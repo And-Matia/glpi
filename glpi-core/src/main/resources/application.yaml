@@ -1,0 +1,25 @@
+spring:
+  application:
+    name: glpi-core
+  datasource:
+    url: jdbc:sqlite:glpi.db
+    driver-class-name: org.sqlite.JDBC
+    username:
+    password:
+  jpa:
+    hibernate:
+      ddl-auto: update
+    database-platform: org.hibernate.community.dialect.SQLiteDialect
+    show-sql: false
+    properties:
+      hibernate:
+        format_sql: true
+        use_sql_comments: true
+        jdbc:
+          batch_size: 20
+          fetch_size: 50
+
+server:
+  port: 8080
+  servlet:
+    context-path: /api
