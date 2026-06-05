@@ -1,0 +1,59 @@
+<div class="confirm-page">
+  @if (loading()) {
+    <div class="confirm-not-found">
+      <p>Chargement de la commande…</p>
+    </div>
+  } @else if (!order()) {
+    <div class="confirm-not-found">
+      <p>Commande introuvable.</p>
+      <a routerLink="/catalog" class="btn-primary">Retour au catalogue</a>
+    </div>
+  } @else {
+    <div class="confirm-card">
+      <div class="confirm-icon">✓</div>
+      <h1 class="confirm-title">Commande confirmée !</h1>
+      <p class="confirm-sub">Merci pour votre commande. Vous serez livré et payerez à la livraison.</p>
+
+      <div class="confirm-id">
+        <span class="confirm-id__label">Référence</span>
+        <span class="confirm-id__value">{{ order()!.reference || '#' + order()!.id }}</span>
+      </div>
+
+      <div class="confirm-meta">
+        <span>{{ formatDate(order()!.date_add || '') }}</span>
+        <span class="confirm-sep">·</span>
+        <span>{{ getStatusLabel(order()!) }}</span>
+      </div>
+
+      <!-- Items -->
+      <div class="confirm-items">
+        @for (item of getOrderItems(order()!); track $index) {
+          <div class="confirm-item">
+            <div class="confirm-item__info">
+              <span class="confirm-item__name">{{ item.product_name }}</span>
+            </div>
+            <span class="confirm-item__qty">× {{ item.product_quantity }}</span>
+            <span class="confirm-item__price">
+              {{ fmt(parseFloat(item.unit_price_tax_excl) * item.product_quantity) }} HT<br>
+              {{ fmt(parseFloat(item.unit_price_tax_incl) * item.product_quantity) }} TTC
+            </span>
+          </div>
+        }
+      </div>
+
+      <div class="confirm-total">
+        <span>Total HT</span>
+        <strong>{{ fmt(getTotalHt(order()!)) }}</strong>
+      </div>
+      <div class="confirm-total">
+        <span>Total TTC payé à la livraison</span>
+        <strong>{{ fmt(getTotalTtc(order()!)) }}</strong>
+      </div>
+
+      <div class="confirm-actions">
+        <a routerLink="/my-orders" class="btn-secondary">Voir mes commandes</a>
+        <a routerLink="/catalog" class="btn-primary">Continuer les achats</a>
+      </div>
+    </div>
+  }
+</div>

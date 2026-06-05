@@ -1,0 +1,213 @@
+.reinit {
+  display: flex;
+  flex-direction: column;
+  gap: var(--space-24);
+}
+
+/* ── Two-column layout ─────────────────────────────────── */
+.reinit__layout {
+  display: grid;
+  grid-template-columns: 340px 1fr;
+  gap: var(--space-24);
+  align-items: start;
+}
+
+/* ── Left column: selector ─────────────────────────────── */
+.reinit__selector {
+  background: var(--color-white);
+  border: 1px solid var(--color-border);
+  border-radius: var(--radius-12);
+  box-shadow: var(--shadow-sm);
+  display: flex;
+  flex-direction: column;
+  gap: var(--space-12);
+  padding: var(--space-16);
+  overflow: hidden;
+}
+
+.reinit__selector-header {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: var(--space-8);
+  padding-bottom: var(--space-8);
+  border-bottom: 1px solid var(--color-border);
+}
+
+.reinit__select-all {
+  display: flex;
+  align-items: center;
+  gap: var(--space-8);
+  font-size: var(--text-14);
+  font-weight: var(--weight-semibold);
+  color: var(--color-text-primary);
+  cursor: pointer;
+  user-select: none;
+}
+
+.reinit__checkbox {
+  width: 15px;
+  height: 15px;
+  accent-color: var(--color-danger);
+  cursor: pointer;
+  flex-shrink: 0;
+}
+
+.reinit__checkbox:disabled { cursor: not-allowed; opacity: 0.5; }
+
+.reinit__list {
+  max-height: 400px;
+  overflow-y: auto;
+  display: flex;
+  flex-direction: column;
+  gap: 2px;
+}
+
+.reinit__item {
+  display: flex;
+  align-items: center;
+  gap: var(--space-8);
+  padding: 7px var(--space-8);
+  border-radius: var(--radius-4);
+  cursor: pointer;
+  user-select: none;
+  transition: background var(--transition-base);
+  font-size: var(--text-13);
+  color: var(--color-text-secondary);
+}
+
+.reinit__item:hover { background: var(--color-surface); }
+
+.reinit__item--checked {
+  background: rgba(220, 38, 38, 0.05);
+  color: var(--color-text-primary);
+  font-weight: var(--weight-medium);
+}
+
+.reinit__item--disabled { opacity: 0.5; cursor: not-allowed; pointer-events: none; }
+
+.reinit__item-label { flex: 1; }
+
+.reinit__no-results {
+  font-size: var(--text-13);
+  color: var(--color-text-muted);
+  text-align: center;
+  padding: var(--space-16);
+  font-style: italic;
+}
+
+/* ── Right column: panel ───────────────────────────────── */
+.reinit__panel {
+  display: flex;
+  flex-direction: column;
+  gap: var(--space-24);
+}
+
+/* Action */
+.reinit__action {
+  display: flex;
+  flex-direction: column;
+  gap: var(--space-8);
+}
+
+.reinit__hint {
+  font-size: var(--text-13);
+  color: var(--color-text-muted);
+  margin: 0;
+}
+
+/* Progress */
+.reinit__progress {
+  background: var(--color-white);
+  border: 1px solid var(--color-border);
+  border-radius: var(--radius-12);
+  padding: var(--space-16);
+  display: flex;
+  flex-direction: column;
+  gap: var(--space-8);
+  box-shadow: var(--shadow-sm);
+}
+
+.reinit__progress-header {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  gap: var(--space-8);
+  font-size: var(--text-14);
+}
+
+.reinit__progress-label {
+  display: flex;
+  align-items: center;
+  gap: var(--space-8);
+  color: var(--color-text-primary);
+  font-weight: var(--weight-medium);
+}
+
+.reinit__progress-label em {
+  font-style: normal;
+  color: var(--color-text-muted);
+  font-weight: var(--weight-regular);
+}
+
+.reinit__progress-count {
+  font-size: var(--text-12);
+  color: var(--color-text-muted);
+  white-space: nowrap;
+}
+
+.reinit__bar-wrap {
+  height: 6px;
+  background: var(--color-border);
+  border-radius: var(--radius-full);
+  overflow: hidden;
+}
+
+.reinit__bar {
+  height: 100%;
+  background: var(--color-danger);
+  border-radius: var(--radius-full);
+  transition: width var(--transition-base);
+}
+
+.reinit__progress-items {
+  font-size: var(--text-12);
+  color: var(--color-text-muted);
+  margin: 0;
+}
+
+/* Results */
+.reinit__results {
+  display: flex;
+  flex-direction: column;
+  gap: var(--space-12);
+}
+
+.reinit__toggle-link {
+  background: none;
+  border: none;
+  cursor: pointer;
+  font-size: inherit;
+  font-weight: var(--weight-semibold);
+  text-decoration: underline;
+  color: inherit;
+  padding: 0;
+  margin-left: var(--space-8);
+}
+
+/* StatsComponent */
+.reinit__stats {
+  display: flex;
+  flex-direction: column;
+  gap: var(--space-8);
+}
+
+.reinit__stats-title {
+  font-size: var(--text-14);
+  font-weight: var(--weight-semibold);
+  color: var(--color-text-secondary);
+  margin: 0;
+  display: flex;
+  align-items: center;
+  gap: var(--space-8);
+}

@@ -1,0 +1,14 @@
+<!-- Labeled input — shows error message below if errorMessage is provided -->
+<div class="input-field">
+  <label class="input-field__label">{{ label() }}</label>
+  <input
+    class="input-field__control"
+    [class.input-field__control--error]="errorMessage()"
+    [type]="type()"
+    [placeholder]="placeholder()"
+    [formControl]="control"
+  />
+  @if (errorMessage()) {
+    <p class="input-field__error">{{ errorMessage() }}</p>
+  }
+</div>

@@ -1,0 +1,98 @@
+<div class="detail-page">
+  <div class="breadcrumb">
+    <a routerLink="/catalogue" class="detail-back">← Retour au catalogue</a>
+  </div>
+
+  @if (loading()) {
+    <div class="detail-loading">
+      <div class="detail-spinner"></div>
+      <p>Chargement du produit...</p>
+    </div>
+  } @else if (error()) {
+    <div class="detail-error">
+      {{ error() }}
+    </div>
+  } @else if (product(); as p) {
+    <div class="detail-layout">
+      <div class="detail-img-wrap">
+        @if (p.id_default_image) {
+          <img [ngSrc]="imageApi.productImageUrl(p.id, p.id_default_image)" [alt]="getName(p)" width="400" height="400" priority class="detail-img">
+        } @else {
+          <div class="detail-img-placeholder">Image non disponible</div>
+        }
+      </div>
+
+      <div class="detail-info">
+        <p class="detail-ref">Référence : {{ p.reference }}</p>
+        <h1 class="detail-name">{{ getName(p) }}</h1>
+        <div class="detail-price">
+          <span class="detail-price__ht">{{ effectivePriceFormatted() }} HT</span>
+          <span class="detail-price__ttc">{{ effectivePriceTtcFormatted() }} TTC</span>
+        </div>
+
+        @if (p.description || p.description_short) {
+          <div class="detail-desc" [innerHTML]="getDescription(p)"></div>
+        }
+
+        @if (variants().length > 0) {
+          <div class="detail-variants">
+            <h2 class="detail-variants__label">Variantes</h2>
+            <div class="detail-variants__list">
+              @for (v of variants(); track v.combinationId) {
+                <button class="variant-chip"
+                        [class.variant-chip--active]="selectedVariant()?.combinationId === v.combinationId"
+                        (click)="selectVariant(v)">
+                  {{ v.label }}
+                </button>
+              }
+            </div>
+            @if (!selectedVariant()) {
+              <p class="detail-variants__hint">Veuillez choisir une variante</p>
+            }
+          </div>
+        }
+
+        <div class="detail-stock">
+          @switch (stockQty()) {
+            @case (null) {
+              <span class="detail-stock--hint">Vérification de la disponibilité...</span>
+            }
+            @case (0) {
+              <span class="detail-stock--out">Rupture de stock</span>
+            }
+            @default {
+              <span class="detail-stock--in">En stock ({{ stockQty() }} disponibles)</span>
+            }
+          }
+        </div>
+
+        @if (stockQty() !== 0) {
+           <p class="detail-shipping">✓ Livraison offerte</p>
+        }
+
+        <div class="detail-actions">
+          <div class="detail-qty">
+            <button class="qty-btn" (click)="decQty()" type="button">-</button>
+            <span class="qty-val">{{ quantity() }}</span>
+            <button class="qty-btn" (click)="incQty()" type="button">+</button>
+          </div>
+          
+          <button class="btn-primary detail-add-btn" 
+                  (click)="addToCart()" 
+                  [disabled]="!canAdd()">
+            {{ added() ? 'Ajouté !' : 'Ajouter au panier' }}
+          </button>
+        </div>
+        
+        @if (added()) {
+          <p class="detail-added-msg">Produit ajouté ! <a routerLink="/panier">Voir le panier</a></p>
+        }
+      </div>
+    </div>
+  } @else {
+    <div class="detail-not-found">
+      <h2>Produit introuvable</h2>
+      <a routerLink="/catalogue" class="btn-primary">Retour au catalogue</a>
+    </div>
+  }
+</div>

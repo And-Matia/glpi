@@ -1,0 +1,223 @@
+.user-select {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  gap: var(--space-40, 40px);
+  padding: var(--space-48, 48px) var(--space-16, 16px);
+  min-height: 60vh;
+}
+
+/* ── Hero ────────────────────────────────────────────────────── */
+.user-select__hero {
+  text-align: center;
+  display: flex;
+  flex-direction: column;
+  gap: var(--space-8, 8px);
+}
+
+.user-select__title {
+  font-size: var(--text-36, 36px);
+  font-weight: 800;
+  color: var(--color-text-primary);
+  margin: 0;
+}
+
+.user-select__sub {
+  font-size: var(--text-16);
+  color: var(--color-text-secondary);
+  margin: 0;
+}
+
+/* ── Error ───────────────────────────────────────────────────── */
+.user-select__error {
+  width: 100%;
+  max-width: 460px;
+  padding: var(--space-12) var(--space-16);
+  background: #fee2e2;
+  color: #dc2626;
+  border-radius: var(--radius-8);
+  font-size: var(--text-14);
+}
+
+/* ── Loading ─────────────────────────────────────────────────── */
+.user-select__loading {
+  display: flex;
+  align-items: center;
+  gap: var(--space-12);
+  color: var(--color-text-secondary);
+  font-size: var(--text-14);
+  padding: var(--space-16) 0;
+}
+
+.user-select__spinner {
+  width: 22px;
+  height: 22px;
+  border: 3px solid #e8d9b0;
+  border-top-color: var(--color-primary);
+  border-radius: 50%;
+  animation: spin 0.7s linear infinite;
+  flex-shrink: 0;
+}
+
+@keyframes spin { to { transform: rotate(360deg); } }
+
+/* ── List ────────────────────────────────────────────────────── */
+.user-select__list {
+  display: flex;
+  flex-direction: column;
+  gap: var(--space-12, 12px);
+  width: 100%;
+  max-width: 460px;
+}
+
+/* ── Search ──────────────────────────────────────────────────── */
+.user-select__search {
+  display: flex;
+  align-items: center;
+  gap: var(--space-12, 12px);
+  padding: 0 var(--space-16, 16px);
+  background: var(--color-white);
+  border: 2px solid #e8d9b0;
+  border-radius: var(--radius-12, 12px);
+  transition: border-color 0.15s;
+}
+
+.user-select__search:focus-within {
+  border-color: var(--color-primary);
+}
+
+.user-select__search i {
+  color: #9ca3af;
+  font-size: var(--text-14);
+  flex-shrink: 0;
+}
+
+.user-select__search input {
+  flex: 1;
+  border: none;
+  outline: none;
+  background: transparent;
+  padding: var(--space-12, 12px) 0;
+  font-size: var(--text-15, 15px);
+  color: var(--color-text-primary);
+}
+
+/* ── Scrollable user list ────────────────────────────────────── */
+.user-select__scroll {
+  display: flex;
+  flex-direction: column;
+  gap: var(--space-12, 12px);
+  max-height: 340px;
+  overflow-y: auto;
+  padding: 2px;
+}
+
+.user-select__no-result {
+  text-align: center;
+  color: var(--color-text-secondary);
+  font-size: var(--text-14);
+  padding: var(--space-16) 0;
+  margin: 0;
+}
+
+/* ── Divider ─────────────────────────────────────────────────── */
+.user-select__divider {
+  display: flex;
+  align-items: center;
+  gap: var(--space-12);
+  margin: var(--space-4) 0;
+  color: var(--color-text-secondary);
+  font-size: var(--text-13, 13px);
+}
+
+.user-select__divider::before,
+.user-select__divider::after {
+  content: '';
+  flex: 1;
+  height: 1px;
+  background: #e5e7eb;
+}
+
+/* ── User card ───────────────────────────────────────────────── */
+.user-card {
+  display: flex;
+  align-items: center;
+  gap: var(--space-16, 16px);
+  padding: var(--space-16) var(--space-20, 20px);
+  background: var(--color-white);
+  border: 2px solid #e8d9b0;
+  border-radius: var(--radius-12, 12px);
+  cursor: pointer;
+  text-align: left;
+  width: 100%;
+  transition: border-color 0.15s, box-shadow 0.15s, transform 0.15s;
+}
+
+.user-card:hover {
+  border-color: var(--color-primary);
+  box-shadow: 0 4px 16px rgba(255, 214, 0, 0.2);
+  transform: translateY(-1px);
+}
+
+.user-card--anon {
+  border-style: dashed;
+  border-color: #d1d5db;
+}
+
+.user-card--anon:hover {
+  border-color: var(--color-primary);
+  border-style: solid;
+}
+
+/* ── Avatar ──────────────────────────────────────────────────── */
+.user-card__avatar {
+  width: 44px;
+  height: 44px;
+  border-radius: 50%;
+  background: var(--color-primary);
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  font-weight: 700;
+  font-size: var(--text-18, 18px);
+  color: var(--color-text-primary);
+  flex-shrink: 0;
+}
+
+.user-card__avatar--anon {
+  background: #f3f4f6;
+  color: #9ca3af;
+  font-size: var(--text-16);
+}
+
+/* ── Info ────────────────────────────────────────────────────── */
+.user-card__info {
+  flex: 1;
+  display: flex;
+  flex-direction: column;
+  gap: 2px;
+  min-width: 0;
+}
+
+.user-card__name {
+  font-size: var(--text-15, 15px);
+  font-weight: 600;
+  color: var(--color-text-primary);
+}
+
+.user-card__city {
+  font-size: var(--text-13, 13px);
+  color: var(--color-text-secondary);
+}
+
+/* ── Arrow ───────────────────────────────────────────────────── */
+.user-card__arrow {
+  color: #d1d5db;
+  font-size: var(--text-14);
+  flex-shrink: 0;
+  transition: color 0.15s;
+}
+
+.user-card:hover .user-card__arrow {
+  color: var(--color-primary);
+}

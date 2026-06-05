@@ -1,0 +1,38 @@
+<div class="product-table-container">
+  @if (error()) {
+    <app-alert type="error">{{ error() }}</app-alert>
+  }
+
+  @if (loading()) {
+    <div class="product-table-loading">
+      <app-loader size="sm" />
+      <span>Chargement des produits…</span>
+    </div>
+  } @else {
+    <app-table
+      [columns]="columns"
+      [rows]="rows()"
+      [searchKeys]="['name', 'reference']"
+      emptyIcon="fa-solid fa-cart-shopping"
+      emptyLabel="Aucun produit trouvé"
+    >
+      <ng-template appCell="name" let-row>
+        <span class="product-name">{{ row['name'] }}</span>
+      </ng-template>
+
+      <ng-template appCell="sales" let-row>
+        <app-badge variant="info" size="sm">{{ row['sales'] }}</app-badge>
+      </ng-template>
+
+      <ng-template appCell="stock" let-row>
+        <app-badge [variant]="row['stock'] <= 5 ? 'danger' : 'success'" size="sm">
+          {{ row['stock'] }}
+        </app-badge>
+      </ng-template>
+
+      <ng-template appCell="profit" let-row>
+        <span class="product-profit">{{ row['profit'] }}</span>
+      </ng-template>
+    </app-table>
+  }
+</div>

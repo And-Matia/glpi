@@ -1,0 +1,13 @@
+<div class="textarea-field">
+  <label class="textarea-field__label">{{ label() }}</label>
+  <textarea
+    class="textarea-field__control"
+    [class.textarea-field__control--error]="errorMessage()"
+    [placeholder]="placeholder()"
+    [rows]="rows()"
+    [(ngModel)]="value"
+  ></textarea>
+  @if (errorMessage()) {
+    <p class="textarea-field__error">{{ errorMessage() }}</p>
+  }
+</div>

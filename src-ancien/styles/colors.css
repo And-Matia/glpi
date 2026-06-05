@@ -1,0 +1,42 @@
+/* Color palette — all design tokens as CSS custom properties */
+:root {
+  /* Brand */
+  --color-primary:         #FFD600;
+  --color-primary-light:   #FFF176;
+  --color-accent:          #F5A623;
+  --color-accent-warm:     #E8B000;
+  --color-tertiary:        #C97D10;
+
+  /* Semantic — success */
+  --color-success:         #16a34a;
+  --color-success-bg:      #dcfce7;
+  --color-success-text:    #14532d;
+
+  /* Semantic — warning */
+  --color-warning:         #d97706;
+  --color-warning-bg:      #fef3c7;
+  --color-warning-text:    #78350f;
+
+  /* Semantic — danger / error */
+  --color-danger:          #dc2626;
+  --color-danger-bg:       #fee2e2;
+  --color-danger-text:     #7f1d1d;
+  --color-error:           #dc2626;
+  --color-error-bg:        #fee2e2;
+  --color-error-text:      #7f1d1d;
+
+  /* Semantic — info */
+  --color-info:            #2563eb;
+  --color-info-bg:         #dbeafe;
+  --color-info-text:       #1e3a8a;
+
+  /* Neutral surface & text */
+  --color-text-primary:    #1A1A1A;
+  --color-text-secondary:  #3D3D3D;
+  --color-text-muted:      #6b7280;
+  --color-border:          #e5e7eb;
+  --color-border-strong:   #d1d5db;
+  --color-surface:         #f9fafb;
+  --color-bg-light:        #FFF8E7;
+  --color-white:           #FFFFFF;
+}

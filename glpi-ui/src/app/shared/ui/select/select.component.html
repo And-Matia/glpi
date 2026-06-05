@@ -1,0 +1,19 @@
+<div class="select-field">
+  <label class="select-field__label">{{ label() }}</label>
+  <div class="select-field__wrapper">
+    <select
+      class="select-field__control"
+      [class.select-field__control--error]="errorMessage()"
+      [(ngModel)]="value"
+    >
+      <option [value]="null" disabled>{{ placeholder() }}</option>
+      @for (opt of options(); track opt.value) {
+        <option [value]="opt.value">{{ opt.label }}</option>
+      }
+    </select>
+    <i class="fa-solid fa-chevron-down select-field__icon"></i>
+  </div>
+  @if (errorMessage()) {
+    <p class="select-field__error">{{ errorMessage() }}</p>
+  }
+</div>

@@ -1,0 +1,86 @@
+<div class="import-container">
+  <h1>Importer les données</h1>
+
+  <label style="display: flex; align-items: center; gap: 0.5rem; margin-bottom: 1rem;">
+    <input type="checkbox" #cb
+           [checked]="skipImageImport()"
+           (change)="skipImageImport.set(cb.checked)"
+    >
+    <span>Ignorer l'importation des images</span>
+  </label>
+  <div class="import-wizard">
+    @for (step of steps(); track $index) {
+      <div class="import-step">
+        <h2>Étape {{ $index + 1 }} — {{ stepLabels[$index] }}</h2>
+
+        <div class="drop-zone"
+             (dragover)="onDragOver($event, $index + 1)"
+             (dragleave)="onDragLeave($index + 1)"
+             (drop)="onDrop($event, $index + 1)"
+             [class.drag-over]="step.isDragOver">
+
+          @if (step.status === 'idle') {
+            <div class="prompt">
+              <i class="fa-solid fa-file-arrow-up"></i>
+              <p>Glissez-déposez un fichier ou cliquez pour sélectionner</p>
+              <input type="file" (change)="onFileChange($event, $index + 1)" hidden #fileInput>
+              <button class="btn-secondary" (click)="fileInput.click()">Parcourir</button>
+            </div>
+          }
+
+          @if (step.status === 'validating') {
+            <app-loader text="Validation en cours..."></app-loader>
+          }
+
+          @if (step.status === 'validated' || step.status === 'importing' || step.status === 'done' || step.status === 'error') {
+            <div class="file-info">
+              <p>{{ step.selectedFile?.name }}</p>
+              @if (step.status === 'validated') {
+                <span class="status-badge status-success">Fichier valide</span>
+              }
+              @if (step.status === 'importing') {
+                <app-loader text="Import en cours..."></app-loader>
+              }
+              @if (step.status === 'done' && step.result) {
+                <div class="import-result">
+                  <p>Importation terminée!</p>
+                  <p>{{ step.result.success }} importés avec succès.</p>
+                  @if (step.result.errors.length > 0) {
+                    <div class="error-details">
+                      <h4>Erreurs:</h4>
+                      <ul>
+                        @for (error of step.result.errors; track $index) {
+                          <li>Ligne {{ error.row }}: {{ error.error }}</li>
+                        }
+                      </ul>
+                    </div>
+                  }
+                </div>
+              }
+              @if (step.status === 'error') {
+                <div class="error-details">
+                  <h4>Erreurs de validation:</h4>
+                  <ul>
+                    @for (error of step.validationErrors; track $index) {
+                      <li>{{ error }}</li>
+                    }
+                  </ul>
+                  @if (step.errorMsg) {
+                    <app-alert type="error">{{ step.errorMsg }}</app-alert>
+                  }
+                </div>
+              }
+              <button class="btn-secondary" (click)="reset($index + 1)">Recommencer</button>
+            </div>
+          }
+        </div>
+      </div>
+    }
+  </div>
+
+  <div class="import-actions">
+    <button class="btn-primary" (click)="startImport()" [disabled]="!canImport()">
+      Lancer l'importation
+    </button>
+  </div>
+</div>

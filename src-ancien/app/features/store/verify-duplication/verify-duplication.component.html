@@ -1,0 +1,98 @@
+<div class="verify-page">
+  <header class="verify-header">
+    <a routerLink="/my-orders" class="verify-back">
+      <i class="fa-solid fa-arrow-left"></i>
+      Retour
+    </a>
+    <h1 class="verify-title">Vérification de duplication</h1>
+    @if (!loading() && !error()) {
+      <p class="verify-subtitle">
+        Commande {{ orderRef() }} · multiplicateur ×{{ multiplier() }}
+      </p>
+    }
+  </header>
+
+  @if (loading()) {
+    <div class="verify-state">
+      <i class="fa-solid fa-spinner fa-spin fa-2x"></i>
+      <p>Vérification des stocks…</p>
+    </div>
+  } @else if (error()) {
+    <div class="verify-state verify-state--error">
+      <i class="fa-solid fa-triangle-exclamation fa-2x"></i>
+      <p>{{ error() }}</p>
+    </div>
+  } @else {
+    @if (hasShortage()) {
+      <div class="verify-alert verify-alert--warning">
+        <i class="fa-solid fa-triangle-exclamation"></i>
+        Stock insuffisant pour un ou plusieurs articles.
+      </div>
+    } @else {
+      <div class="verify-alert verify-alert--success">
+        <i class="fa-solid fa-circle-check"></i>
+        Stock disponible pour tous les articles.
+      </div>
+    }
+
+    <div class="verify-table-wrap">
+      <table class="verify-table">
+        <thead>
+          <tr>
+            <th>Produit</th>
+            <th>Référence</th>
+            <th class="num">Demandé</th>
+            <th class="num">Disponible</th>
+            <th>État</th>
+          </tr>
+        </thead>
+        <tbody>
+          @for (row of rows(); track $index) {
+            <tr [class.row--alert]="row.insufficient">
+              <td>
+                <div class="cell-product">{{ row.label }}</div>
+                @if (row.variantName) {
+                  <div class="cell-variant">{{ row.variantName }}</div>
+                }
+              </td>
+              <td class="cell-ref">{{ row.reference || '—' }}</td>
+              <td class="num"><strong>{{ row.requested }}</strong></td>
+              <td class="num">{{ row.available }}</td>
+              <td>
+                @if (row.insufficient) {
+                  <span class="pill pill--danger">
+                    <i class="fa-solid fa-triangle-exclamation"></i>
+                    Manque {{ row.requested - row.available }}
+                  </span>
+                } @else {
+                  <span class="pill pill--ok">
+                    <i class="fa-solid fa-check"></i>
+                    OK
+                  </span>
+                }
+              </td>
+            </tr>
+          }
+        </tbody>
+      </table>
+    </div>
+
+    <div class="verify-actions">
+      <a routerLink="/my-orders" class="btn-ghost">Annuler</a>
+      <button
+        type="button"
+        class="btn-primary"
+        (click)="addToCart()"
+        [disabled]="adding() || rows().length === 0"
+      >
+        @if (adding()) {
+          <i class="fa-solid fa-spinner fa-spin"></i>
+          Ajout en cours…
+        } @else {
+          <i class="fa-solid fa-cart-plus"></i>
+          Mettre dans le panier
+        }
+      </button>
+    </div>
+  }
+</div>

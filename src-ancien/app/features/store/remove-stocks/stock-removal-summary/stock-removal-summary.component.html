@@ -1,0 +1,61 @@
+<div class="summary">
+
+  <h2 class="summary__title">
+    Ajout ({{ rowsToAdd().length }} ligne{{ rowsToAdd().length > 1 ? 's' : '' }})
+  </h2>
+
+  <app-table
+    [columns]="columnsToAdd"
+    [rows]="tableRowsToAdd()"
+    [searchKeys]="['productName', 'reference', 'categoryName']"
+    emptyIcon="fa-solid fa-box-open"
+    emptyLabel="Aucun stock à retirer pour cette sélection."
+  >
+    <ng-template appCell="amountRemoved" let-row>
+      <span class="summary__removed">−{{ row.amountAdded }}</span>
+    </ng-template>
+  </app-table>
+
+  @if (rowsToAdd().length > 0) {
+    <div class="summary__totals">
+      <div class="summary__total">
+        <span class="summary__total-label">Stock théorique à ajouter total</span>
+        <span class="summary__total-value">{{ totalRequestedToAdd() }}</span>
+      </div>
+      <div class="summary__total">
+        <span class="summary__total-label">Stock ajouter réel total</span>
+        <span class="summary__total-value">{{ totalAdded() }}</span>
+      </div>
+    </div>
+  }
+  <h2 class="summary__title">
+    Removing ({{ rowsToRemove().length }} ligne{{ rowsToRemove().length > 1 ? 's' : '' }})
+  </h2>
+
+  <app-table
+    [columns]="columnsToRemove"
+    [rows]="tableRowsToRemove()"
+    [searchKeys]="['productName', 'reference', 'categoryName']"
+    emptyIcon="fa-solid fa-box-open"
+    emptyLabel="Aucun stock à retirer pour cette sélection."
+  >
+    <ng-template appCell="amountRemoved" let-row>
+      <span class="summary__removed">−{{ row.amountRemoved }}</span>
+    </ng-template>
+  </app-table>
+
+  @if (rowsToRemove().length > 0) {
+    <div class="summary__totals">
+      <div class="summary__total">
+        <span class="summary__total-label">Stock théorique à retirer total</span>
+        <span class="summary__total-value">{{ totalRequestedToRemove() }}</span>
+      </div>
+      <div class="summary__total">
+        <span class="summary__total-label">Stock retiré réel total</span>
+        <span class="summary__total-value summary__total-value--removed">−{{ totalRemoved() }}</span>
+      </div>
+    </div>
+  }
+
+
+</div>

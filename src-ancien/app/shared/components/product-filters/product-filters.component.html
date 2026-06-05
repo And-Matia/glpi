@@ -1,0 +1,38 @@
+<div class="filters">
+  <div class="filters__search-wrap">
+    <input
+      class="filters__search"
+      type="search"
+      placeholder="Rechercher un produit…"
+      [value]="filters().search"
+      (input)="onSearch($event)"
+    />
+  </div>
+
+  <div class="filters__row">
+    <select class="filters__select" (change)="onCategory($event)">
+      <option value="">Toutes les catégories</option>
+      @for (c of categories(); track c.id) {
+        <option [value]="c.id">{{ c.name }}</option>
+      }
+    </select>
+
+    <div class="filters__price-range">
+      <input
+        class="filters__price-input"
+        type="number"
+        placeholder="Prix min"
+        min="0"
+        (input)="onPriceMin($event)"
+      />
+      <span class="filters__price-sep">—</span>
+      <input
+        class="filters__price-input"
+        type="number"
+        placeholder="Prix max"
+        min="0"
+        (input)="onPriceMax($event)"
+      />
+    </div>
+  </div>
+</div>

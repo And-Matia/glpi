@@ -1,0 +1,22 @@
+
+# curl -X POST http://localhost/glpi/api.php/token
+#  -H "Content-Type: application/json"
+#  -d '{
+#    "grant_type": "password",
+#    "client_id": "4ba8eb4ef8cdf767f8cf1373c039732d0ad287cdb9a5b0e27d708121e213ec3b",
+#    "client_secret": "5f1331b3a1a0275911f2c685c4077d4553d206c63c8bc83adffbb04bc6e62e21",
+#    "username": "glpi",
+#    "password": "glpi"
+#  }'
+POST http://localhost/glpi/api/v2.3/token
+Content-Type: application/json
+
+{
+  "grant_type": "password",
+  "client_id": "4ba8eb4ef8cdf767f8cf1373c039732d0ad287cdb9a5b0e27d708121e213ec3b",
+  "client_secret": "5f1331b3a1a0275911f2c685c4077d4553d206c63c8bc83adffbb04bc6e62e21",
+  "username": "glpi",
+  "password": "glpi"
+}
+
+###

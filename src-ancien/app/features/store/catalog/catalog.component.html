@@ -1,0 +1,123 @@
+<div class="catalog-page">
+  <header class="catalog-hero">
+    <h1 class="catalog-hero__title">Notre Catalogue</h1>
+    <p class="catalog-hero__sub">Découvrez notre sélection de produits de qualité</p>
+  </header>
+
+  <div>
+    <a routerLink="/remove-stocks/" class="btn-primary">Ajustement stock</a>
+  </div>
+  <aside class="catalog-filters">
+    <div class="catalog-filter-group">
+      <label for="search" class="catalog-filter-label">Rechercher</label>
+      <input
+        id="search"
+        type="text"
+        [formControl]="$any(filtersForm.get('search'))"
+        class="catalog-input"
+        placeholder="Nom, référence..."
+      />
+    </div>
+
+    <div class="catalog-filter-group">
+      <label for="category" class="catalog-filter-label">Catégorie</label>
+      <select id="category" [formControl]="$any(filtersForm.get('categoryId'))" class="catalog-input catalog-select">
+        <option [ngValue]="null">Toutes les catégories</option>
+        @for (cat of categories(); track cat.id) {
+          <option [value]="cat.id">{{ getName(cat) }}</option>
+        }
+      </select>
+    </div>
+
+    <div class="catalog-filter-group catalog-filter-group--price">
+      <label class="catalog-filter-label">Prix</label>
+      <div class="catalog-price-range">
+        <input
+          type="number"
+          [formControl]="$any(filtersForm.get('priceMin'))"
+          class="catalog-input catalog-input--price"
+          placeholder="Min"
+        />
+        <span class="catalog-price-sep">-</span>
+        <input
+          type="number"
+          [formControl]="$any(filtersForm.get('priceMax'))"
+          class="catalog-input catalog-input--price"
+          placeholder="Max"
+        />
+      </div>
+    </div>
+
+    <button type="button" (click)="resetFilters()" class="catalog-reset-btn">
+      <i class="fa-solid fa-rotate-left"></i>
+      Réinitialiser
+    </button>
+  </aside>
+
+  <div class="catalog-count">
+    @if (!loading()) {
+      {{ filtered().length }} produit(s) trouvé(s)
+    }
+  </div>
+
+  <main class="catalog-content">
+    @if (loading()) {
+      <div class="catalog-loading">
+        <div class="catalog-spinner"></div>
+        <p>Chargement du catalogue...</p>
+      </div>
+    } @else if (error()) {
+      <app-alert type="error">{{ error() }}</app-alert>
+    } @else {
+      <div class="catalog-grid">
+        @for (p of filtered(); track p.id) {
+          <div class="product-card">
+            @switch (badge(p)) {
+              @case ('hot') {
+                <span class="product-badge product-badge--hot">HOT</span>
+              }
+              @case ('new') {
+                <span class="product-badge product-badge--new">NOUVEAU</span>
+              }
+            }
+
+            <a [routerLink]="['/products', p.id]" class="product-card__img-link">
+              @if (getProductImageUrl(p)) {
+                <img [ngSrc]="getProductImageUrl(p)!" [alt]="getName(p)" width="220" height="220" class="product-card__img" priority>
+              } @else {
+                <div class="product-card__img-placeholder">Image non disponible</div>
+              }
+            </a>
+
+            <div class="product-card__body">
+              <p class="product-card__ref">{{ p.reference }}</p>
+              <h3 class="product-card__name">
+                <a [routerLink]="['/products', p.id]">{{ getName(p) }}</a>
+              </h3>
+              <p class="product-card__price">
+                <span class="product-card__price-ht">{{ getProductPrice(p.id) }} HT</span>
+                <span class="product-card__price-ttc">{{ getProductPriceTtc(p.id) }} TTC</span>
+              </p>
+
+              @if (hasCombinations(p)) {
+                <p class="product-card__variants-hint">+ de variantes disponibles</p>
+              }
+            </div>
+
+            <div class="product-card__footer">
+              <a [routerLink]="['/products', p.id]" class="product-card__btn">
+                Voir le produit
+              </a>
+            </div>
+          </div>
+        } @empty {
+          <div class="catalog-empty">
+            <i class="fa-solid fa-magnifying-glass fa-3x" style="color: var(--color-text-muted)"></i>
+            <p class="catalog-empty__text">Aucun produit ne correspond à vos critères.</p>
+            <button class="btn-primary" (click)="resetFilters()">Voir tous les produits</button>
+          </div>
+        }
+      </div>
+    }
+  </main>
+</div>

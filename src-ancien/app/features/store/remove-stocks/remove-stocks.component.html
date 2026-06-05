@@ -1,0 +1,73 @@
+@if (!showSummary()) {
+  <div class="page">
+
+    @if (!verified()) {
+      <form class="card" [formGroup]="loginForm" (ngSubmit)="onSubmit()">
+        <h1 class="card__title">Vérification</h1>
+        @if (error()) {
+          <p class="error">{{ error() }}</p>
+        }
+        <label>Mot de passe<input type="password" formControlName="password" autocomplete="current-password" /></label>
+        <button type="submit" [disabled]="loading() || loginForm.invalid">
+          {{ loading() ? 'Connexion…' : 'Se connecter' }}
+        </button>
+      </form>
+    }
+
+    @if (verified()) {
+      <form class="card" [formGroup]="categoriesForm" (ngSubmit)="onRemove()">
+
+
+        <h1 class="card__title">Ajouter du stock</h1>
+        @if (error()) {
+          <p class="error">{{ error() }}</p>
+        }
+        <label>
+          Catégorie
+          <select formControlName="categoryIdToAdd">
+            <option [ngValue]="null" disabled>Sélectionner…</option>
+            <option [ngValue]="'all'">Toutes les catégories</option>
+            @for (cat of categories(); track cat.id) {
+              <option [ngValue]="cat.id">{{ getName(cat) }}</option>
+            }
+          </select>
+        </label>
+        <label>
+          Quantité à ajouter
+          <input type="number" formControlName="toAdd" min="1" placeholder="ex: 10" />
+        </label>
+        <label>
+          Limite
+          <input type="number" formControlName="stockLimit" placeholder="ex: 10" />
+        </label>
+
+        <h1 class="card__title">Retirer du stock</h1>
+        @if (error()) {
+          <p class="error">{{ error() }}</p>
+        }
+        <label>
+          Catégorie
+          <select formControlName="categoryIdToRemove">
+            <option [ngValue]="null" disabled>Sélectionner…</option>
+            <option [ngValue]="'all'">Toutes les catégories</option>
+            @for (cat of categories(); track cat.id) {
+              <option [ngValue]="cat.id">{{ getName(cat) }}</option>
+            }
+          </select>
+        </label>
+        <label>
+          Quantité à retirer
+          <input type="number" formControlName="toRemove" min="1" placeholder="ex: 10" />
+        </label>
+        <button type="submit" class="btn-danger" [disabled]="loading()">
+          {{ loading() ? 'En cours…' : 'Retirer le stock' }}
+        </button>
+      </form>
+    }
+
+  </div>
+}
+
+@if (showSummary()) {
+  <app-stock-removal-summary [rowsToAdd]="summaryRowsToAdd()" [rowsToRemove]="summaryRowsToRemove()" />
+}

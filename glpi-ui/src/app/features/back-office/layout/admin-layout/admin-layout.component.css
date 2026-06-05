@@ -1,0 +1,13 @@
+.admin-shell {
+  display: flex;
+  align-items: stretch;
+  min-height: 100vh;
+}
+
+.admin-shell__content {
+  flex: 1;
+  min-width: 0;
+  padding: var(--space-32);
+  overflow-y: auto;
+  background: var(--color-surface);
+}

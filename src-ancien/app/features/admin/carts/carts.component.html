@@ -1,0 +1,22 @@
+<div class="carts-page">
+  <app-page-header title="Panier" subtitle="osnultation des panier"/>
+
+  @if (error()) {
+    <app-alert type="error">{{ error() }}</app-alert>
+  }
+
+  @if (loading()) {
+    <div class="carts-loading">
+      <app-loader size="md"/>
+      <span>Chargement des paniers…</span>
+    </div>
+  } @else {
+    <app-table
+      [columns]="tableColumns"
+      [rows]="rows()"
+      [searchKeys]="[ 'customerName', 'id']"
+      emptyIcon="fa-solid fa-cart-shopping"
+      emptyLabel="Aucun panier trouvé">
+    </app-table>
+  }
+</div>

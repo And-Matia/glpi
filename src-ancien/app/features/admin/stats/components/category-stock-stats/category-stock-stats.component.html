@@ -1,0 +1,21 @@
+<section class="stats-section">
+  <h2>Stock par catégorie</h2>
+
+  @if (error()) {
+    <app-alert type="error">{{ error() }}</app-alert>
+  }
+
+  @if (loading()) {
+    <div class="stats-loading">
+      <app-loader size="md"/>
+      <span>Chargement du stock…</span>
+    </div>
+  } @else {
+    <app-table
+      [columns]="stockColumns"
+      [rows]="stockRows()"
+      emptyIcon="fa-solid fa-boxes-stacked"
+      emptyLabel="Aucune catégorie trouvée"
+    />
+  }
+</section>

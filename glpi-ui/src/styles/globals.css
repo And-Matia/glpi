@@ -1,0 +1,51 @@
+/* Global base styles — reset, typography, and utility classes */
+@import './colors.css';
+@import './variables.css';
+
+/* Minimal CSS reset */
+*, *::before, *::after {
+  box-sizing: border-box;
+  margin: 0;
+  padding: 0;
+}
+
+/* Base typography */
+body {
+  font-family: 'Inter', system-ui, sans-serif;
+  font-size: 16px;
+  line-height: 1.6;
+  color: var(--color-text-primary);
+  background-color: var(--color-white);
+}
+
+/* Heading styles */
+h1 {
+  font-size: var(--text-32);
+  color: var(--color-text-primary);
+  margin-bottom: var(--space-16);
+}
+
+h2 {
+  font-size: var(--text-24);
+  color: var(--color-text-primary);
+  margin-bottom: var(--space-12);
+}
+
+h3 {
+  font-size: var(--text-20);
+  color: var(--color-text-secondary);
+  margin-bottom: var(--space-8);
+}
+
+h4 {
+  font-size: var(--text-16);
+  color: var(--color-text-secondary);
+  margin-bottom: var(--space-8);
+}
+
+/* Utility classes */
+.text-center   { text-align: center; }
+.mt-16         { margin-top: var(--space-16); }
+.mb-16         { margin-bottom: var(--space-16); }
+.flex          { display: flex; }
+.flex-between  { display: flex; justify-content: space-between; align-items: center; }

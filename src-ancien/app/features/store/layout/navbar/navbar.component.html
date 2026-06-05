@@ -1,0 +1,47 @@
+<nav class="navbar">
+  <a routerLink="/catalog" class="navbar__brand">
+    <i class="fa-solid fa-store"></i>
+    <span>New App</span>
+  </a>
+
+  <ul class="navbar__links">
+    <li>
+      <a routerLink="/catalog" routerLinkActive="active">
+        <i class="fa-solid fa-list-ul"></i>
+        <span>Catalogue</span>
+      </a>
+    </li>
+    <li>
+      <a routerLink="/my-orders" routerLinkActive="active">
+        <i class="fa-solid fa-box-archive"></i>
+        <span>Mes commandes</span>
+      </a>
+    </li>
+    <li>
+      <a routerLink="/cart" routerLinkActive="active" class="navbar__cart-link">
+        <div class="navbar__cart-icon-wrapper">
+          <i class="fa-solid fa-cart-shopping"></i>
+          @if (cartService.count() > 0) {
+            <span class="navbar__cart-badge">{{ cartService.count() }}</span>
+          }
+        </div>
+        <span>Panier</span>
+      </a>
+    </li>
+  </ul>
+
+  <div class="navbar__user">
+    @if (userSession.currentUser(); as u) {
+      <a routerLink="/" class="navbar__user-chip" title="Changer d'utilisateur">
+        <span class="navbar__user-avatar">{{ u.id === 0 ? '?' : u.name.charAt(0).toUpperCase() }}</span>
+        <span class="navbar__user-name">{{ u.id === 0 ? 'Anonyme' : u.name }}</span>
+        <i class="fa-solid fa-caret-down"></i>
+      </a>
+    } @else {
+      <a routerLink="/" class="navbar__user-chip navbar__user-chip--none">
+        <i class="fa-solid fa-circle-user"></i>
+        <span>Connexion</span>
+      </a>
+    }
+  </div>
+</nav>

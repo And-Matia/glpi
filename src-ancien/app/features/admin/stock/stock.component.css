@@ -1,0 +1,106 @@
+.stock-page {
+  display: flex;
+  flex-direction: column;
+  gap: var(--space-24);
+}
+
+.stock-loading {
+  display: flex;
+  align-items: center;
+  gap: var(--space-12);
+  color: var(--color-text-muted);
+  font-size: var(--text-14);
+  padding: var(--space-48) 0;
+}
+
+.stock-name-link {
+  color: var(--color-text-primary);
+  text-decoration: none;
+  font-weight: var(--weight-medium);
+  border-bottom: 1px dotted var(--color-accent-warm);
+}
+
+.stock-name-link:hover { color: var(--color-tertiary); }
+
+.stock-input {
+  width: 80px;
+  padding: 5px var(--space-8);
+  border: 1px solid var(--color-border);
+  border-radius: var(--radius-4);
+  font-size: var(--text-14);
+  text-align: right;
+  outline: none;
+  transition: border-color var(--transition-base);
+}
+
+.stock-input:focus { border-color: var(--color-accent); }
+
+.stock-section-title {
+  margin: var(--space-16) 0 0;
+  font-size: var(--text-18);
+  font-weight: var(--weight-semibold);
+  color: var(--color-text-primary);
+}
+
+.mvt-filters {
+  display: flex;
+  align-items: center;
+  flex-wrap: wrap;
+  gap: var(--space-16);
+  padding: var(--space-16);
+  background: var(--color-surface);
+  border: 1px solid var(--color-border);
+  border-radius: var(--radius-8);
+}
+
+.mvt-filter-group {
+  display: flex;
+  align-items: center;
+  gap: var(--space-8);
+}
+
+.mvt-filter-label {
+  font-size: var(--text-13);
+  font-weight: var(--weight-medium);
+  color: var(--color-text-muted);
+  white-space: nowrap;
+}
+
+.mvt-select {
+  padding: 6px var(--space-12);
+  border: 1px solid var(--color-border);
+  border-radius: var(--radius-4);
+  font-size: var(--text-14);
+  background: var(--color-white);
+  color: var(--color-text-primary);
+  outline: none;
+  cursor: pointer;
+  transition: border-color var(--transition-base);
+}
+
+.mvt-select:focus { border-color: var(--color-accent); }
+
+.mvt-reset-btn {
+  padding: 6px var(--space-12);
+  border: 1px solid var(--color-border);
+  border-radius: var(--radius-4);
+  font-size: var(--text-13);
+  background: transparent;
+  color: var(--color-text-muted);
+  cursor: pointer;
+  display: flex;
+  align-items: center;
+  gap: var(--space-4);
+  transition: color var(--transition-base), border-color var(--transition-base);
+}
+
+.mvt-reset-btn:hover {
+  color: var(--color-danger);
+  border-color: var(--color-danger);
+}
+
+.mvt-count {
+  margin-left: auto;
+  font-size: var(--text-13);
+  color: var(--color-text-muted);
+}
