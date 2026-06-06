@@ -1,4 +1,0 @@
-/* Entry point for global styles — imports the full design system */
-@import './styles/colors.css';
-@import './styles/variables.css';
-@import './styles/globals.css';

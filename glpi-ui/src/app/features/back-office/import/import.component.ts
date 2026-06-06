@@ -1,8 +1,7 @@
 import { Component, ChangeDetectionStrategy, inject, signal, computed } from '@angular/core';
-import { from, Observable, throwError } from 'rxjs';
+import { defer, from, Observable, throwError } from 'rxjs';
 import { catchError, concatMap, tap, toArray } from 'rxjs/operators';
 import { ImportStats } from '@app/core/models';
-import { ImportRegistryService } from '@app/core/services/import/import-registry.service';
 import { GlpiDropdownService } from '@app/core/services/glpi/dropdown.service';
 import { ItemImportService } from '@app/core/services/import/item-import.service';
 import { TicketImportService } from '@app/core/services/import/ticket-import.service';
@@ -26,10 +25,10 @@ interface ImportStep {
 }
 
 const STEP_LABELS = [
-  'Éléments — Feuille 1 (CSV)',
-  'Tickets — Feuille 2 (CSV)',
-  'Coûts tickets — Feuille 3 (CSV)',
-  'Images (ZIP)',
+  'Assets',
+  'Tickets',
+  'Coûts tickets',
+  'Images',
 ] as const;
 
 const STEP_ICONS = [
@@ -53,7 +52,6 @@ function emptyStep(): ImportStep {
   changeDetection: ChangeDetectionStrategy.OnPush,
 })
 export class ImportComponent {
-  private readonly registry         = inject(ImportRegistryService);
   private readonly dropdown         = inject(GlpiDropdownService);
   private readonly itemImport       = inject(ItemImportService);
   private readonly ticketImport     = inject(TicketImportService);
@@ -115,7 +113,9 @@ export class ImportComponent {
   // ── Import ────────────────────────────────────────────────────────────────
 
   startImport(): void {
-    this.registry.clearAll();
+    // Keep the persisted registry (so costs/images can reference tickets/items
+    // imported in a previous run); re-imports overwrite entries by key.
+    // Only the dropdown cache is reset, to re-validate dropdowns after a reset.
     this.dropdown.clearCache();
 
     const tasks = this.steps()
@@ -130,9 +130,14 @@ export class ImportComponent {
   }
 
   private runStep(file: File, index: number): Observable<ImportStats> {
-    this.patchStep(index, { status: 'importing' });
-
-    return this.getService(index).importFile(file).pipe(
+    // `defer` so a step only flips to "importing" and starts its work when the
+    // sequential concatMap actually reaches it — never eagerly while building
+    // the task list, which would run every step in parallel (e.g. images
+    // looking up items before the items step has created them).
+    return defer(() => {
+      this.patchStep(index, { status: 'importing' });
+      return this.getService(index).importFile(file);
+    }).pipe(
       tap(stats => {
         this.patchStep(index, {
           result: stats,

@@ -1,6 +1,6 @@
 import { inject, Injectable } from '@angular/core';
 import { HttpClient, HttpParams } from '@angular/common/http';
-import { firstValueFrom, from, Observable, of } from 'rxjs';
+import { defer, firstValueFrom, from, Observable, of } from 'rxjs';
 import { catchError } from 'rxjs/operators';
 import JSZip from 'jszip';
 import { environment } from '../../../../environment';
@@ -45,7 +45,10 @@ export class ImageImportService {
   }
 
   importFile(file: File): Observable<ImportStats> {
-    return from(this.run(file));
+    // `defer` so the work (unzip + item lookup + upload) only starts when this
+    // step is actually reached in the import sequence — never eagerly, in
+    // parallel with the items import, which would look up items before they exist.
+    return defer(() => from(this.run(file)));
   }
 
   private async run(file: File): Promise<ImportStats> {

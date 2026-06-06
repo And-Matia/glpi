@@ -18,4 +18,4 @@ Créer 1 page pour créer un ticket, on peut associer plusieurs éléments au ti
 ExistingApp
 s’assurer que
 Toutes les données importées sont visibles quelque part dans le backoffice de GLPI.
-Que la modification des données aient un impact sur la NewAPP	
+Que la modification des données aient un impact sur la NewAPP

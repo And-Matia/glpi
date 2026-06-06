@@ -1,5 +1,6 @@
 import { Component, ChangeDetectionStrategy, inject, signal } from '@angular/core';
 import { ResetService } from '@app/core/services/reset.service';
+import { ImportRegistryService } from '@app/core/services/import/import-registry.service';
 import { ToastService } from '@app/core/services/toast.service';
 import { ButtonComponent } from '@app/shared/ui/button/button.component';
 import { ConfirmDialogComponent } from '@app/shared/ui/confirm-dialog/confirm-dialog.component';
@@ -14,6 +15,7 @@ import { PageHeaderComponent } from '@app/shared/ui/page-header/page-header.comp
 })
 export class ResetComponent {
   private readonly resetService = inject(ResetService);
+  private readonly registry     = inject(ImportRegistryService);
   private readonly toast        = inject(ToastService);
 
   readonly confirmOpen = signal(false);
@@ -37,6 +39,8 @@ export class ResetComponent {
 
     this.resetService.resetAll().subscribe({
       complete: () => {
+        // GLPI data is gone → drop the import registry so it can't point to stale ids.
+        this.registry.clearAll();
         this.loading.set(false);
         this.success.set(true);
         this.toast.success('Données réinitialisées avec succès');

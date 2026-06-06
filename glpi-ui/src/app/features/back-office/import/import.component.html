@@ -5,11 +5,6 @@
     subtitle="Importez dans l'ordre : Éléments → Tickets → Coûts → Images"
   />
 
-  <div class="import-note">
-    <i class="fa-solid fa-circle-info"></i>
-    Respectez l'ordre des étapes : les tickets référencent les éléments, et les coûts référencent les tickets.
-  </div>
-
   <div class="import-wizard">
     @for (step of steps(); track $index) {
       <app-card>
