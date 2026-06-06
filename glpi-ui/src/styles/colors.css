@@ -39,4 +39,10 @@
   --color-surface:         #f9fafb;
   --color-bg-light:        #FFF8E7;
   --color-white:           #FFFFFF;
+
+  /* Semantic aliases (named convention used across feature components) */
+  --color-text:           var(--color-text-primary);
+  --color-bg:             var(--color-surface);
+  --color-bg-primary:     var(--color-white);
+  --color-bg-secondary:   var(--color-surface);
 }

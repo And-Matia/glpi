@@ -6,6 +6,7 @@ import { environment } from '../../../../environment';
 import { ImportStats, ItemType } from '@app/core/models';
 import { ImportRegistryService } from './import-registry.service';
 import { GlpiDropdownService } from '@app/core/services/glpi/dropdown.service';
+import { ASSET_ITEMTYPES, assetType } from '@app/core/constants/glpi.constants';
 import { parseCsvText, ParseResult } from '@app/core/utils/csv.utils';
 
 interface ItemRow {
@@ -76,29 +77,26 @@ export class ItemImportService {
   }
 
   private importRow(row: ItemRow): Observable<{ id: number }> {
-    const isComputer  = row.item_type === 'Computer';
-    const endpoint    = isComputer ? 'Computer' : 'Monitor';
-    const modelType   = isComputer ? 'ComputerModel' : 'MonitorModel';
-    const modelField  = isComputer ? 'computermodels_id' : 'monitormodels_id';
+    const cfg = assetType(row.item_type)!; // validated in parseFile
 
     // Resolve every GLPI dropdown to a real id (creating it on the fly).
     return forkJoin({
       states_id:        this.dropdown.resolve('State', row.status),
       locations_id:     this.dropdown.resolve('Location', row.location),
       manufacturers_id: this.dropdown.resolve('Manufacturer', row.manufacturer),
-      model_id:         this.dropdown.resolve(modelType, row.model),
+      model_id:         this.dropdown.resolve(cfg.modelType, row.model),
     }).pipe(
       switchMap(({ states_id, locations_id, manufacturers_id, model_id }) => {
         const input: Record<string, unknown> = {
-          name:        row.name,
-          otherserial: row.inventory_number,
-          contact:     row.user,           // CSV "User" → asset contact (visible in GLPI)
+          name:           row.name,
+          otherserial:    row.inventory_number,
+          contact:        row.user,        // CSV "User" → asset contact (visible in GLPI)
           states_id,
           locations_id,
           manufacturers_id,
-          [modelField]: model_id,
+          [cfg.modelField]: model_id,
         };
-        return this.http.post<{ id: number }>(`${this.base}/${endpoint}`, { input });
+        return this.http.post<{ id: number }>(`${this.base}/${cfg.itemtype}`, { input });
       })
     );
   }
@@ -117,7 +115,9 @@ export class ItemImportService {
       parseCsvText<ItemRow>(text, record => {
         if (!record['Name']) throw new Error('Nom manquant');
         const type = record['Item_Type'];
-        if (type !== 'Computer' && type !== 'Monitor') throw new Error(`Type inconnu: ${type}`);
+        if (!ASSET_ITEMTYPES.includes(type)) {
+          throw new Error(`Type inconnu: ${type} (attendus : ${ASSET_ITEMTYPES.join(', ')})`);
+        }
         return {
           name:             record['Name'],
           status:           record['Status']           ?? '',

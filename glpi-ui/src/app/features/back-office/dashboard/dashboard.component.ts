@@ -4,7 +4,7 @@ import { ItemV1Service } from '@app/core/services/glpi/item/item-v1.service';
 import { TicketV1Service } from '@app/core/services/glpi/ticket/ticket-v1.service';
 import { Ticket } from '@app/core/models/ticket.model';
 import { Item } from '@app/core/models/item.model';
-import { GLPI_TICKET_STATUS, GLPI_TICKET_TYPE } from '@app/core/constants/glpi.constants';
+import { ASSET_TYPES, GLPI_TICKET_STATUS, GLPI_TICKET_TYPE } from '@app/core/constants/glpi.constants';
 import { PageHeaderComponent } from '@app/shared/ui/page-header/page-header.component';
 import { CardComponent } from '@app/shared/ui/card/card.component';
 import { SpinnerComponent } from '@app/shared/ui/spinner/spinner.component';
@@ -26,8 +26,15 @@ export class DashboardComponent implements OnInit {
   readonly tickets = signal<Ticket[]>([]);
   readonly items   = signal<Item[]>([]);
 
-  readonly computers = computed(() => this.items().filter(i => i.item_type === 'Computer').length);
-  readonly monitors  = computed(() => this.items().filter(i => i.item_type === 'Monitor').length);
+  // One {label, count} entry per supported asset type (only types that have items).
+  readonly itemsByType = computed(() =>
+    ASSET_TYPES
+      .map(cfg => ({
+        label: cfg.label,
+        count: this.items().filter(i => i.item_type === cfg.itemtype).length,
+      }))
+      .filter(entry => entry.count > 0)
+  );
 
   readonly ticketsByType = computed(() =>
     Object.entries(GLPI_TICKET_TYPE).map(([code, label]) => ({

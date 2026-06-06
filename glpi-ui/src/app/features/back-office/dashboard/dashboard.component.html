@@ -16,14 +16,12 @@
           <span class="stat-block__label">total</span>
         </div>
         <div class="stat-list">
-          <div class="stat-list__item">
-            <span>Ordinateurs</span>
-            <app-badge variant="primary">{{ computers() }}</app-badge>
-          </div>
-          <div class="stat-list__item">
-            <span>Moniteurs</span>
-            <app-badge variant="info">{{ monitors() }}</app-badge>
-          </div>
+          @for (item of itemsByType(); track item.label) {
+            <div class="stat-list__item">
+              <span>{{ item.label }}</span>
+              <app-badge variant="primary">{{ item.count }}</app-badge>
+            </div>
+          }
         </div>
       </app-card>
 

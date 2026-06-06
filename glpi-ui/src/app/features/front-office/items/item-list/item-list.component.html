@@ -3,12 +3,10 @@
   </app-page-header>
 
   <div class="item-list__filters">
-    <input
-      class="filter-input"
-      type="text"
+    <app-search-input
+      class="item-list__search"
       placeholder="Rechercher (nom, inventaire, utilisateur…)"
-      [value]="searchText()"
-      (input)="searchText.set($any($event.target).value)"
+      [(value)]="searchText"
     />
     <app-select
       label="Type"

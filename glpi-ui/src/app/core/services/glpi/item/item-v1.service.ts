@@ -1,8 +1,10 @@
 import { inject, Injectable } from '@angular/core';
 import { HttpClient, HttpParams } from '@angular/common/http';
-import { forkJoin, map, Observable } from 'rxjs';
+import { forkJoin, map, Observable, of } from 'rxjs';
+import { catchError } from 'rxjs/operators';
 import { environment } from '../../../../../environment';
 import { Item, ItemType } from '@app/core/models';
+import { ASSET_TYPES, assetType, AssetTypeConfig } from '@app/core/constants/glpi.constants';
 
 interface GlpiItemRaw {
   id: number;
@@ -10,11 +12,11 @@ interface GlpiItemRaw {
   states_id: string;
   locations_id: string;
   manufacturers_id: string;
-  computermodels_id?: string;
-  monitormodels_id?: string;
   otherserial: string;
   contact: string;
   users_id_tech: string;
+  // Model field name varies per asset type (computermodels_id, printermodels_id…).
+  [key: string]: unknown;
 }
 
 @Injectable({ providedIn: 'root' })
@@ -24,48 +26,48 @@ export class ItemV1Service {
   private readonly params = new HttpParams().set('expand_dropdowns', '1');
 
   getAll(): Observable<Item[]> {
-    return forkJoin([
-      this.http.get<GlpiItemRaw[]>(`${this.base}/Computer`, { params: this.params }),
-      this.http.get<GlpiItemRaw[]>(`${this.base}/Monitor`, { params: this.params })
-    ]).pipe(
-      map(([computers, monitors]) => [
-        ...computers.map(c => this.mapItem(c, 'Computer')),
-        ...monitors.map(m => this.mapItem(m, 'Monitor'))
-      ])
-    );
+    return forkJoin(
+      ASSET_TYPES.map(cfg =>
+        this.http.get<GlpiItemRaw[]>(`${this.base}/${cfg.itemtype}`, { params: this.params }).pipe(
+          // A type with no rows can answer 4xx on some GLPI builds → treat as empty.
+          catchError(() => of([] as GlpiItemRaw[])),
+          map(raws => raws.map(raw => this.mapItem(raw, cfg))),
+        )
+      )
+    ).pipe(map(lists => lists.flat()));
   }
 
   getById(id: number, type: ItemType): Observable<Item> {
-    const endpoint = type === 'Computer' ? 'Computer' : 'Monitor';
-    return this.http.get<GlpiItemRaw>(`${this.base}/${endpoint}/${id}`, { params: this.params }).pipe(
-      map(raw => this.mapItem(raw, type))
+    const cfg = assetType(type)!;
+    return this.http.get<GlpiItemRaw>(`${this.base}/${cfg.itemtype}/${id}`, { params: this.params }).pipe(
+      map(raw => this.mapItem(raw, cfg))
     );
   }
 
   create(data: Partial<Item>, type: ItemType): Observable<{ id: number }> {
-    const endpoint = type === 'Computer' ? 'Computer' : 'Monitor';
-    return this.http.post<{ id: number }>(`${this.base}/${endpoint}`, { input: data });
+    const cfg = assetType(type)!;
+    return this.http.post<{ id: number }>(`${this.base}/${cfg.itemtype}`, { input: data });
   }
 
   update(id: number, data: Partial<Item>, type: ItemType): Observable<void> {
-    const endpoint = type === 'Computer' ? 'Computer' : 'Monitor';
-    return this.http.put<void>(`${this.base}/${endpoint}/${id}`, { input: data });
+    const cfg = assetType(type)!;
+    return this.http.put<void>(`${this.base}/${cfg.itemtype}/${id}`, { input: data });
   }
 
   delete(id: number, type: ItemType): Observable<void> {
-    const endpoint = type === 'Computer' ? 'Computer' : 'Monitor';
-    return this.http.delete<void>(`${this.base}/${endpoint}/${id}`);
+    const cfg = assetType(type)!;
+    return this.http.delete<void>(`${this.base}/${cfg.itemtype}/${id}`);
   }
 
-  private mapItem(raw: GlpiItemRaw, type: ItemType): Item {
+  private mapItem(raw: GlpiItemRaw, cfg: AssetTypeConfig): Item {
     return {
       id: raw.id,
       name: raw.name,
       status: raw.states_id,
       location: raw.locations_id,
       manufacturer: raw.manufacturers_id,
-      item_type: type,
-      model: raw.computermodels_id ?? raw.monitormodels_id ?? '',
+      item_type: cfg.itemtype,
+      model: String(raw[cfg.modelField] ?? ''),
       inventory_number: raw.otherserial,
       // CSV "User" is stored in the asset's `contact` field at import time.
       user: raw.contact || raw.users_id_tech

@@ -1,8 +1,10 @@
 import { inject, Injectable } from '@angular/core';
 import { HttpClient, HttpParams } from '@angular/common/http';
-import { forkJoin, map, Observable } from 'rxjs';
+import { forkJoin, map, Observable, of } from 'rxjs';
+import { catchError } from 'rxjs/operators';
 import { environment } from '../../../../../environment';
-import {Item, ItemType} from '@app/core/models';
+import { Item, ItemType } from '@app/core/models';
+import { ASSET_TYPES, assetType } from '@app/core/constants/glpi.constants';
 
 interface GlpiV2Item {
   id: number;
@@ -23,20 +25,19 @@ export class ItemV2Service {
 
   getAll(filter?: string): Observable<Item[]> {
     const params = filter ? new HttpParams().set('filter', filter) : undefined;
-    return forkJoin([
-      this.http.get<GlpiV2Item[]>(`${this.base}/Assets/Computer`, { params }),
-      this.http.get<GlpiV2Item[]>(`${this.base}/Assets/Monitor`, { params })
-    ]).pipe(
-      map(([computers, monitors]) => [
-        ...computers.map(c => this.mapItem(c, 'Computer')),
-        ...monitors.map(m => this.mapItem(m, 'Monitor'))
-      ])
-    );
+    return forkJoin(
+      ASSET_TYPES.map(cfg =>
+        this.http.get<GlpiV2Item[]>(`${this.base}/${cfg.v2Path}`, { params }).pipe(
+          catchError(() => of([] as GlpiV2Item[])),
+          map(items => items.map(i => this.mapItem(i, cfg.itemtype))),
+        )
+      )
+    ).pipe(map(lists => lists.flat()));
   }
 
   getById(id: number, type: ItemType): Observable<Item> {
-    const endpoint = type === 'Computer' ? 'Assets/Computer' : 'Assets/Monitor';
-    return this.http.get<GlpiV2Item>(`${this.base}/${endpoint}/${id}`).pipe(
+    const cfg = assetType(type)!;
+    return this.http.get<GlpiV2Item>(`${this.base}/${cfg.v2Path}/${id}`).pipe(
       map(raw => this.mapItem(raw, type))
     );
   }

@@ -5,6 +5,7 @@ import { catchError, concatMap, map, switchMap, toArray } from 'rxjs/operators';
 import { environment } from '../../../../environment';
 import { ImportStats } from '@app/core/models';
 import { ImportRegistryService } from './import-registry.service';
+import { TICKET_TYPE_CODE, TICKET_STATUS_CODE, TICKET_PRIORITY_CODE } from '@app/core/constants/glpi.constants';
 import { parseCsvText, ParseResult } from '@app/core/utils/csv.utils';
 
 interface TicketRow {
@@ -18,10 +19,6 @@ interface TicketRow {
   priority:    number;
   items:       string[]; // item names
 }
-
-const TYPE_MAP: Record<string, number>     = { 'Incident': 1, 'Request': 2, 'Demande': 2 };
-const STATUS_MAP: Record<string, number>   = { 'New': 1, 'Processing (assigned)': 2, 'Processing (planned)': 3, 'Pending': 4, 'Solved': 5, 'Closed': 6 };
-const PRIORITY_MAP: Record<string, number> = { 'Very Low': 1, 'Low': 2, 'Medium': 3, 'High': 4, 'Very High': 5, 'Major': 6 };
 
 function toGlpiDate(date: string, heure: string): string {
   const [day, month, year] = date.split('/');
@@ -128,11 +125,11 @@ export class TicketImportService {
           ref_ticket:  Number(record['Ref_Ticket']) || 0,
           date:        record['Date']        ?? '',
           heure:       record['Heure']       ?? '00:00',
-          type:        TYPE_MAP[record['Type']     ?? ''] ?? 1,
+          type:        TICKET_TYPE_CODE[record['Type']     ?? ''] ?? 1,
           titre:       record['Titre']       ?? '',
           description: record['Description'] ?? '',
-          status:      STATUS_MAP[record['Status']   ?? ''] ?? 1,
-          priority:    PRIORITY_MAP[record['Priority'] ?? ''] ?? 3,
+          status:      TICKET_STATUS_CODE[record['Status']   ?? ''] ?? 1,
+          priority:    TICKET_PRIORITY_CODE[record['Priority'] ?? ''] ?? 3,
           items,
         };
       })

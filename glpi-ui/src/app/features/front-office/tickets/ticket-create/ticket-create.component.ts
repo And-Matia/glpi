@@ -4,11 +4,13 @@ import { from, concatMap, Observable } from 'rxjs';
 import { TicketV1Service, CreateTicketInput } from '@app/core/services/glpi/ticket/ticket-v1.service';
 import { ItemV2Service } from '@app/core/services/glpi/item/item-v2.service';
 import { Item } from '@app/core/models';
+import { TICKET_TYPE_OPTIONS, TICKET_PRIORITY_OPTIONS, assetLabel } from '@app/core/constants/glpi.constants';
 import { ToastService } from '@app/core/services/toast.service';
 import { ButtonComponent } from '@app/shared/ui/button/button.component';
 import { InputComponent } from '@app/shared/ui/input/input.component';
 import { TextareaComponent } from '@app/shared/ui/textarea/textarea.component';
-import { SelectComponent, SelectOption } from '@app/shared/ui/select/select.component';
+import { SelectComponent } from '@app/shared/ui/select/select.component';
+import { SearchInputComponent } from '@app/shared/ui/search-input/search-input.component';
 import { SpinnerComponent } from '@app/shared/ui/spinner/spinner.component';
 import { PageHeaderComponent } from '@app/shared/ui/page-header/page-header.component';
 import { CardComponent } from '@app/shared/ui/card/card.component';
@@ -21,6 +23,7 @@ import { BadgeComponent } from '@app/shared/ui/badge/badge.component';
     InputComponent,
     TextareaComponent,
     SelectComponent,
+    SearchInputComponent,
     SpinnerComponent,
     PageHeaderComponent,
     CardComponent,
@@ -51,19 +54,11 @@ export class TicketCreateComponent implements OnInit {
   // form state
   readonly submitting = signal(false);
 
-  readonly typeOptions: SelectOption[] = [
-    { value: 1, label: 'Incident' },
-    { value: 2, label: 'Demande' },
-  ];
+  readonly typeOptions     = TICKET_TYPE_OPTIONS;
+  readonly priorityOptions = TICKET_PRIORITY_OPTIONS;
 
-  readonly priorityOptions: SelectOption[] = [
-    { value: 1, label: 'Très basse' },
-    { value: 2, label: 'Basse' },
-    { value: 3, label: 'Moyenne' },
-    { value: 4, label: 'Haute' },
-    { value: 5, label: 'Très haute' },
-    { value: 6, label: 'Majeure' },
-  ];
+  /** French label for an asset itemtype (used in the item picker). */
+  readonly assetLabel = assetLabel;
 
   readonly visibleItems = computed(() => {
     const search = this.itemSearch().toLowerCase().trim();

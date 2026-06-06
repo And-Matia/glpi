@@ -6,6 +6,7 @@ import JSZip from 'jszip';
 import { environment } from '../../../../environment';
 import { ImportStats, ItemType } from '@app/core/models';
 import { ImportRegistryService } from './import-registry.service';
+import { ASSET_ITEMTYPES } from '@app/core/constants/glpi.constants';
 
 interface GlpiNamed { id: number; name: string; }
 
@@ -100,7 +101,7 @@ export class ImageImportService {
     const cached = this.registry.getItem(name);
     if (cached) return { id: cached.id, type: cached.item_type };
 
-    for (const type of ['Computer', 'Monitor'] as ItemType[]) {
+    for (const type of ASSET_ITEMTYPES) {
       const params = new HttpParams().set('searchText[name]', name).set('range', '0-99');
       const list = await firstValueFrom(
         this.http.get<GlpiNamed[]>(`${this.base}/${type}`, { params }).pipe(catchError(() => of([] as GlpiNamed[]))),

@@ -1,8 +1,9 @@
 import { Component, OnInit, ChangeDetectionStrategy, inject, signal, computed } from '@angular/core';
-import { FormsModule } from '@angular/forms';
 import { ItemV2Service } from '@app/core/services/glpi/item/item-v2.service';
-import { Item, ItemType } from '@app/core/models';
-import { SelectComponent, SelectOption } from '@app/shared/ui/select/select.component';
+import { Item } from '@app/core/models';
+import { ASSET_TYPE_OPTIONS, ITEM_STATUS_OPTIONS, assetLabel } from '@app/core/constants/glpi.constants';
+import { SelectComponent } from '@app/shared/ui/select/select.component';
+import { SearchInputComponent } from '@app/shared/ui/search-input/search-input.component';
 import { SpinnerComponent } from '@app/shared/ui/spinner/spinner.component';
 import { PageHeaderComponent } from '@app/shared/ui/page-header/page-header.component';
 import { TableComponent, TableColumn } from '@app/shared/ui/table/table.component';
@@ -10,8 +11,8 @@ import { TableComponent, TableColumn } from '@app/shared/ui/table/table.componen
 @Component({
   selector: 'app-item-list',
   imports: [
-    FormsModule,
     SelectComponent,
+    SearchInputComponent,
     SpinnerComponent,
     PageHeaderComponent,
     TableComponent,
@@ -31,20 +32,8 @@ export class ItemListComponent implements OnInit {
   readonly filterType  = signal<string>('');
   readonly filterStatus = signal<string>('');
 
-  readonly typeOptions: SelectOption[] = [
-    { value: '', label: 'Tous les types' },
-    { value: 'Computer', label: 'Ordinateur' },
-    { value: 'Monitor',  label: 'Moniteur' },
-  ];
-
-  readonly statusOptions: SelectOption[] = [
-    { value: '',           label: 'Tous les statuts' },
-    { value: 'En stock',   label: 'En stock' },
-    { value: 'En production', label: 'En production' },
-    { value: 'En panne',   label: 'En panne' },
-    { value: 'Maintenance', label: 'Maintenance' },
-    { value: 'Hors service', label: 'Hors service' },
-  ];
+  readonly typeOptions   = ASSET_TYPE_OPTIONS;
+  readonly statusOptions = ITEM_STATUS_OPTIONS;
 
   readonly columns: TableColumn[] = [
     { key: 'name',             label: 'Nom',             sortable: true  },
@@ -72,7 +61,7 @@ export class ItemListComponent implements OnInit {
   readonly rows = computed(() =>
     this.filteredItems().map(item => ({
       name:             item.name,
-      item_type:        item.item_type === 'Computer' ? 'Ordinateur' : 'Moniteur',
+      item_type:        assetLabel(item.item_type),
       status:           item.status,
       location:         item.location,
       user:             item.user,
