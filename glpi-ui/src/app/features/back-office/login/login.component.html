@@ -1,0 +1,16 @@
+<div class="login">
+  <div class="login__form">
+    <h1 class="login__title">Backoffice</h1>
+
+    <app-input
+      label="Code d'accès"
+      type="text"
+      [(value)]="password"
+      [errorMessage]="error()"
+    />
+
+    <app-button [disabled]="!password()" (clicked)="onSubmit()">
+      Se connecter
+    </app-button>
+  </div>
+</div>

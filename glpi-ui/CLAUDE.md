@@ -13,15 +13,18 @@ ng generate component path/to/name  # scaffold a component
 
 ## Architecture
 
-Angular 21 standalone-component app with a clean architecture split into three layers:
+Angular 21 standalone-component app with a clean architecture:
 
 ```
 src/app/
   core/
-    http/        # Raw HTTP calls only — one file per resource (e.g. ticket.http.ts)
-    services/    # Business logic + signal-based state (e.g. ticket.service.ts, auth.service.ts, toast.service.ts)
+    services/    # HTTP access + business logic + signal-based state
+                 #   - glpi.service.ts  → native GLPI API (apirest.php), maps raw → app models
+                 #   - item.service.ts / ticket.service.ts → glpi-core backend (clean DTOs)
+                 #   - auth.service.ts, toast.service.ts
     guards/      # Functional route guards (e.g. auth.guard.ts)
-    models/      # Shared interfaces used across multiple http files
+    models/      # App-internal domain models (item, ticket, ticket-cost, dashboard-stats)
+    constants/   # GLPI code↔label maps (status, priority, type)
   features/
     back-office/ # Admin portal — layout: AdminLayout + SidebarComponent
     front-office/# Store/customer portal — layout: StoreLayout + NavbarComponent
@@ -29,6 +32,10 @@ src/app/
     ui/          # Presentational-only components (see list below)
     components/  # Shared smart/composite components
 ```
+
+Data layer (Option B): services call `HttpClient` directly. The GLPI raw shape
+is mapped to clean internal models *inside the service* (private `mapXxx`
+methods) — there is no separate http/serializer layer.
 
 Each feature area has its own `layout/` shell and its feature pages as sibling folders (e.g. `tickets/ticket-list/`).
 
@@ -65,4 +72,4 @@ Toast is driven by `ToastService` (inject it, call `.success()` / `.error()` / `
 - Path alias `@app/*` → `src/app/*` is configured in `tsconfig.json`.
 - CSS uses design tokens only (never hard-coded values). Tokens: `src/styles/variables.css` (spacing, typography, radius, shadows) and `src/styles/colors.css` (palette + semantic colors).
 - Test runner is **Vitest** (not Karma/Jest) via `@angular/build`.
-- Feature components inject services from `core/services/` — never from `core/http/` directly.
+- Feature components inject services from `core/services/` — they never call `HttpClient` directly.

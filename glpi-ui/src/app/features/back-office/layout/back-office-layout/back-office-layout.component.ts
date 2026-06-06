@@ -7,7 +7,7 @@ import { SidebarComponent } from '../sidebar/sidebar.component';
 
   selector: 'app-admin-layout',
   imports: [RouterOutlet, SidebarComponent],
-  templateUrl: './admin-layout.component.html',
-  styleUrl: './admin-layout.component.css',
+  templateUrl: './back-office-layout.component.html',
+  styleUrl: './back-office-layout.component.css',
 })
-export class AdminLayoutComponent {}
+export class BackOfficeLayoutComponent {}

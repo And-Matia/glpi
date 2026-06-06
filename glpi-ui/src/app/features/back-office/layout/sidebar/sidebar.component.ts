@@ -22,6 +22,6 @@ export class SidebarComponent {
 
   logout() {
     this.auth.logout();
-    return this.router.navigate(['/admin/login']);
+    return this.router.navigate(['/back-office/login']);
   }
 }
