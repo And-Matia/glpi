@@ -1,8 +1,8 @@
 import { inject, Injectable } from '@angular/core';
 import { HttpClient } from '@angular/common/http';
 import { map, Observable } from 'rxjs';
-import { environment } from '../../../../environment';
-import {Ticket} from '@app/core/models';
+import { environment } from '../../../../../environment';
+import { Ticket } from '@app/core/models';
 
 interface GlpiTicketRaw {
   id: number;
@@ -14,10 +14,18 @@ interface GlpiTicketRaw {
   priority: number;
 }
 
+export interface CreateTicketInput {
+  titre:       string;
+  description: string;
+  type:        number;
+  priority:    number;
+}
+
 @Injectable({ providedIn: 'root' })
 export class TicketV1Service {
   private readonly http = inject(HttpClient);
   private readonly base = `${environment.glpi.v1ApiUrl}/Ticket`;
+  private readonly itemTicketBase = `${environment.glpi.v1ApiUrl}/Item_Ticket`;
 
   getAll(): Observable<Ticket[]> {
     return this.http.get<GlpiTicketRaw[]>(this.base).pipe(
@@ -31,8 +39,21 @@ export class TicketV1Service {
     );
   }
 
-  create(data: Partial<Ticket>): Observable<{ id: number }> {
-    return this.http.post<{ id: number }>(this.base, { input: data });
+  create(data: CreateTicketInput): Observable<{ id: number }> {
+    return this.http.post<{ id: number }>(this.base, {
+      input: {
+        name:     data.titre,
+        content:  data.description,
+        type:     data.type,
+        priority: data.priority,
+      },
+    });
+  }
+
+  addItem(ticketId: number, itemtype: string, itemsId: number): Observable<void> {
+    return this.http.post<void>(this.itemTicketBase, {
+      input: { tickets_id: ticketId, itemtype, items_id: itemsId },
+    });
   }
 
   update(id: number, data: Partial<Ticket>): Observable<void> {
@@ -50,12 +71,12 @@ export class TicketV1Service {
       ref_ticket: raw.id,
       date,
       heure,
-      type: raw.type,
-      titre: raw.name,
+      type:        raw.type,
+      titre:       raw.name,
       description: raw.content,
-      status: raw.status,
-      priority: raw.priority,
-      items: []
+      status:      raw.status,
+      priority:    raw.priority,
+      items:       [],
     };
   }
 }

@@ -1,0 +1,40 @@
+<div class="item-list">
+  <app-page-header title="Éléments" subtitle="Parc informatique">
+  </app-page-header>
+
+  <div class="item-list__filters">
+    <input
+      class="filter-input"
+      type="text"
+      placeholder="Rechercher (nom, inventaire, utilisateur…)"
+      [value]="searchText()"
+      (input)="searchText.set($any($event.target).value)"
+    />
+    <app-select
+      label="Type"
+      [options]="typeOptions"
+      [(value)]="filterType"
+    />
+    <app-select
+      label="Statut"
+      [options]="statusOptions"
+      [(value)]="filterStatus"
+    />
+  </div>
+
+  @if (loading()) {
+    <div class="item-list__loader">
+      <app-spinner size="lg" />
+    </div>
+  } @else if (error()) {
+    <p class="item-list__error">{{ error() }}</p>
+  } @else {
+    <app-table
+      [columns]="columns"
+      [rows]="rows()"
+      [showToolbar]="false"
+      emptyIcon="fa-solid fa-desktop"
+      emptyLabel="Aucun élément trouvé"
+    />
+  }
+</div>

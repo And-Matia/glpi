@@ -1,0 +1,98 @@
+<div class="ticket-create">
+
+  <app-page-header title="Nouveau ticket" subtitle="Déclarez un incident ou une demande">
+    <app-button variant="ghost" size="sm" (clicked)="goBack()">← Retour</app-button>
+  </app-page-header>
+
+  <div class="ticket-create__grid">
+
+    <!-- Formulaire -->
+    <app-card title="Informations du ticket">
+      <div class="form">
+        <app-input
+          label="Titre *"
+          [(value)]="titre"
+          [errorMessage]="''"
+        />
+        <app-textarea
+          label="Description *"
+          [(value)]="description"
+          [rows]="5"
+          [errorMessage]="''"
+        />
+        <app-select
+          label="Type *"
+          [options]="typeOptions"
+          [(value)]="type"
+        />
+        <app-select
+          label="Priorité *"
+          [options]="priorityOptions"
+          [(value)]="priority"
+        />
+        <div class="form__actions">
+          <app-button
+            variant="primary"
+            [loading]="submitting()"
+            [disabled]="submitting()"
+            (clicked)="onSubmit()"
+          >
+            Créer le ticket
+            @if (selectedCount() > 0) {
+              ({{ selectedCount() }} élément{{ selectedCount() > 1 ? 's' : '' }})
+            }
+          </app-button>
+        </div>
+      </div>
+    </app-card>
+
+    <!-- Sélection d'éléments -->
+    <app-card title="Associer des éléments">
+      <div class="items-panel">
+
+        <input
+          class="items-panel__search"
+          type="text"
+          placeholder="Rechercher un élément…"
+          [value]="itemSearch()"
+          (input)="itemSearch.set($any($event.target).value)"
+        />
+
+        @if (loadingItems()) {
+          <div class="items-panel__loader">
+            <app-spinner size="sm" />
+          </div>
+        } @else {
+          <ul class="items-panel__list">
+            @for (item of visibleItems(); track item.id) {
+              <li
+                class="items-panel__item"
+                [class.items-panel__item--selected]="isSelected(item.id)"
+                (click)="toggleItem(item.id)"
+              >
+                <span class="items-panel__check">
+                  @if (isSelected(item.id)) {
+                    <i class="fa-solid fa-circle-check"></i>
+                  } @else {
+                    <i class="fa-regular fa-circle"></i>
+                  }
+                </span>
+                <div class="items-panel__info">
+                  <span class="items-panel__name">{{ item.name }}</span>
+                  <span class="items-panel__meta">
+                    <app-badge variant="info" size="sm">{{ item.item_type === 'Computer' ? 'Ordinateur' : 'Moniteur' }}</app-badge>
+                    {{ item.status }}
+                  </span>
+                </div>
+              </li>
+            } @empty {
+              <li class="items-panel__empty">Aucun élément trouvé</li>
+            }
+          </ul>
+        }
+
+      </div>
+    </app-card>
+
+  </div>
+</div>

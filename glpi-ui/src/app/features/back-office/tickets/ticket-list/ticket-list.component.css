@@ -1,0 +1,14 @@
+.ticket-list {
+  padding: var(--spacing-6);
+  display: flex;
+  flex-direction: column;
+  gap: var(--spacing-6);
+}
+
+.ticket-list__loader {
+  display: flex;
+  justify-content: center;
+  padding: var(--spacing-10);
+}
+
+.ticket-list__error { color: var(--color-danger); }

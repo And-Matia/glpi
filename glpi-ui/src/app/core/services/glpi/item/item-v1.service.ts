@@ -1,7 +1,7 @@
 import { inject, Injectable } from '@angular/core';
 import { HttpClient, HttpParams } from '@angular/common/http';
 import { forkJoin, map, Observable } from 'rxjs';
-import { environment } from '../../../../environment';
+import { environment } from '../../../../../environment';
 import { Item, ItemType } from '@app/core/models';
 
 interface GlpiItemRaw {
@@ -13,6 +13,7 @@ interface GlpiItemRaw {
   computermodels_id?: string;
   monitormodels_id?: string;
   otherserial: string;
+  contact: string;
   users_id_tech: string;
 }
 
@@ -66,7 +67,8 @@ export class ItemV1Service {
       item_type: type,
       model: raw.computermodels_id ?? raw.monitormodels_id ?? '',
       inventory_number: raw.otherserial,
-      user: raw.users_id_tech
+      // CSV "User" is stored in the asset's `contact` field at import time.
+      user: raw.contact || raw.users_id_tech
     };
   }
 }

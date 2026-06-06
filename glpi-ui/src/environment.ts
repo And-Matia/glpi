@@ -1,9 +1,9 @@
 export const environment = {
   glpi: {
-    v1ApiUrl: 'http://localhost/glpi/apirest.php',
-    v2ApiUrl: 'http://localhost/glpi/api.php',
-    graphqlUrl: 'http://localhost/glpi/api.php/GraphQL',
-    tokenUrl: 'http://localhost/glpi/api.php/token',
+    v1ApiUrl: '/api.php/v1',
+    v2ApiUrl: '/api.php/v2',
+    graphqlUrl: '/api.php/GraphQL',
+    tokenUrl: '/api.php/token',
     userToken: 'uzxpifgX6UyYjLXRkAzW4CrmC23QIyDCP0F0HBlp',
     oauth: {
       clientId: 'f9367e59643cc96ed0f6d5ad6ed0387bad683bcdd3f38008288d46dbdc96161c',

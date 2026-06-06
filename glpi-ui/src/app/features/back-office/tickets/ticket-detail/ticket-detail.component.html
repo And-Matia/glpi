@@ -1,0 +1,48 @@
+<div class="ticket-detail">
+  @if (loading()) {
+    <div class="ticket-detail__loader">
+      <app-spinner size="lg" />
+    </div>
+  } @else if (error()) {
+    <p class="ticket-detail__error">{{ error() }}</p>
+  } @else if (ticket(); as t) {
+    <app-page-header [title]="'Ticket #' + t.ref_ticket" [subtitle]="t.titre">
+      <app-button variant="ghost" size="sm" (clicked)="goBack()">
+        ← Retour
+      </app-button>
+    </app-page-header>
+
+    <div class="ticket-detail__grid">
+
+      <app-card title="Informations générales">
+        <div class="detail-list">
+          <div class="detail-list__row">
+            <span class="detail-list__label">Référence</span>
+            <span>#{{ t.ref_ticket }}</span>
+          </div>
+          <div class="detail-list__row">
+            <span class="detail-list__label">Date</span>
+            <span>{{ t.date }} {{ t.heure }}</span>
+          </div>
+          <div class="detail-list__row">
+            <span class="detail-list__label">Type</span>
+            <app-badge variant="info">{{ typeLabel(t.type) }}</app-badge>
+          </div>
+          <div class="detail-list__row">
+            <span class="detail-list__label">Statut</span>
+            <app-badge variant="primary">{{ statusLabel(t.status) }}</app-badge>
+          </div>
+          <div class="detail-list__row">
+            <span class="detail-list__label">Priorité</span>
+            <app-badge variant="warning">{{ priorityLabel(t.priority) }}</app-badge>
+          </div>
+        </div>
+      </app-card>
+
+      <app-card title="Description">
+        <p class="ticket-detail__description">{{ t.description }}</p>
+      </app-card>
+
+    </div>
+  }
+</div>

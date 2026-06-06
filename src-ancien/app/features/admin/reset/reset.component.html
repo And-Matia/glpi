@@ -69,8 +69,8 @@
         >
           <i class="fa-solid fa-trash"></i>
           @if (isRunning()) { Réinitialisation… }
-          @else if (selectedEndpoints().size > 0) { Reset ({{ selectedEndpoints().size }}) }
-          @else { Reset }
+          @else if (selectedEndpoints().size > 0) { ResetService ({{ selectedEndpoints().size }}) }
+          @else { ResetService }
         </app-button>
         @if (!canRun() && !isRunning()) {
           <p class="reinit__hint">Sélectionnez au moins une ressource.</p>

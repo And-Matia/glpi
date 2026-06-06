@@ -1,7 +1,7 @@
 import { inject, Injectable } from '@angular/core';
 import { HttpClient, HttpParams } from '@angular/common/http';
 import { map, Observable } from 'rxjs';
-import { environment } from '../../../../environment';
+import { environment } from '../../../../../environment';
 import {Ticket} from '@app/core/models';
 
 interface GlpiV2Ticket {

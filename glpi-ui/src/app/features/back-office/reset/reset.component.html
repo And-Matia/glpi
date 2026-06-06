@@ -1,1 +1,35 @@
-<p>reset.component works!</p>
+<div class="reset-page">
+  <app-page-header
+    title="Réinitialisation"
+    subtitle="Supprime définitivement toutes les données GLPI"
+  />
+
+  <div class="reset-page__body">
+    @if (success()) {
+      <p class="reset-page__success">Données réinitialisées avec succès.</p>
+    }
+
+    @if (error()) {
+      <p class="reset-page__error">{{ error() }}</p>
+    }
+
+    <app-button
+      variant="danger"
+      [loading]="loading()"
+      [disabled]="loading()"
+      (clicked)="openConfirm()"
+    >
+      Réinitialiser les données
+    </app-button>
+  </div>
+</div>
+
+<app-confirm-dialog
+  [open]="confirmOpen()"
+  title="Réinitialiser les données"
+  message="Cette action supprimera définitivement tous les tickets, coûts et équipements GLPI. Opération irréversible."
+  confirmLabel="Oui, tout supprimer"
+  [danger]="true"
+  (confirmed)="onConfirmed()"
+  (cancelled)="onCancelled()"
+/>

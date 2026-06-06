@@ -27,8 +27,7 @@ export class GlpiSessionService {
         `${environment.glpi.v1ApiUrl}/initSession`,
         {
           headers: new HttpHeaders({
-            'Authorization': `user_token  ${environment.glpi.userToken}`,
-            'Content-Type': 'application/json'
+            'Authorization': `user_token ${environment.glpi.userToken}`,
           })
         }
       )

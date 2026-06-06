@@ -1,0 +1,23 @@
+<div class="ticket-list">
+  <app-page-header title="Tickets" subtitle="Liste de tous les tickets GLPI" />
+
+  @if (loading()) {
+    <div class="ticket-list__loader">
+      <app-spinner size="lg" />
+    </div>
+  } @else if (error()) {
+    <p class="ticket-list__error">{{ error() }}</p>
+  } @else {
+    <app-table
+      [columns]="columns"
+      [rows]="rows()"
+      [searchKeys]="['titre', 'ref_ticket', 'status', 'type']"
+    >
+      <ng-template appCell="actions" let-row>
+        <app-button size="sm" variant="ghost" (clicked)="openTicket(row)">
+          Voir
+        </app-button>
+      </ng-template>
+    </app-table>
+  }
+</div>

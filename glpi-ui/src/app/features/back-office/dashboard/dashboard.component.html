@@ -1,1 +1,60 @@
-<p>reset.component works!</p>
+<div class="dashboard">
+  <app-page-header title="Dashboard" subtitle="Vue générale du parc GLPI" />
+
+  @if (loading()) {
+    <div class="dashboard__loader">
+      <app-spinner size="lg" />
+    </div>
+  } @else if (error()) {
+    <p class="dashboard__error">{{ error() }}</p>
+  } @else {
+    <div class="dashboard__grid">
+
+      <app-card title="Équipements">
+        <div class="stat-block">
+          <span class="stat-block__total">{{ items().length }}</span>
+          <span class="stat-block__label">total</span>
+        </div>
+        <div class="stat-list">
+          <div class="stat-list__item">
+            <span>Ordinateurs</span>
+            <app-badge variant="primary">{{ computers() }}</app-badge>
+          </div>
+          <div class="stat-list__item">
+            <span>Moniteurs</span>
+            <app-badge variant="info">{{ monitors() }}</app-badge>
+          </div>
+        </div>
+      </app-card>
+
+      <app-card title="Tickets">
+        <div class="stat-block">
+          <span class="stat-block__total">{{ tickets().length }}</span>
+          <span class="stat-block__label">total</span>
+        </div>
+        <div class="stat-list">
+          @for (item of ticketsByType(); track item.label) {
+            <div class="stat-list__item">
+              <span>{{ item.label }}</span>
+              <app-badge variant="neutral">{{ item.count }}</app-badge>
+            </div>
+          }
+        </div>
+      </app-card>
+
+      <app-card title="Tickets par statut">
+        <div class="stat-list">
+          @for (item of ticketsByStatus(); track item.label) {
+            @if (item.count > 0) {
+              <div class="stat-list__item">
+                <span>{{ item.label }}</span>
+                <app-badge variant="neutral">{{ item.count }}</app-badge>
+              </div>
+            }
+          }
+        </div>
+      </app-card>
+
+    </div>
+  }
+</div>

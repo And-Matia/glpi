@@ -17,6 +17,12 @@
         </a>
       </li>
       <li>
+        <a routerLink="/back-office/tickets" routerLinkActive="active">
+          <span class="sidebar__icon"><i class="fa-solid fa-ticket"></i></span>
+          @if (isOpen()) { <span class="sidebar__label">Tickets</span> }
+        </a>
+      </li>
+      <li>
         <a routerLink="/back-office/import" routerLinkActive="active">
           <span class="sidebar__icon"><i class="fa-solid fa-upload"></i></span>
           @if (isOpen()) { <span class="sidebar__label">Import</span> }
@@ -25,7 +31,7 @@
       <li>
         <a routerLink="/back-office/reset" routerLinkActive="active">
           <span class="sidebar__icon"><i class="fa-solid fa-rotate-left"></i></span>
-          @if (isOpen()) { <span class="sidebar__label">Reset</span> }
+          @if (isOpen()) { <span class="sidebar__label">ResetService</span> }
         </a>
       </li>
       <li>

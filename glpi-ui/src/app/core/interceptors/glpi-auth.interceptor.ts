@@ -10,27 +10,28 @@ export const glpiAuthInterceptor: HttpInterceptorFn = (req, next) => {
     return next(req);
   }
 
+  // Only declare a JSON Content-Type when we actually send a JSON body.
+  // - On a bodyless GET/DELETE, the GLPI v2 API tries to parse the (empty) body
+  //   and answers 400 "Contenu du JSON invalide".
+  // - On FormData uploads, the browser must set the multipart boundary itself.
+  const isFormData = req.body instanceof FormData;
+  const wantsJson = req.body != null && !isFormData;
+
   if (req.url.startsWith(environment.glpi.v1ApiUrl)) {
     const token = session.getSessionToken();
     if (token) {
-      req = req.clone({
-        setHeaders: {
-          'Session-Token': token,
-          'Content-Type': 'application/json'
-        }
-      });
+      const headers: Record<string, string> = { 'Session-Token': token };
+      if (wantsJson) headers['Content-Type'] = 'application/json';
+      req = req.clone({ setHeaders: headers });
     }
   }
 
   if (req.url.startsWith(environment.glpi.v2ApiUrl) || req.url.startsWith(environment.glpi.graphqlUrl)) {
     const token = session.getAccessToken();
     if (token) {
-      req = req.clone({
-        setHeaders: {
-          'Authorization': `Bearer ${token}`,
-          'Content-Type': 'application/json'
-        }
-      });
+      const headers: Record<string, string> = { 'Authorization': `Bearer ${token}` };
+      if (wantsJson) headers['Content-Type'] = 'application/json';
+      req = req.clone({ setHeaders: headers });
     }
   }
 

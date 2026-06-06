@@ -1,18 +1,19 @@
 import { inject, Injectable } from '@angular/core';
 import { HttpClient, HttpParams } from '@angular/common/http';
 import { forkJoin, map, Observable } from 'rxjs';
-import { environment } from '../../../../environment';
+import { environment } from '../../../../../environment';
 import {Item, ItemType} from '@app/core/models';
 
 interface GlpiV2Item {
   id: number;
   name: string;
-  inventory_number: string;
-  status: { name: string };
-  location: { name: string };
-  manufacturer: { name: string };
-  model: { name: string };
-  user: { name: string };
+  otherserial: string | null;
+  contact: string | null;
+  status: { name: string } | null;
+  location: { name: string } | null;
+  manufacturer: { name: string } | null;
+  model: { name: string } | null;
+  user: { name: string } | null;
 }
 
 @Injectable({ providedIn: 'root' })
@@ -23,8 +24,8 @@ export class ItemV2Service {
   getAll(filter?: string): Observable<Item[]> {
     const params = filter ? new HttpParams().set('filter', filter) : undefined;
     return forkJoin([
-      this.http.get<GlpiV2Item[]>(`${this.base}/Asset/Computer`, { params }),
-      this.http.get<GlpiV2Item[]>(`${this.base}/Asset/Monitor`, { params })
+      this.http.get<GlpiV2Item[]>(`${this.base}/Assets/Computer`, { params }),
+      this.http.get<GlpiV2Item[]>(`${this.base}/Assets/Monitor`, { params })
     ]).pipe(
       map(([computers, monitors]) => [
         ...computers.map(c => this.mapItem(c, 'Computer')),
@@ -34,7 +35,7 @@ export class ItemV2Service {
   }
 
   getById(id: number, type: ItemType): Observable<Item> {
-    const endpoint = type === 'Computer' ? 'Asset/Computer' : 'Asset/Monitor';
+    const endpoint = type === 'Computer' ? 'Assets/Computer' : 'Assets/Monitor';
     return this.http.get<GlpiV2Item>(`${this.base}/${endpoint}/${id}`).pipe(
       map(raw => this.mapItem(raw, type))
     );
@@ -49,8 +50,9 @@ export class ItemV2Service {
       manufacturer: raw.manufacturer?.name ?? '',
       item_type: type,
       model: raw.model?.name ?? '',
-      inventory_number: raw.inventory_number ?? '',
-      user: raw.user?.name ?? ''
+      inventory_number: raw.otherserial ?? '',
+      // CSV "User" is imported into the asset's `contact` field; fall back to a linked GLPI user.
+      user: raw.contact ?? raw.user?.name ?? ''
     };
   }
 }
