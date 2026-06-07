@@ -28,7 +28,7 @@ export class ItemV1Service {
   getAll(): Observable<Item[]> {
     return forkJoin(
       ASSET_TYPES.map(cfg =>
-        this.http.get<GlpiItemRaw[]>(`${this.base}/${cfg.itemtype}`, { params: this.params }).pipe(
+        this.http.get<GlpiItemRaw[]>(`${this.base}/${encodeURIComponent(cfg.apiType)}`, { params: this.params }).pipe(
           // A type with no rows can answer 4xx on some GLPI builds → treat as empty.
           catchError(() => of([] as GlpiItemRaw[])),
           map(raws => raws.map(raw => this.mapItem(raw, cfg))),
@@ -39,24 +39,24 @@ export class ItemV1Service {
 
   getById(id: number, type: ItemType): Observable<Item> {
     const cfg = assetType(type)!;
-    return this.http.get<GlpiItemRaw>(`${this.base}/${cfg.itemtype}/${id}`, { params: this.params }).pipe(
+    return this.http.get<GlpiItemRaw>(`${this.base}/${encodeURIComponent(cfg.apiType)}/${id}`, { params: this.params }).pipe(
       map(raw => this.mapItem(raw, cfg))
     );
   }
 
   create(data: Partial<Item>, type: ItemType): Observable<{ id: number }> {
     const cfg = assetType(type)!;
-    return this.http.post<{ id: number }>(`${this.base}/${cfg.itemtype}`, { input: data });
+    return this.http.post<{ id: number }>(`${this.base}/${encodeURIComponent(cfg.apiType)}`, { input: data });
   }
 
   update(id: number, data: Partial<Item>, type: ItemType): Observable<void> {
     const cfg = assetType(type)!;
-    return this.http.put<void>(`${this.base}/${cfg.itemtype}/${id}`, { input: data });
+    return this.http.put<void>(`${this.base}/${encodeURIComponent(cfg.apiType)}/${id}`, { input: data });
   }
 
   delete(id: number, type: ItemType): Observable<void> {
     const cfg = assetType(type)!;
-    return this.http.delete<void>(`${this.base}/${cfg.itemtype}/${id}`);
+    return this.http.delete<void>(`${this.base}/${encodeURIComponent(cfg.apiType)}/${id}`);
   }
 
   private mapItem(raw: GlpiItemRaw, cfg: AssetTypeConfig): Item {
@@ -67,7 +67,7 @@ export class ItemV1Service {
       location: raw.locations_id,
       manufacturer: raw.manufacturers_id,
       item_type: cfg.itemtype,
-      model: String((cfg.modelField ? raw[cfg.modelField] : undefined) ?? ''),
+      model: cfg.modelField ? String(raw[cfg.modelField] ?? '') : '',
       inventory_number: raw.otherserial,
       // CSV "User" is stored in the asset's `contact` field at import time.
       user: raw.contact || raw.users_id_tech

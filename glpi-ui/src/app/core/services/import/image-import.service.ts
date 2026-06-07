@@ -1,15 +1,24 @@
 import { inject, Injectable } from '@angular/core';
-import { HttpClient, HttpParams } from '@angular/common/http';
-import { defer, firstValueFrom, from, Observable, of } from 'rxjs';
-import { catchError } from 'rxjs/operators';
+import { HttpClient } from '@angular/common/http';
+import { defer, firstValueFrom, from, Observable } from 'rxjs';
 import JSZip from 'jszip';
 import { environment } from '../../../../environment';
 import { ImportStats, ItemType } from '@app/core/models';
-import { ImportRegistryService } from './import-registry.service';
-import { ASSET_TYPES, assetType } from '@app/core/constants/glpi.constants';
-import { detectImageType, isZip, readHeaderBytes } from '@app/core/utils/file-type.utils';
+import { GlpiImportLookupService } from './glpi-import-lookup.service';
+import { apiTypeOf } from '@app/core/constants/glpi.constants';
 
-interface GlpiNamed { id: number; name: string; }
+/** Maps real magic-byte content to a GLPI-accepted extension/mime. */
+function detectImage(bytes: Uint8Array): { mime: string; ext: string } | null {
+  if (bytes.length >= 3 && bytes[0] === 0xff && bytes[1] === 0xd8 && bytes[2] === 0xff)
+    return { mime: 'image/jpeg', ext: 'jpg' };
+  if (bytes.length >= 4 && bytes[0] === 0x89 && bytes[1] === 0x50 && bytes[2] === 0x4e && bytes[3] === 0x47)
+    return { mime: 'image/png', ext: 'png' };
+  if (bytes.length >= 4 && bytes[0] === 0x47 && bytes[1] === 0x49 && bytes[2] === 0x46 && bytes[3] === 0x38)
+    return { mime: 'image/gif', ext: 'gif' };
+  if (bytes.length >= 2 && bytes[0] === 0x42 && bytes[1] === 0x4d)
+    return { mime: 'image/bmp', ext: 'bmp' };
+  return null;
+}
 
 /** "images/PC-ADM-001.png" → "PC-ADM-001" */
 function itemNameFromPath(path: string): string {
@@ -19,14 +28,14 @@ function itemNameFromPath(path: string): string {
 
 @Injectable({ providedIn: 'root' })
 export class ImageImportService {
-  private readonly http     = inject(HttpClient);
-  private readonly registry = inject(ImportRegistryService);
-  private readonly base     = environment.glpi.v1ApiUrl;  // Document upload + linking
-  private readonly v2base   = environment.glpi.v2ApiUrl;  // asset lookup by name
+  private readonly http   = inject(HttpClient);
+  private readonly lookup = inject(GlpiImportLookupService);
+  private readonly base   = environment.glpi.v1ApiUrl;
 
   async validateFile(file: File): Promise<string[]> {
-    const header = await readHeaderBytes(file, 4);
-    if (!isZip(header)) {
+    const arr = new Uint8Array(await file.slice(0, 4).arrayBuffer());
+    // ZIP magic bytes: "PK" (0x50 0x4B)
+    if (arr[0] !== 0x50 || arr[1] !== 0x4b) {
       return ['Le fichier doit être une archive ZIP valide (signature PK manquante).'];
     }
     return [];
@@ -49,6 +58,7 @@ export class ImageImportService {
       return { total: 1, success: 0, failed: 1, errors: [{ row: 1, error: "Archive ZIP illisible." }] };
     }
 
+    // Real image entries only — skip directories and the macOS "__MACOSX" sidecars.
     const entries = Object.values(zip.files).filter(
       f => !f.dir && !f.name.split('/').some(seg => seg.startsWith('__MACOSX') || seg.startsWith('._')),
     );
@@ -60,13 +70,13 @@ export class ImageImportService {
       const row = line++;
       try {
         const bytes = await entry.async('uint8array');
-        const kind = detectImageType(bytes);
+        const kind = detectImage(bytes);
         if (!kind) {
           throw new Error(`Format image non reconnu pour "${entry.name}".`);
         }
 
         const itemName = itemNameFromPath(entry.name);
-        const target = await this.findItem(itemName);
+        const target = await firstValueFrom(this.lookup.findItemByName(itemName));
         if (!target) {
           throw new Error(`Aucun élément GLPI nommé "${itemName}".`);
         }
@@ -86,24 +96,6 @@ export class ImageImportService {
     return stats;
   }
 
-  /** Resolves an item by name: registry first (same import run), then GLPI lookup.
-   *  Lookup uses the v2 `Assets/{itemtype}` path so every type is reachable by its
-   *  plain name — including namespaced classes (e.g. Socket) that v1 can't address. */
-  private async findItem(name: string): Promise<{ id: number; type: ItemType } | null> {
-    const cached = this.registry.getItem(name);
-    if (cached) return { id: cached.id, type: cached.item_type };
-
-    for (const cfg of ASSET_TYPES) {
-      const params = new HttpParams().set('filter', `name==${name}`);
-      const list = await firstValueFrom(
-        this.http.get<GlpiNamed[]>(`${this.v2base}/${cfg.v2Path}`, { params }).pipe(catchError(() => of([] as GlpiNamed[]))),
-      );
-      const found = (list ?? []).find(x => (x.name ?? '').trim().toLowerCase() === name.toLowerCase());
-      if (found) return { id: found.id, type: cfg.itemtype };
-    }
-    return null;
-  }
-
   private async uploadDocument(filename: string, bytes: Uint8Array, mime: string, docName: string): Promise<number> {
     const form = new FormData();
     form.append('uploadManifest', JSON.stringify({ input: { name: docName, _filename: [filename] } }));
@@ -115,11 +107,9 @@ export class ImageImportService {
   }
 
   private async linkDocument(documentsId: number, itemtype: ItemType, itemsId: number): Promise<void> {
-    // Document_Item stores the GLPI class name; namespaced types (Socket) differ from itemtype.
-    const relationType = assetType(itemtype)?.relationType ?? itemtype;
     await firstValueFrom(
       this.http.post(`${this.base}/Document_Item`, {
-        input: { documents_id: documentsId, itemtype: relationType, items_id: itemsId },
+        input: { documents_id: documentsId, itemtype: apiTypeOf(itemtype), items_id: itemsId },
       }),
     );
   }

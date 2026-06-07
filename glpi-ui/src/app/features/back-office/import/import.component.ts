@@ -113,9 +113,9 @@ export class ImportComponent {
   // ── Import ────────────────────────────────────────────────────────────────
 
   startImport(): void {
-    // Keep the persisted registry (so costs/images can reference tickets/items
-    // imported in a previous run); re-imports overwrite entries by key.
-    // Only the dropdown cache is reset, to re-validate dropdowns after a reset.
+    // Cross-sheet references (costs→tickets, images/tickets→items) are resolved by
+    // querying GLPI directly (ticket `externalid`, item `name`), so no client-side
+    // registry is needed. Only the dropdown cache is reset between runs.
     this.dropdown.clearCache();
 
     const tasks = this.steps()

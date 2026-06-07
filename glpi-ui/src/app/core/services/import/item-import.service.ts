@@ -4,7 +4,6 @@ import { forkJoin, from, Observable, of } from 'rxjs';
 import { catchError, concatMap, map, switchMap, toArray } from 'rxjs/operators';
 import { environment } from '../../../../environment';
 import { ImportStats, ItemType } from '@app/core/models';
-import { ImportRegistryService } from './import-registry.service';
 import { GlpiDropdownService } from '@app/core/services/glpi/dropdown.service';
 import { ASSET_ITEMTYPES, assetType } from '@app/core/constants/glpi.constants';
 import { parseCsvText, ParseResult } from '@app/core/utils/csv.utils';
@@ -23,9 +22,8 @@ interface ItemRow {
 @Injectable({ providedIn: 'root' })
 export class ItemImportService {
   private readonly http     = inject(HttpClient);
-  private readonly registry = inject(ImportRegistryService);
   private readonly dropdown = inject(GlpiDropdownService);
-  private readonly v2base   = environment.glpi.v2ApiUrl;
+  private readonly base     = environment.glpi.v1ApiUrl;
 
   importFile(file: File): Observable<ImportStats> {
     return from(this.parseFile(file)).pipe(
@@ -59,9 +57,8 @@ export class ItemImportService {
     return from(rows).pipe(
       concatMap((row, i) =>
         this.importRow(row).pipe(
-          map(({ id }) => {
+          map(() => {
             stats.success++;
-            this.registry.registerItem(row.name, id, row.item_type);
             return null;
           }),
           catchError(err => {
@@ -77,10 +74,8 @@ export class ItemImportService {
   }
 
   private importRow(row: ItemRow): Observable<{ id: number }> {
-    const cfg = assetType(row.item_type)!; // validated in parseFile
+    const cfg = assetType(row.item_type)!;
 
-    // Dropdowns are resolved (find-or-create) over v1, which exposes them cleanly.
-    // model is skipped for types that have no {itemtype}Model dropdown in GLPI.
     return forkJoin({
       states_id:        this.dropdown.resolve('State', row.status),
       locations_id:     this.dropdown.resolve('Location', row.location),
@@ -88,19 +83,16 @@ export class ItemImportService {
       model_id:         cfg.modelType ? this.dropdown.resolve(cfg.modelType, row.model) : of(0),
     }).pipe(
       switchMap(({ states_id, locations_id, manufacturers_id, model_id }) => {
-        // v2 create: POST /Assets/{itemtype}. Dropdown FKs are nested {id} objects;
-        // a 0 id means "empty" so we omit it. Extra fields a type doesn't have are
-        // ignored by GLPI, but we keep the payload tight.
-        const input: Record<string, unknown> = { name: row.name };
-        if (row.inventory_number) input['otherserial']  = row.inventory_number;
-        if (row.user)             input['contact']      = row.user; // CSV "User" → asset contact
-        // State dropdown: GLPI names the v2 property `status` for classic assets,
-        // `state` for the DCIM/cable family, and omits it for types with no state.
-        if (states_id && cfg.stateField) input[cfg.stateField] = { id: states_id };
-        if (locations_id)         input['location']     = { id: locations_id };
-        if (manufacturers_id)     input['manufacturer'] = { id: manufacturers_id };
-        if (model_id)             input['model']        = { id: model_id };
-        return this.http.post<{ id: number }>(`${this.v2base}/${cfg.v2Path}`, input);
+        const input: Record<string, unknown> = {
+          name:           row.name,
+          otherserial:    row.inventory_number,
+          contact:        row.user,
+          states_id,
+          locations_id,
+          manufacturers_id,
+        };
+        if (cfg.modelField) input[cfg.modelField] = model_id;
+        return this.http.post<{ id: number }>(`${this.base}/${encodeURIComponent(cfg.apiType)}`, { input });
       })
     );
   }

@@ -4,12 +4,12 @@ import { from, Observable, of } from 'rxjs';
 import { catchError, concatMap, map, switchMap, toArray } from 'rxjs/operators';
 import { environment } from '../../../../environment';
 import { ImportStats } from '@app/core/models';
-import { ImportRegistryService } from './import-registry.service';
-import { TICKET_TYPE_CODE, TICKET_STATUS_CODE, TICKET_PRIORITY_CODE } from '@app/core/constants/glpi.constants';
+import { GlpiImportLookupService } from './glpi-import-lookup.service';
+import { TICKET_TYPE_CODE, TICKET_STATUS_CODE, TICKET_PRIORITY_CODE, apiTypeOf } from '@app/core/constants/glpi.constants';
 import { parseCsvText, ParseResult } from '@app/core/utils/csv.utils';
 
 interface TicketRow {
-  ref_ticket:  number;
+  ref_ticket:  string; // CSV reference, e.g. "TK-001" or "1" — kept as text
   date:        string; // "03/06/2026"
   heure:       string; // "13:45"
   type:        number;
@@ -28,7 +28,7 @@ function toGlpiDate(date: string, heure: string): string {
 @Injectable({ providedIn: 'root' })
 export class TicketImportService {
   private readonly http       = inject(HttpClient);
-  private readonly registry   = inject(ImportRegistryService);
+  private readonly lookup     = inject(GlpiImportLookupService);
   private readonly base       = environment.glpi.v1ApiUrl;
   private readonly itemTicket = `${environment.glpi.v1ApiUrl}/Item_Ticket`;
 
@@ -77,33 +77,35 @@ export class TicketImportService {
   }
 
   private importRow(row: TicketRow): Observable<void> {
-    // 1. Create ticket
+    // 1. Create ticket — store the CSV reference in `externalid` so later imports
+    //    (e.g. costs) can resolve this ticket by querying GLPI, with no registry.
     return this.http.post<{ id: number }>(`${this.base}/Ticket`, {
       input: {
-        name:     row.titre,
-        content:  row.description,
-        type:     row.type,
-        status:   row.status,
-        priority: row.priority,
-        date:     toGlpiDate(row.date, row.heure),
+        name:       row.titre,
+        content:    row.description,
+        type:       row.type,
+        status:     row.status,
+        priority:   row.priority,
+        date:       toGlpiDate(row.date, row.heure),
+        externalid: row.ref_ticket,
       },
     }).pipe(
       switchMap(({ id: ticketId }) => {
-        // 2. Register ticket (csvRef → glpiId)
-        this.registry.registerTicket(row.ref_ticket, ticketId);
+        // 2. Link items: resolve each item by name directly in GLPI (its name is
+        //    unique), then create the Item_Ticket relation.
+        if (!row.items.length) return of(void 0);
 
-        // 3. Link items sequentially
-        const itemsToLink = row.items
-          .map(name => this.registry.getItem(name))
-          .filter((item): item is NonNullable<typeof item> => !!item);
-
-        if (!itemsToLink.length) return of(void 0);
-
-        return from(itemsToLink).pipe(
-          concatMap(item =>
-            this.http.post<void>(this.itemTicket, {
-              input: { tickets_id: ticketId, itemtype: item.item_type, items_id: item.id },
-            }).pipe(catchError(() => of(void 0)))
+        return from(row.items).pipe(
+          concatMap(name =>
+            this.lookup.findItemByName(name).pipe(
+              concatMap(found =>
+                found
+                  ? this.http.post<void>(this.itemTicket, {
+                      input: { tickets_id: ticketId, itemtype: apiTypeOf(found.type), items_id: found.id },
+                    }).pipe(catchError(() => of(void 0)))
+                  : of(void 0)
+              ),
+            )
           ),
           toArray(),
           map(() => void 0)
@@ -122,7 +124,7 @@ export class TicketImportService {
           try { items = JSON.parse(rawItems); } catch { items = []; }
         }
         return {
-          ref_ticket:  Number(record['Ref_Ticket']) || 0,
+          ref_ticket:  (record['Ref_Ticket'] ?? '').trim(),
           date:        record['Date']        ?? '',
           heure:       record['Heure']       ?? '00:00',
           type:        TICKET_TYPE_CODE[record['Type']     ?? ''] ?? 1,

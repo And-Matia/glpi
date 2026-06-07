@@ -1,11 +1,5 @@
 import { SelectOption } from '@app/shared/ui/select/select.component';
 
-/* ============================================================================
- *  Single source of truth for every GLPI ↔ app mapping and option list.
- *  (Tickets, asset types, item statuses.)
- * ========================================================================== */
-
-/* ── Tickets : GLPI code → label ──────────────────────────────────────────── */
 
 export const GLPI_TICKET_STATUS: Record<number, string> = {
   1: 'New',
@@ -72,62 +66,56 @@ export const TICKET_PRIORITY_CODE: Record<string, number> = {
   'Major':     6,
 };
 
-/* ============================================================================
- *  GLPI asset types — extensible registry.
- *
- *  Supporting a NEW asset type (Printer, Phone, NetworkEquipment, …) is a
- *  one-liner: add an entry below. Every service/component derives its
- *  behaviour from this list, so nothing else has to change.
- *
- *  Field naming follows GLPI's strict convention (verified live against 11.0.7):
- *    - v2 path            = "Assets/" + itemtype           (e.g. "Assets/Printer")
- *    - model dropdown     = itemtype + "Model"             (e.g. "PrinterModel")
- *    - model FK field     = lowercase(itemtype) + "models_id" (e.g. "printermodels_id")
- *
- *  Assets are CREATED via the v2 API (POST /Assets/{itemtype}) — not v1. The v1
- *  REST layer can't reach a few itemtypes by their plain name (e.g. `Socket` is
- *  the namespaced class `Glpi\Socket`), whereas the v2 `Assets/{itemtype}` path
- *  is uniform for every type. Dropdowns (State, Location, …, {itemtype}Model) are
- *  still resolved/created over v1, which exposes them cleanly.
- * ========================================================================== */
-
 export interface AssetTypeConfig {
-  /** GLPI itemtype — also the v1 REST endpoint and the CSV `Item_Type` value. */
-  itemtype:     string;
+  /** GLPI itemtype — app identity and the CSV `Item_Type` value (e.g. "Socket"). */
+  itemtype:   string;
+  /**
+   * GLPI v1 REST endpoint name. Equals `itemtype` for plain classes, but is the
+   * fully-namespaced class for the few that GLPI 11 moved (e.g. "Glpi\\Socket").
+   * Using the bare name for those 400s with ERROR_RESOURCE_NOT_FOUND_NOR_COMMONDBTM.
+   */
+  apiType:    string;
   /** French label shown in the UI. */
-  label:        string;
+  label:      string;
   /** High-level v2 API path segment. */
-  v2Path:       string;
-  /** Class name GLPI stores in relation tables (e.g. Document_Item.itemtype).
-   *  Equals `itemtype` for global classes; namespaced for a few (e.g. `Glpi\Socket`). */
-  relationType: string;
-  /** Model dropdown itemtype (find-or-create at import time). null = no model in GLPI. */
-  modelType:    string | null;
-  /** Foreign-key field carrying the model on the asset. null = no model in GLPI. */
-  modelField:   string | null;
-  /** v2 property carrying the State dropdown. GLPI names it `status` for classic
-   *  inventory assets but `state` for the DCIM/cable family; a few types have no
-   *  state at all (null). Verified live against 11.0.7. */
-  stateField:   'status' | 'state' | null;
+  v2Path:     string;
+  /**
+   * Dropdown itemtype the CSV "Model" column is resolved against (find-or-create
+   * at import time). Usually `{itemtype}Model`, but some itemtypes carry the
+   * concept on a *type* dropdown instead (Cable→CableType, …) or a namespaced
+   * class (Socket→Glpi\\SocketModel). `undefined` when the itemtype has no such
+   * field at all (Software, SoftwareLicense) — the "Model" column is then dropped.
+   */
+  modelType?:  string;
+  /** Foreign-key field carrying the model/type on the asset. `undefined` when none. */
+  modelField?: string;
 }
 
-function asset(
-  itemtype: string,
-  label: string,
-  modelType?: string | null,
-  relationType?: string,
-  stateField: 'status' | 'state' | null = 'status',
-): AssetTypeConfig {
-  const mt = modelType !== undefined ? modelType : `${itemtype}Model`;
-  return {
+interface AssetOptions {
+  /** Default true: auto-derive `{itemtype}Model` / `{itemtype.toLowerCase()}models_id`. Ignored when `model` is set. */
+  hasModel?: boolean;
+  /** Override the v1 REST endpoint for namespaced classes (e.g. "Glpi\\Socket"). */
+  apiType?:  string;
+  /** Explicit dropdown for the "Model" column when it isn't the standard `{itemtype}Model`. */
+  model?:    { type: string; field: string };
+}
+
+function asset(itemtype: string, label: string, opts: AssetOptions = {}): AssetTypeConfig {
+  const { hasModel = true, apiType = itemtype, model } = opts;
+  const cfg: AssetTypeConfig = {
     itemtype,
+    apiType,
     label,
-    v2Path:       `Assets/${itemtype}`,
-    relationType: relationType ?? itemtype,
-    modelType:    mt,
-    modelField:   mt ? `${itemtype.toLowerCase()}models_id` : null,
-    stateField,
+    v2Path: `Assets/${itemtype}`,
   };
+  if (model) {
+    cfg.modelType  = model.type;
+    cfg.modelField = model.field;
+  } else if (hasModel) {
+    cfg.modelType  = `${itemtype}Model`;
+    cfg.modelField = `${itemtype.toLowerCase()}models_id`;
+  }
+  return cfg;
 }
 
 export const ASSET_TYPES: AssetTypeConfig[] = [
@@ -137,25 +125,25 @@ export const ASSET_TYPES: AssetTypeConfig[] = [
   asset('Phone',             'Téléphone'),
   asset('Peripheral',        'Périphérique'),
   asset('NetworkEquipment',  'Équipement réseau'),
-  // DCIM/cable family: GLPI's v2 schema exposes the State dropdown as `state`.
-  asset('Enclosure',         'Boîtier',            undefined, undefined, 'state'),
-  asset('PDU',               'PDU',                undefined, undefined, 'state'),
-  asset('PassiveDCEquipment','Équipement DC passif', undefined, undefined, 'state'),
-  asset('Rack',              'Rack',               undefined, undefined, 'state'),
-  asset('Cable',             'Câble',              null, undefined, 'state'),
-  // Socket is the namespaced class Glpi\Socket: created via Assets/Socket (v2),
-  // but relation tables (Document_Item) need the fully-qualified class name.
-  // Socket has no State field in GLPI.
-  asset('Socket',            'Prise',              null, 'Glpi\\Socket', null),
-  asset('Appliance',         'Appliance',          null),
-  // Software itself has no State (status lives on SoftwareVersion).
-  asset('Software',          'Logiciel',           null, undefined, null),
-  asset('SoftwareLicense',   'Licence logicielle', null),
-  asset('Certificate',       'Certificat',         null),
+  asset('Enclosure',         'Enclosure'),
+  asset('PDU',               'PDU'),
+  asset('PassiveDCEquipment','PassiveDCEquipment'),
+  asset('Rack',              'Rack'),
+  // ── "Model" column mapped to the type/model dropdown each itemtype actually has ──
+  asset('Cable',             'Cable',           { model: { type: 'CableType',       field: 'cabletypes_id' } }),
+  asset('Appliance',         'Appliance',       { model: { type: 'ApplianceType',   field: 'appliancetypes_id' } }),
+  asset('Certificate',       'Certificate',     { model: { type: 'CertificateType', field: 'certificatetypes_id' } }),
+  asset('Socket',            'Socket',          { apiType: 'Glpi\\Socket', model: { type: 'Glpi\\SocketModel', field: 'socketmodels_id' } }),
+  // ── No model/type dropdown for these → the "Model" column is dropped ──
+  asset('Software',          'Logiciel',        { hasModel: false }),
+  asset('SoftwareLicense',   'SoftwareLicense', { hasModel: false }),
 ];
 
-/** All supported GLPI itemtypes, e.g. for CSV validation. */
+/** All supported GLPI itemtypes (CSV `Item_Type` values), e.g. for CSV validation. */
 export const ASSET_ITEMTYPES: string[] = ASSET_TYPES.map(a => a.itemtype);
+
+/** GLPI v1 REST endpoint names for every supported asset (namespaced where needed). */
+export const ASSET_API_TYPES: string[] = ASSET_TYPES.map(a => a.apiType);
 
 export function assetType(itemtype: string): AssetTypeConfig | undefined {
   return ASSET_TYPES.find(a => a.itemtype === itemtype);
@@ -163,6 +151,15 @@ export function assetType(itemtype: string): AssetTypeConfig | undefined {
 
 export function assetLabel(itemtype: string): string {
   return assetType(itemtype)?.label ?? itemtype;
+}
+
+/**
+ * GLPI REST endpoint / relation `itemtype` value for a CSV itemtype.
+ * Returns the namespaced class where GLPI requires it (e.g. "Socket" → "Glpi\\Socket"),
+ * otherwise the itemtype unchanged.
+ */
+export function apiTypeOf(itemtype: string): string {
+  return assetType(itemtype)?.apiType ?? itemtype;
 }
 
 /** Type filter options (with a leading "all types" entry). */

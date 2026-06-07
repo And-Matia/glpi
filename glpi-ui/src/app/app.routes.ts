@@ -46,7 +46,7 @@ export const routes: Routes = [
   {
     path: 'front-office',
     loadComponent: () =>
-      import('./features/front-office/layout/front-office-layout/front-office-layout.component').then(
+      import('@app/features/front-office/layout/front-office-layout/front-office-layout.component').then(
         m => m.FrontOfficeLayoutComponent,
       ),
     children: [

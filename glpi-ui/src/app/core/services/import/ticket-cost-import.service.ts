@@ -4,11 +4,11 @@ import { from, Observable, of, throwError } from 'rxjs';
 import { catchError, concatMap, map, switchMap, toArray } from 'rxjs/operators';
 import { environment } from '../../../../environment';
 import { ImportStats } from '@app/core/models';
-import { ImportRegistryService } from './import-registry.service';
+import { GlpiImportLookupService } from './glpi-import-lookup.service';
 import { parseCsvText, parseFrenchFloat, ParseResult } from '@app/core/utils/csv.utils';
 
 interface TicketCostRow {
-  num_ticket:      number;
+  num_ticket:      string; // CSV reference, e.g. "TK-001" or "1" — kept as text
   duration_second: number;
   time_cost:       number;
   fixed_cost:      number;
@@ -16,9 +16,9 @@ interface TicketCostRow {
 
 @Injectable({ providedIn: 'root' })
 export class TicketCostImportService {
-  private readonly http     = inject(HttpClient);
-  private readonly registry = inject(ImportRegistryService);
-  private readonly base     = environment.glpi.v1ApiUrl;
+  private readonly http   = inject(HttpClient);
+  private readonly lookup = inject(GlpiImportLookupService);
+  private readonly base   = environment.glpi.v1ApiUrl;
 
   importFile(file: File): Observable<ImportStats> {
     return from(this.parseFile(file)).pipe(
@@ -65,23 +65,26 @@ export class TicketCostImportService {
   }
 
   private importRow(row: TicketCostRow): Observable<void> {
-    // Map the CSV ticket reference to the real GLPI id created during the ticket
-    // import. GLPI ids are auto-incremented, so we must NOT assume num_ticket === id.
-    const ticketId = this.registry.getTicketId(row.num_ticket);
-    if (ticketId === undefined) {
-      return throwError(() => new Error(
-        `Ticket #${row.num_ticket} introuvable : importez d'abord la feuille des tickets (feuille 2).`,
-      ));
-    }
-
-    return this.http.post<void>(`${this.base}/TicketCost`, {
-      input: {
-        tickets_id:  ticketId,
-        actiontime:  row.duration_second,
-        cost_time:   row.time_cost,
-        cost_fixed:  row.fixed_cost,
-      },
-    });
+    // Map the CSV ticket reference to the real GLPI id by querying the ticket whose
+    // `externalid` carries that reference (set during the ticket import). GLPI ids
+    // are auto-incremented, so we must NOT assume num_ticket === id.
+    return this.lookup.findTicketIdByRef(row.num_ticket).pipe(
+      switchMap(ticketId => {
+        if (ticketId === null) {
+          return throwError(() => new Error(
+            `Ticket #${row.num_ticket} introuvable : importez d'abord la feuille des tickets (feuille 2).`,
+          ));
+        }
+        return this.http.post<void>(`${this.base}/TicketCost`, {
+          input: {
+            tickets_id:  ticketId,
+            actiontime:  row.duration_second,
+            cost_time:   row.time_cost,
+            cost_fixed:  row.fixed_cost,
+          },
+        });
+      }),
+    );
   }
 
   private parseFile(file: File): Promise<ParseResult<TicketCostRow>> {
@@ -89,7 +92,7 @@ export class TicketCostImportService {
       parseCsvText<TicketCostRow>(text, record => {
         if (!record['Num_Ticket']) throw new Error('Num_Ticket manquant');
         return {
-          num_ticket:      Number(record['Num_Ticket'])  || 0,
+          num_ticket:      (record['Num_Ticket'] ?? '').trim(),
           duration_second: Number(record['Duration_second']) || 0,
           time_cost:       parseFrenchFloat(record['Time_Cost']  ?? '0'),
           fixed_cost:      parseFrenchFloat(record['Fixed_Cost'] ?? '0'),

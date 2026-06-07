@@ -33,8 +33,11 @@ export class GlpiDropdownService {
     if (cached !== undefined) return of(cached);
 
     const params = new HttpParams().set('searchText[name]', clean).set('range', '0-99');
+    // Encode for the URL path: namespaced dropdowns contain a backslash
+    // (e.g. "Glpi\\SocketModel") that browsers would otherwise rewrite to "/".
+    const path = encodeURIComponent(itemtype);
 
-    return this.http.get<GlpiDropdownRaw[]>(`${this.base}/${itemtype}`, { params }).pipe(
+    return this.http.get<GlpiDropdownRaw[]>(`${this.base}/${path}`, { params }).pipe(
       // An empty result set can surface as 4xx on some GLPI builds → treat as "not found".
       catchError(() => of([] as GlpiDropdownRaw[])),
       switchMap(list => {
@@ -44,7 +47,7 @@ export class GlpiDropdownService {
           return of(found.id);
         }
         return this.http
-          .post<{ id: number }>(`${this.base}/${itemtype}`, { input: { name: clean } })
+          .post<{ id: number }>(`${this.base}/${path}`, { input: { name: clean } })
           .pipe(map(res => {
             this.cache.set(key, res.id);
             return res.id;

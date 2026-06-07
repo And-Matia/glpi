@@ -1,139 +1,150 @@
 .navbar {
-  display: flex;
-  align-items: center;
-  gap: var(--spacing-6);
-  padding: 0 var(--spacing-6);
-  height: 64px;
   background: var(--color-white);
   border-bottom: 1px solid var(--color-border);
-  box-shadow: var(--shadow-sm);
   position: sticky;
   top: 0;
   z-index: var(--z-navbar);
 }
 
-/* ── Brand ─────────────────────────────────────────────── */
+.navbar__inner {
+  display: flex;
+  align-items: stretch;
+  gap: var(--spacing-8);
+  max-width: 1200px;
+  margin: 0 auto;
+  padding: 0 var(--spacing-6);
+  height: 64px;
+}
+
+/* ── Brand ──────────────────────────────────────────────────────────────── */
 .navbar__brand {
   display: flex;
   align-items: center;
   gap: var(--spacing-3);
-  margin-right: auto;
   text-decoration: none;
-  color: inherit;
+  border-radius: var(--radius-md);
 }
 
 .navbar__logo {
   display: grid;
   place-items: center;
-  width: 38px;
-  height: 38px;
+  width: 36px;
+  height: 36px;
   border-radius: var(--radius-md);
   background: var(--color-primary);
   color: var(--color-text-primary);
-  font-size: var(--font-size-lg);
-  box-shadow: var(--shadow-sm);
+  font-size: 1.05rem;
 }
 
-.navbar__brand-text {
+.navbar__titles {
   display: flex;
   flex-direction: column;
   line-height: 1.1;
 }
 
-.navbar__brand-name {
+.navbar__title {
   font-weight: var(--weight-bold);
-  font-size: var(--font-size-lg);
+  font-size: var(--font-size-md);
   color: var(--color-text-primary);
-  letter-spacing: 0.02em;
+  letter-spacing: 0.01em;
 }
 
-.navbar__brand-portal {
+.navbar__subtitle {
   font-size: var(--font-size-xs);
-  font-weight: var(--weight-semibold);
+  font-weight: var(--weight-medium);
   color: var(--color-text-muted);
-  text-transform: uppercase;
-  letter-spacing: 0.08em;
 }
 
-/* ── Liens de navigation ───────────────────────────────── */
+/* ── Right cluster (tabs + CTA) ─────────────────────────────────────────── */
+.navbar__nav {
+  display: flex;
+  align-items: stretch;
+  gap: var(--spacing-5);
+  margin-left: auto;
+}
+
 .navbar__links {
   display: flex;
-  align-items: center;
+  align-items: stretch;
   list-style: none;
   margin: 0;
   padding: 0;
   gap: var(--spacing-1);
 }
 
-.navbar__links a {
+.navbar__links li { display: flex; }
+
+/* Tabs — active state shown as a thin yellow underline aligned to the navbar border */
+.navbar__tab {
   display: inline-flex;
   align-items: center;
   gap: var(--spacing-2);
-  padding: var(--spacing-2) var(--spacing-4);
-  border-radius: var(--radius-md);
+  padding: 0 var(--spacing-3);
+  margin-bottom: -1px; /* overlap the navbar's bottom border */
+  border-bottom: 2px solid transparent;
   font-size: var(--font-size-sm);
   font-weight: var(--weight-medium);
   color: var(--color-text-secondary);
   text-decoration: none;
-  transition: background var(--transition-base), color var(--transition-base);
+  transition: color var(--transition-base), border-color var(--transition-base);
 }
 
-.navbar__links a i {
-  font-size: var(--font-size-sm);
-  color: var(--color-text-muted);
-  transition: color var(--transition-base);
-}
-
-.navbar__links a:hover {
-  background: var(--color-surface);
+.navbar__tab:hover {
   color: var(--color-text-primary);
+  border-bottom-color: var(--color-border-strong);
 }
 
-.navbar__links a:hover i {
-  color: var(--color-accent);
-}
-
-.navbar__link--active,
-.navbar__link--active:hover {
-  background: var(--color-bg-light);
+.navbar__tab.active {
   color: var(--color-text-primary);
   font-weight: var(--weight-semibold);
+  border-bottom-color: var(--color-primary);
 }
 
-.navbar__link--active i {
-  color: var(--color-accent);
-}
-
-/* ── Accès administration ──────────────────────────────── */
-.navbar__admin {
+/* CTA — outlined button, restrained */
+.navbar__cta {
   display: inline-flex;
   align-items: center;
+  align-self: center;
   gap: var(--spacing-2);
   padding: var(--spacing-2) var(--spacing-4);
-  border: 1px solid var(--color-border);
-  border-radius: var(--radius-full);
+  border: 1px solid var(--color-border-strong);
+  border-radius: var(--radius-md);
   font-size: var(--font-size-sm);
-  font-weight: var(--weight-medium);
-  color: var(--color-text-secondary);
-  text-decoration: none;
-  transition: border-color var(--transition-base), color var(--transition-base), background var(--transition-base);
-}
-
-.navbar__admin:hover {
-  background: var(--color-surface);
-  border-color: var(--color-border-strong);
+  font-weight: var(--weight-semibold);
   color: var(--color-text-primary);
+  text-decoration: none;
+  transition: background var(--transition-base), border-color var(--transition-base),
+    color var(--transition-base);
 }
 
-/* ── Responsive ────────────────────────────────────────── */
+.navbar__cta-icon { color: var(--color-tertiary); transition: color var(--transition-base); }
+
+.navbar__cta:hover,
+.navbar__cta.active {
+  background: var(--color-bg-light);
+  border-color: var(--color-accent-warm);
+  color: var(--color-tertiary);
+}
+
+.navbar__cta:hover .navbar__cta-icon,
+.navbar__cta.active .navbar__cta-icon { color: var(--color-tertiary); }
+
+/* ── Accessibility ──────────────────────────────────────────────────────── */
+.navbar__brand:focus-visible,
+.navbar__tab:focus-visible,
+.navbar__cta:focus-visible {
+  outline: 2px solid var(--color-accent-warm);
+  outline-offset: 2px;
+  border-radius: var(--radius-sm);
+}
+
+/* ── Responsive ─────────────────────────────────────────────────────────── */
 @media (max-width: 640px) {
-  .navbar {
-    gap: var(--spacing-3);
-    padding: 0 var(--spacing-3);
+  .navbar__inner {
+    gap: var(--spacing-4);
+    padding: 0 var(--spacing-4);
   }
-  .navbar__brand-portal { display: none; }
-  .navbar__links a span,
-  .navbar__admin span { display: none; }
-  .navbar__links a,
-  .navbar__admin { padding: var(--spacing-2); }
+  .navbar__nav { gap: var(--spacing-3); }
+  .navbar__subtitle { display: none; }
+  .navbar__tab span { display: none; }
 }

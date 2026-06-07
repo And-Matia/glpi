@@ -7,6 +7,9 @@ import { SearchInputComponent } from '@app/shared/ui/search-input/search-input.c
 import { SpinnerComponent } from '@app/shared/ui/spinner/spinner.component';
 import { PageHeaderComponent } from '@app/shared/ui/page-header/page-header.component';
 import { TableComponent, TableColumn } from '@app/shared/ui/table/table.component';
+import { TableCellDirective } from '@app/shared/ui/table/table-cell.directive';
+import { BadgeComponent, BadgeVariant } from '@app/shared/ui/badge/badge.component';
+import { AvatarComponent } from '@app/shared/ui/avatar/avatar.component';
 
 @Component({
   selector: 'app-item-list',
@@ -16,6 +19,9 @@ import { TableComponent, TableColumn } from '@app/shared/ui/table/table.componen
     SpinnerComponent,
     PageHeaderComponent,
     TableComponent,
+    TableCellDirective,
+    BadgeComponent,
+    AvatarComponent,
   ],
   templateUrl: './item-list.component.html',
   styleUrl: './item-list.component.css',
@@ -68,6 +74,18 @@ export class ItemListComponent implements OnInit {
       inventory_number: item.inventory_number,
     }))
   );
+
+  /** Maps a GLPI item status label to a badge colour. */
+  statusVariant(status: string): BadgeVariant {
+    switch (status) {
+      case 'En production': return 'success';
+      case 'En stock':      return 'info';
+      case 'Maintenance':   return 'warning';
+      case 'En panne':      return 'danger';
+      case 'Hors service':  return 'neutral';
+      default:              return 'neutral';
+    }
+  }
 
   ngOnInit(): void {
     this.itemService.getAll().subscribe({
