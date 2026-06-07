@@ -8,14 +8,17 @@ les **pièges**. Objectif : ne plus jamais écrire de HTML brut quand un composa
 
 | Fichier | Composants couverts |
 |---------|---------------------|
-| `01-boutons.md` | **Button** |
-| `02-formulaires.md` | **Input · Textarea · Select · SearchInput** |
-| `03-feedback.md` | **Spinner · Badge · EmptyState · Toast · Tooltip** |
-| `04-structure.md` | **PageHeader · Card · Divider · Avatar · Tabs** |
+| `01-boutons.md` | **Button · IconButton** |
+| `02-formulaires.md` | **Input · Textarea · Select · SearchInput · Checkbox · Switch** |
+| `03-feedback.md` | **Spinner · Badge · Chip · Alert · EmptyState · Toast · Tooltip · ProgressBar · Skeleton** |
+| `04-structure.md` | **PageHeader · Card · Divider · Avatar · Tabs · Breadcrumb · StatCard** |
 | `05-table.md` | **Table** + directive **appCell** (cellules personnalisées, tri, recherche, filtres) |
-| `06-overlays.md` | **Modal · ConfirmDialog** |
+| `06-overlays.md` | **Modal · ConfirmDialog · Dropzone** |
 | `07-pagination.md` | **Pagination** |
 | `08-recettes.md` | **Compositions complètes** (page liste, fiche, formulaire, CRUD avec modale) |
+
+> Pour brancher ces composants à un **service + GLPI** (créer un élément, un utilisateur, éditer,
+> supprimer), voir `../docs/13-recettes-features.md`.
 
 ---
 
@@ -74,6 +77,16 @@ brancher dépend du type de membre exposé :
 | Modal | `app-modal` | `open`*, `title`, `size` | `closed` | — | corps + `[slot=footer]` |
 | ConfirmDialog | `app-confirm-dialog` | `open`*, `title`, `message`, `confirmLabel`, `cancelLabel`, `danger` | `confirmed`, `cancelled` | — | — |
 | Pagination | `app-pagination` | `total`*, `pageSize` | — | `page` | — |
+| IconButton | `app-icon-button` | `icon`*, `variant`, `size`, `disabled`, `ariaLabel` | `clicked` | — | — |
+| Checkbox | `app-checkbox` | `label`, `disabled` | — | `checked` | — |
+| Switch | `app-switch` | `label`, `disabled` | — | `checked` | — |
+| Chip | `app-chip` | `variant`, `icon`, `removable` | `removed` | — | contenu |
+| Alert | `app-alert` | `variant`, `title`, `icon`, `dismissible` | `dismissed` | — | message |
+| ProgressBar | `app-progress-bar` | `value`, `max`, `variant`, `showLabel` | — | — | — |
+| Skeleton | `app-skeleton` | `width`, `height`, `circle` | — | — | — |
+| Breadcrumb | `app-breadcrumb` | `items`* | — | — | — |
+| StatCard | `app-stat-card` | `label`, `value`, `icon`, `variant` | — | — | — |
+| Dropzone | `app-dropzone` | `accept`, `multiple`, `disabled`, `label`, `hint`, `icon` | `filesSelected` | — | — |
 
 `*` = entrée **obligatoire** (`input.required` / `model.required`).
 

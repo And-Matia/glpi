@@ -12,21 +12,19 @@
       <ul class="navbar__links">
         <li>
           <a
-            class="navbar__tab"
+            class="navbar__link"
             routerLink="/front-office/items"
             routerLinkActive="active"
           >
-            <i class="fa-solid fa-desktop"></i><span>Éléments</span>
+            <span class="navbar__icon"><i class="fa-solid fa-desktop"></i></span>
+            <span class="navbar__label">Éléments</span>
           </a>
         </li>
       </ul>
 
-      <a
-        class="navbar__cta"
-        routerLink="/front-office/tickets/new"
-        routerLinkActive="active"
-      >
-        <i class="fa-solid fa-plus navbar__cta-icon"></i><span>Nouveau ticket</span>
+      <a class="navbar__cta" routerLink="/front-office/tickets/new" routerLinkActive="active">
+        <i class="fa-solid fa-plus"></i>
+        <span>Nouveau ticket</span>
       </a>
     </div>
   </div>

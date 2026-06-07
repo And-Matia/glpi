@@ -17,6 +17,11 @@ suit le même format pour t'entraîner à raisonner comme à l'examen :
 | 5 | **Features intermédiaires** | une feature complète multi-couches | 2 h |
 | 6 | **Features complexes** | plusieurs couches + cas limites | 3 h |
 | 7 | **Simulations d'examen** | conditions réelles, chronométré | 2 × 2 h |
+| 8 | **CRUD complet** | créer/éditer/supprimer (élément, user, ticket…) | 2 h 30 |
+
+> Le **niveau 8** couvre toutes les écritures (création d'élément, d'utilisateur, édition, suppression,
+> mini-CRUD en modale). Fais-le après le 5 ; il s'appuie sur `../docs/13-recettes-features.md` et le
+> dossier `../ui/`.
 
 ## Méthode (rappel)
 

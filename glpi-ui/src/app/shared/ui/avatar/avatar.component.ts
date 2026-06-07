@@ -14,7 +14,8 @@ export class AvatarComponent {
   size  = input<AvatarSize>('md');
 
   readonly initials = computed(() => {
-    const parts = this.name().trim().split(' ').filter(Boolean);
+    // Coerce defensively: callers may bind a non-string (e.g. a numeric id).
+    const parts = String(this.name() ?? '').trim().split(' ').filter(Boolean);
     if (parts.length === 0) return '?';
     if (parts.length === 1) return parts[0][0].toUpperCase();
     return (parts[0][0] + parts[parts.length - 1][0]).toUpperCase();

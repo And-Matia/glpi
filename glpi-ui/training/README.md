@@ -28,7 +28,15 @@ training/
 │   ├── 09-workflow-import-reset.md
 │   ├── 10-conventions-bonnes-pratiques.md
 │   ├── 11-flux-de-donnees.md
-│   └── 12-debugging.md
+│   ├── 12-debugging.md
+│   └── 13-recettes-features.md   ← CRUD bout-en-bout (créer élément/user, éditer, supprimer)
+├── ui/                       ← la bibliothèque shared/ui de A à Z (API + exemples)
+│   ├── README.md
+│   ├── 01-boutons.md            06-overlays.md
+│   ├── 02-formulaires.md        07-pagination.md
+│   ├── 03-feedback.md           08-recettes.md
+│   ├── 04-structure.md
+│   └── 05-table.md
 └── exercises/                ← le parcours pratique, du débutant à l'examen
     ├── README.md
     ├── niveau-1-comprehension.md
@@ -37,7 +45,8 @@ training/
     ├── niveau-4-petites-features.md
     ├── niveau-5-features-intermediaires.md
     ├── niveau-6-features-complexes.md
-    └── niveau-7-simulations-examen.md
+    ├── niveau-7-simulations-examen.md
+    └── niveau-8-crud-creation.md   ← création/édition/suppression (toutes les écritures)
 ```
 
 ---
@@ -50,7 +59,12 @@ training/
 | **J2 — RxJS & données** | docs 04, 05 | Exercices niveau 2 (RxJS) |
 | **J3 — État & UI** | docs 06, 07, 08 | Exercices niveaux 3 et 4 |
 | **J4 — Métier & flux** | docs 09, 11, 10 | Exercice niveau 5 |
-| **J5 — Examen** | doc 12 (debug) + relecture | Exercices niveaux 6 et 7 (simulations chronométrées) |
+| **J5 — CRUD & UI** | doc 13 (recettes) + dossier `ui/` | Exercices niveau 8 (création/édition/suppression) |
+| **J6 — Examen** | doc 12 (debug) + relecture | Exercices niveaux 6 et 7 (simulations chronométrées) |
+
+> 📚 Le dossier **`ui/`** documente **chaque composant** `shared/ui` (API exacte + exemples +
+> pièges). À garder ouvert pendant les exercices. La doc **13** est ton aide-mémoire CRUD :
+> créer un élément, étendre la création de ticket, créer un utilisateur, éditer, supprimer.
 
 > Tu peux accélérer si tu connais déjà Angular, mais **ne saute pas les docs 04 (RxJS),
 > 05 (services) et 09 (workflow import)** : c'est là que se concentre 80 % de la difficulté
@@ -98,7 +112,11 @@ Coche quand tu maîtrises **sans aide** :
 - [ ] Enchaîner « créer X puis lier Y » de façon séquentielle et gérer les erreurs par ligne
 - [ ] Ajouter une route lazy-loaded protégée par un guard
 - [ ] Brancher un nouveau type GLPI dans `ASSET_TYPES` sans toucher au reste
-- [ ] Diagnostiquer une erreur (CORS, 400 JSON, 206, FK GLPI) et la corriger
+- [ ] Diagnostiquer une erreur (CORS, 400 JSON, 206, FK GLPI, itemtype namespacé) et la corriger
 - [ ] Construire une page de liste filtrable + une page de détail + un formulaire de création
+- [ ] Créer une entité GLPI de bout en bout : résoudre les dropdowns (libellé→id), POST `{ input }`,
+      gérer succès/erreur (élément, **utilisateur**, ticket)
+- [ ] Éditer (charger→pré-remplir→PUT) et supprimer (ConfirmDialog + `force_purge`) une entité
+- [ ] Utiliser le bon composant `shared/ui` pour chaque besoin (cf. dossier `ui/`) sans HTML brut
 
-Quand les 9 cases sont cochées, tu es prêt. Bon courage 💪
+Quand toutes les cases sont cochées, tu es prêt. Bon courage 💪

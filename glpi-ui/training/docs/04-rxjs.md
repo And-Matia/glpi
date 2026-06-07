@@ -109,7 +109,8 @@ Et pour résoudre des dropdowns avant de créer l'élément :
 ```ts
 return forkJoin({ states_id, locations_id, manufacturers_id, model_id }).pipe(
   switchMap(({ states_id, /* … */ }) =>
-    this.http.post(`${this.base}/${cfg.itemtype}`, { input: { /* … */ } })
+    // apiType (endpoint REST réel) + encodeURIComponent (itemtypes namespacés : "Glpi\Socket")
+    this.http.post(`${this.base}/${encodeURIComponent(cfg.apiType)}`, { input: { /* … */ } })
   )
 );
 ```
@@ -121,8 +122,8 @@ C'est le héros de l'import. On importe les lignes **une par une, dans l'ordre**
 return from(rows).pipe(                       // émet chaque row
   concatMap((row, i) =>                        // attend la fin de la précédente
     this.importRow(row).pipe(
-      map(({ id }) => { stats.success++; this.registry.registerItem(row.name, id, row.item_type); return null; }),
-      catchError(err => { stats.failed++; stats.errors.push({ row: i + 2, error: … }); return of(null); }),
+      map(() => { stats.success++; return null; }),
+      catchError(err => { stats.failed++; stats.errors.push({ row: i + 2, error: this.errorText(err) }); return of(null); }),
     )
   ),
   toArray(),                                   // attend que TOUT soit fini
@@ -132,7 +133,8 @@ return from(rows).pipe(                       // émet chaque row
 **Pourquoi `concatMap` et pas `mergeMap` ici ?** Deux raisons :
 1. Le **cache de dropdowns** (`GlpiDropdownService`) doit être peuplé par la ligne N avant
    que la ligne N+1 ne le réutilise → sinon on créerait deux fois « Dell ». Le séquentiel
-   garantit la cohérence du cache.
+   garantit la cohérence du cache. *(Le `concatMap` documente lui-même cette dépendance :
+   un futur lecteur comprend que l'ordre est volontaire.)*
 2. GLPI assigne des **ids auto-incrémentés** ; faire les choses dans l'ordre rend le flux
    prévisible et évite de marteler le serveur.
 
@@ -148,24 +150,37 @@ from(tasks).pipe(
 > Si tu vois « l'utilisateur tape, je veux seulement la dernière recherche » → `switchMap`.
 
 ### `switchMap` imbriqué pour « créer puis lier »
-`ticket-import.service.ts` : créer le ticket, **puis** lier ses éléments séquentiellement.
+`ticket-import.service.ts` : créer le ticket (avec sa réf. dans `externalid`), **puis** lier ses
+éléments séquentiellement. La correspondance nom→élément est résolue **côté GLPI** (plus de
+registre local), via `GlpiImportLookupService.findItemByName`.
 ```ts
-return this.http.post<{ id: number }>(`${this.base}/Ticket`, { input: { … } }).pipe(
+return this.http.post<{ id: number }>(`${this.base}/Ticket`, {
+  input: { name: row.titre, content: row.description, /* … */ externalid: row.ref_ticket },
+}).pipe(
   switchMap(({ id: ticketId }) => {
-    this.registry.registerTicket(row.ref_ticket, ticketId);     // mémorise la correspondance
-    const items = row.items.map(n => this.registry.getItem(n)).filter(Boolean);
-    if (!items.length) return of(void 0);
-    return from(items).pipe(                                     // lie chaque élément…
-      concatMap(item => this.http.post(this.itemTicket, { input: { tickets_id: ticketId, itemtype: item.item_type, items_id: item.id } })
-        .pipe(catchError(() => of(void 0)))),                    // une liaison qui rate n'arrête pas tout
+    if (!row.items.length) return of(void 0);
+    return from(row.items).pipe(                                 // pour chaque nom d'élément…
+      concatMap(name =>
+        this.lookup.findItemByName(name).pipe(                   // …le retrouver dans GLPI…
+          concatMap(found =>
+            found
+              ? this.http.post<void>(this.itemTicket, {          // …puis créer la relation.
+                  // apiTypeOf : le type namespacé attendu côté GLPI (Socket → "Glpi\Socket")
+                  input: { tickets_id: ticketId, itemtype: apiTypeOf(found.type), items_id: found.id },
+                }).pipe(catchError(() => of(void 0)))            // une liaison qui rate n'arrête pas tout
+              : of(void 0),
+          ),
+        ),
+      ),
       toArray(),
       map(() => void 0),
     );
-  })
+  }),
 );
 ```
-Décortique ce bloc : c'est le **patron type** « POST parent → récupérer l'id → POST enfants
-en boucle ». Tu le réécriras à l'examen.
+Décortique ce bloc : c'est le **patron type** « POST parent → récupérer l'id → (résoudre +) POST
+enfants en boucle ». Tu le réécriras à l'examen. Note le **double `concatMap`** : un pour
+sérialiser les noms, un pour enchaîner « résoudre → lier » à l'intérieur.
 
 ---
 
@@ -174,13 +189,15 @@ en boucle ». Tu le réécriras à l'examen.
 `forkJoin` lance tout en même temps et émet **une fois** quand **tous** ont complété, sous
 forme de tableau OU d'objet.
 
-Forme **objet** (`item-import.service.ts`) — résoudre 4 dropdowns à la fois :
+Forme **objet** (`item-import.service.ts`) — résoudre les dropdowns à la fois. Le modèle n'est
+résolu que si le type en possède un (`cfg.modelType`), sinon `of(0)` (sinon on requêterait un
+endpoint inexistant) :
 ```ts
 forkJoin({
   states_id:        this.dropdown.resolve('State', row.status),
   locations_id:     this.dropdown.resolve('Location', row.location),
   manufacturers_id: this.dropdown.resolve('Manufacturer', row.manufacturer),
-  model_id:         this.dropdown.resolve(cfg.modelType, row.model),
+  model_id:         cfg.modelType ? this.dropdown.resolve(cfg.modelType, row.model) : of(0),
 }).pipe(switchMap(({ states_id, locations_id, … }) => /* crée l'élément */));
 ```
 
@@ -188,8 +205,8 @@ Forme **tableau** (`item-v1.service.ts`) — charger plusieurs endpoints et fusi
 ```ts
 forkJoin(
   ASSET_TYPES.map(cfg =>
-    this.http.get<GlpiItemRaw[]>(`${this.base}/${cfg.itemtype}`, { params }).pipe(
-      catchError(() => of([] as GlpiItemRaw[])),     // un type vide ne casse pas le tout
+    this.http.get<GlpiItemRaw[]>(`${this.base}/${encodeURIComponent(cfg.apiType)}`, { params }).pipe(
+      catchError(() => of([] as GlpiItemRaw[])),     // un type vide / en erreur ne casse pas le tout
       map(raws => raws.map(raw => this.mapItem(raw, cfg))),
     )
   )
@@ -324,7 +341,208 @@ parallèle.
 
 ---
 
-## 11. Tableau de décision (à mémoriser)
+## 11. `first` / `take` / `filter` — réduire le flux
+
+### `first(predicate?, default?)` — la **1re** valeur (qui matche), puis complète
+Utilisé dans `glpi-import-lookup.service.ts` pour **court-circuiter** une recherche multi-types :
+on essaie chaque itemtype en séquence et on **s'arrête au premier** qui trouve l'élément.
+```ts
+return from(ASSET_TYPES).pipe(
+  concatMap(cfg => this.searchOne(cfg, name)),   // émet {id,type} | null pour chaque type
+  first((r): r is Found => r !== null, null),    // 1er résultat non-null → complète (stoppe le reste)
+);
+```
+- `first()` sans argument = la 1re valeur émise.
+- `first(pred)` = la 1re qui satisfait `pred` (sinon **erreur** si rien ne matche).
+- `first(pred, default)` = comme ci-dessus mais émet `default` au lieu d'erreurer. **Toujours
+  fournir un `default`** si « rien trouvé » est un cas normal.
+- Comme `first` **complète** après la 1re valeur, le `concatMap` en amont **arrête** d'émettre →
+  on n'interroge pas les types suivants inutilement (court-circuit).
+
+> `take(n)` = les `n` premières valeurs puis complète. `take(1)` ≈ `first()` (mais `take(1)`
+> n'erreure jamais si la source complète à vide ; `first()` si). `last()` = la dernière.
+
+### `filter(pred)` — ne laisse passer que ce qui matche
+```ts
+this.search$.pipe(filter(term => term.length >= 2), …)   // ignore les recherches trop courtes
+```
+
+---
+
+## 12. Recherche réactive : `debounceTime` + `distinctUntilChanged` + `switchMap`
+
+Le patron **typeahead** de référence (à connaître pour l'examen, même si le projet filtre
+souvent côté client avec un `computed`).
+```ts
+this.term$.pipe(
+  debounceTime(300),                 // attendre 300 ms d'inactivité (ne pas requêter à chaque frappe)
+  distinctUntilChanged(),            // ignorer si le texte n'a pas changé
+  switchMap(term =>                  // annuler la requête précédente (seul le dernier compte)
+    this.api.search(term).pipe(catchError(() => of([]))),
+  ),
+).subscribe(results => this.results.set(results));
+```
+- `debounceTime(ms)` : n'émet qu'après un silence de `ms` → réduit drastiquement les appels.
+- `distinctUntilChanged()` : évite de re-requêter une valeur identique.
+- `switchMap` : **annule** la requête en vol si l'utilisateur retape → pas de résultats périmés.
+> 🧠 Le trio `debounceTime → distinctUntilChanged → switchMap` est *la* signature d'une bonne
+> recherche serveur. Avec une recherche **purement locale**, préfère un `computed` sur un signal
+> (voir `06-gestion-etat.md`).
+
+---
+
+## 13. `finalize` — exécuter quoi qu'il arrive (succès **ou** erreur)
+
+Idéal pour **éteindre un état `loading`** sans le dupliquer dans `next` ET `error`.
+```ts
+this.loading.set(true);
+this.service.getAll().pipe(
+  finalize(() => this.loading.set(false)),   // appelé à la complétion OU à l'erreur OU au désabonnement
+).subscribe({
+  next:  data => this.rows.set(data),
+  error: ()   => this.error.set('Échec du chargement.'),
+});
+```
+> Sans `finalize`, tu dois remettre `loading=false` dans `next` **et** dans `error` (oubli
+> fréquent → spinner bloqué). `finalize` centralise.
+
+---
+
+## 14. `exhaustMap` — ignorer pendant qu'un travail est en cours (anti double-clic)
+
+`exhaustMap` lance l'observable interne et **ignore les nouvelles émissions tant qu'il n'a pas
+fini**. Parfait pour un **bouton de soumission** : un double-clic ne crée pas deux tickets.
+```ts
+this.submitClicks$.pipe(
+  exhaustMap(() => this.ticketService.create(input)),   // les clics pendant le POST sont ignorés
+).subscribe(() => this.toast.success('Créé.'));
+```
+| Cas d'usage | Opérateur |
+|-------------|-----------|
+| Recherche (garder le dernier) | `switchMap` |
+| Écritures ordonnées (tout exécuter, en file) | `concatMap` |
+| Soumission (ignorer les rejeux pendant le travail) | `exhaustMap` |
+| Parallèle sans ordre | `mergeMap` |
+
+> Dans le projet on bloque souvent le double-clic via le signal `submitting` + `[disabled]`.
+> `exhaustMap` est l'équivalent côté flux (utile si tu pars d'un `Subject` de clics).
+
+---
+
+## 15. `retry` & `timeout` — robustesse réseau
+
+```ts
+this.http.get<X[]>(url).pipe(
+  timeout(8000),                          // erreur si pas de réponse en 8 s
+  retry({ count: 2, delay: 1000 }),       // réessaye 2× à 1 s d'intervalle avant d'abandonner
+  catchError(() => of([])),               // repli final
+);
+```
+> `retry` **re-souscrit** à la source (relance l'appel HTTP). Ne l'utilise pas sur des écritures
+> **non idempotentes** (un POST de création réessayé peut créer un doublon).
+
+---
+
+## 16. `combineLatest` vs `forkJoin`
+
+Les deux combinent plusieurs sources, mais :
+| | `forkJoin` | `combineLatest` |
+|--|-----------|-----------------|
+| Émet | **une fois**, à la complétion de **toutes** | **à chaque** émission de **l'une**, dès que toutes ont émis ≥ 1× |
+| Pour | requêtes HTTP (qui complètent) | flux **persistants** (signaux-like, filtres combinés) |
+
+```ts
+// Réagir à 2 filtres qui changent dans le temps (sources qui n'achèvent pas) :
+combineLatest([this.type$, this.status$]).pipe(
+  map(([type, status]) => this.applyFilters(type, status)),
+);
+```
+> ⚠️ Avec des `HttpClient` (qui complètent), `combineLatest` finit par se comporter comme
+> `forkJoin` mais émet aussi les états intermédiaires → pour « attendre tout », c'est `forkJoin`.
+> Dans ce projet, les états combinés se font surtout via **`computed`** sur des signals.
+
+---
+
+## 17. `reduce` / `scan` — agréger des émissions
+
+- `reduce` : comme `Array.reduce`, émet **un seul** résultat à la complétion.
+- `scan` : émet le **cumul à chaque** étape (utile pour une progression).
+```ts
+from(rows).pipe(
+  concatMap(row => this.save(row).pipe(map(() => 1), catchError(() => of(0)))),
+  scan((done, ok) => done + ok, 0),     // émet 1, 2, 3, … (progression en direct)
+  tap(done => this.progress.set(done)),
+).subscribe();
+```
+> Dans l'import, on accumule plutôt dans un objet `stats` muté + `toArray()`. `reduce`/`scan`
+> sont l'alternative « pure flux » à connaître.
+
+---
+
+## 18. `Subject` / `BehaviorSubject` — et pourquoi le projet préfère les **signals**
+
+Un `Subject` est un Observable **dont tu pousses** les valeurs (`.next(v)`) — utile pour
+transformer un événement impératif (clic) en flux.
+```ts
+private readonly clicks$ = new Subject<void>();
+onClick() { this.clicks$.next(); }            // pousser
+ngOnInit() { this.clicks$.pipe(exhaustMap(() => this.save())).subscribe(); }
+```
+`BehaviorSubject<T>(initial)` garde la **dernière** valeur et la rejoue aux nouveaux abonnés —
+c'était l'outil d'état avant les signals.
+
+> 🧠 **Dans ce projet, l'état se gère avec `signal`/`computed`**, pas des Subjects (voir
+> `06-gestion-etat.md`). Garde les Subjects pour **transformer un flux d'événements** quand tu as
+> besoin d'opérateurs temporels (`debounceTime`, `exhaustMap`). Pour stocker une valeur : signal.
+
+---
+
+## 19. Cycle de vie & fuites : `async` pipe, `takeUntilDestroyed`, `take(1)`
+
+Un `subscribe` manuel **vit jusqu'à** la complétion ou le désabonnement. `HttpClient` complète
+tout seul (1 réponse) → pas de fuite. Mais un flux **qui ne complète pas** (Subject,
+`interval`, `combineLatest` de signaux) **fuit** si tu ne te désabonnes pas.
+
+Trois bons réflexes :
+```ts
+// a) Le pipe `async` du template : Angular gère l'abonnement ET le désabonnement tout seul.
+items$ = this.service.getAll();
+// template : @if (items$ | async; as items) { … }
+
+// b) takeUntilDestroyed() : coupe le flux quand le composant est détruit.
+this.clicks$.pipe(takeUntilDestroyed(), exhaustMap(() => this.save())).subscribe();
+
+// c) take(1) / first() : pour un one-shot, le flux se ferme après la 1re valeur.
+this.service.getById(id).pipe(take(1)).subscribe(x => this.x.set(x));
+```
+> Règle simple : **HTTP one-shot** → `subscribe` direct OK (il complète). **Flux persistant** →
+> `async` pipe **ou** `takeUntilDestroyed`. Ne laisse jamais un Subject/`interval` sans garde.
+
+---
+
+## 20. Comment **lire** un `.pipe()` (méthode anti-panique)
+
+1. **Pars du `subscribe`** (ou `async`) : c'est là que tout démarre.
+2. **Remonte la source** : `from(rows)` (N émissions ?) `http.get` (1 émission) `of(x)` (1) ?
+3. **Pour chaque opérateur, demande** : « est-ce que je **transforme** (`map`), **enchaîne un
+   appel** (`*Map`), **attends plusieurs** (`forkJoin`), **gère l'erreur** (`catchError`), ou
+   **fais un effet de bord** (`tap`) ? »
+4. **Repère le `*Map`** : c'est le cœur. `switch`/`concat`/`merge`/`exhaust` → relis le tableau §14.
+5. **Trouve les `catchError`** : *à l'intérieur* d'un `concatMap` = erreur isolée par ligne ;
+   *à l'extérieur* = stoppe tout.
+
+### Mini-marbles (source émet `a` puis `b`, requête = `R(x)` qui prend du temps)
+```
+source:      --a-----b------|
+switchMap:   ----R(a)X-R(b)--|     (R(a) annulé quand b arrive)
+concatMap:   ----R(a)----R(b)|     (R(b) attend la fin de R(a))
+mergeMap:    ----R(a)--R(b)--|     (en parallèle, ordre d'arrivée non garanti)
+exhaustMap:  ----R(a)-------|      (b ignoré car R(a) en cours)
+```
+
+---
+
+## 21. Tableau de décision (à mémoriser)
 
 ```
 Je veux…                                                  → opérateur
@@ -332,30 +550,50 @@ Je veux…                                                  → opérateur
 transformer une valeur (sync)                              → map
 lancer un appel HTTP à partir d'une valeur, ordre important → concatMap
 … seulement le dernier (recherche)                         → switchMap
+… ignorer les rejeux pendant le travail (submit)           → exhaustMap
 … tous en parallèle (sans ordre)                           → mergeMap
 attendre plusieurs appels en parallèle puis combiner       → forkJoin (objet/array)
+réagir à plusieurs flux persistants qui changent           → combineLatest
 gérer une erreur (absorber ou relancer)                    → catchError + of/throwError
+réessayer un appel qui échoue (lecture idempotente)        → retry({count,delay})
+abandonner si trop lent                                    → timeout(ms)
+exécuter quoi qu'il arrive (éteindre un loading)           → finalize
 effet de bord (maj UI, log)                                → tap
-émettre une valeur immédiate / repli                       → of
+ne garder que ce qui matche                                → filter
+la 1re valeur (qui matche) puis stop / court-circuit       → first(pred?, default?) / take(1)
+la dernière valeur                                         → last()
+ignorer les frappes trop rapprochées (recherche)           → debounceTime + distinctUntilChanged
+agréger en un seul résultat / en progression               → reduce / scan
+émettre une valeur immédiate / repli                       → of   (rien du tout → EMPTY)
+choisir un observable selon une condition                  → iif(() => cond, a$, b$)
 convertir promesse/array en flux                           → from
 créer une erreur                                           → throwError(() => e)
 différer la création jusqu'à l'abonnement                  → defer
 attendre la fin d'une boucle d'émissions                   → toArray
 Observable → await                                         → firstValueFrom
+pousser des valeurs manuellement (événements)              → Subject / BehaviorSubject
+couper un flux persistant à la destruction du composant    → takeUntilDestroyed
 ```
 
 ---
 
-## 12. Pièges récapitulatifs
+## 22. Pièges récapitulatifs
 
 | ❌ Piège | ✅ Bon réflexe |
 |---------|----------------|
 | Oublier `subscribe`/`firstValueFrom` → rien ne part | toujours déclencher le flux |
 | `mergeMap` là où l'ordre compte | `concatMap` |
 | `switchMap` sur des écritures (annulerait la précédente) | `concatMap` pour les POST/PUT |
+| Double-clic qui crée 2 entités | `exhaustMap` (ou `submitting` + `[disabled]`) |
 | `from(promise())` qui exécute trop tôt | `defer(() => from(promise()))` |
 | `catchError` mal placé (arrête tout au lieu d'une ligne) | le mettre **dans** le `concatMap` de ligne |
 | `forkJoin` qui erreure en entier | `catchError` par branche |
+| `forkJoin` qui n'émet jamais | une source ne complète pas → utilise `combineLatest` ou `take(1)` |
+| `first(pred)` sans `default` qui erreure « no elements » | `first(pred, valeurParDéfaut)` |
+| `loading` jamais remis à `false` sur erreur | `finalize(() => loading.set(false))` |
+| `retry` sur un POST → doublons | ne réessayer que les **lectures** idempotentes |
+| Recherche serveur qui spamme l'API | `debounceTime` + `distinctUntilChanged` + `switchMap` |
+| Subject/`interval` sans désabonnement → fuite | `async` pipe, `takeUntilDestroyed`, ou `take(1)` |
 | Muter le résultat d'un `map` | renvoyer une nouvelle valeur |
 
 ➡️ Ensuite : **`05-couche-donnees-services.md`** (comment ces flux parlent à GLPI).

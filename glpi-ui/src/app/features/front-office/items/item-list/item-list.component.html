@@ -34,15 +34,15 @@
       emptyIcon="fa-solid fa-desktop"
       emptyLabel="Aucun élément trouvé"
     >
-      <ng-template appCell="item_type" let-value>
+      <ng-template appCell="item_type" let-value="value">
         <app-badge variant="neutral" size="sm">{{ value }}</app-badge>
       </ng-template>
 
-      <ng-template appCell="status" let-value>
+      <ng-template appCell="status" let-value="value">
         <app-badge [variant]="statusVariant(value)" size="sm">{{ value }}</app-badge>
       </ng-template>
 
-      <ng-template appCell="user" let-value>
+      <ng-template appCell="user" let-value="value">
         @if (value) {
           <span class="item-list__user">
             <app-avatar [name]="value" size="sm" />
@@ -53,7 +53,7 @@
         }
       </ng-template>
 
-      <ng-template appCell="inventory_number" let-value>
+      <ng-template appCell="inventory_number" let-value="value">
         @if (value) {
           <code class="item-list__inv">{{ value }}</code>
         } @else {

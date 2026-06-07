@@ -53,7 +53,8 @@ export class ItemV2Service {
       model: raw.model?.name ?? '',
       inventory_number: raw.otherserial ?? '',
       // CSV "User" is imported into the asset's `contact` field; fall back to a linked GLPI user.
-      user: raw.contact ?? raw.user?.name ?? ''
+      // Coerce to string: GLPI may return `contact` as a non-string (e.g. a numeric value).
+      user: String(raw.contact || raw.user?.name || '')
     };
   }
 }
