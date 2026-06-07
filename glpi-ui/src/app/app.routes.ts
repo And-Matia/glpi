@@ -44,10 +44,10 @@ export const routes: Routes = [
     ],
   },
   {
-    path: 'store',
+    path: 'front-office',
     loadComponent: () =>
-      import('./features/front-office/layout/store-layout/store-layout.component').then(
-        m => m.StoreLayoutComponent,
+      import('./features/front-office/layout/front-office-layout/front-office-layout.component').then(
+        m => m.FrontOfficeLayoutComponent,
       ),
     children: [
       { path: '', redirectTo: 'items', pathMatch: 'full' },
@@ -63,5 +63,5 @@ export const routes: Routes = [
       },
     ],
   },
-  { path: '', redirectTo: 'store', pathMatch: 'full' },
+  { path: '', redirectTo: 'front-office', pathMatch: 'full' },
 ];

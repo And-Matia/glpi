@@ -14,7 +14,7 @@ fonctionnalités** à livrer de bout en bout, comme à l'examen.
 ## 🧪 Simulation A (2 h) — « Gestion des éléments enrichie »
 
 ### Tâche A1 (45 min) — Fiche élément + tickets liés
-Depuis la liste store, cliquer sur un élément ouvre `/store/items/:type/:id`. La fiche affiche
+Depuis la liste front-office, cliquer sur un élément ouvre `/front-office/items/:type/:id`. La fiche affiche
 tous les champs (statut en badge) **et** la liste des tickets qui référencent cet élément
 (titre + statut, cliquables vers la fiche ticket back-office… ou simple affichage).
 
@@ -33,7 +33,7 @@ s'il existe un `Document_Item` pour lui. (Astuce perf : charger une fois la list
 - **A1** : route `items/:type/:id`, composant `item-detail` (`ItemV2Service.getById`),
   tickets liés via `GET /Item_Ticket?searchText[items_id]=…&searchText[itemtype]=…` puis
   `forkJoin` de `TicketV1Service.getById`. Liste cliquable :
-  `router.navigate(['/store/items', item.item_type, item.id])`.
+  `router.navigate(['/front-office/items', item.item_type, item.id])`.
 - **A2** : `dropdown.resolve('State', status).pipe(switchMap(id => itemService.update(this.id,{states_id:id},type)))`,
   toast, reload.
 - **A3** : `GET /Document_Item?searchText[itemtype]=…` insuffisant (il faut tous) → charger

@@ -1,51 +1,139 @@
 .navbar {
   display: flex;
   align-items: center;
-  gap: var(--spacing-8);
+  gap: var(--spacing-6);
   padding: 0 var(--spacing-6);
-  height: 56px;
-  background: var(--color-surface);
+  height: 64px;
+  background: var(--color-white);
   border-bottom: 1px solid var(--color-border);
+  box-shadow: var(--shadow-sm);
   position: sticky;
   top: 0;
-  z-index: 100;
+  z-index: var(--z-navbar);
 }
 
+/* ── Brand ─────────────────────────────────────────────── */
 .navbar__brand {
   display: flex;
   align-items: center;
-  gap: var(--spacing-2);
-  font-weight: 700;
-  font-size: var(--font-size-lg);
-  color: var(--color-primary);
+  gap: var(--spacing-3);
   margin-right: auto;
+  text-decoration: none;
+  color: inherit;
 }
 
-.navbar__logo { font-size: 1.25rem; }
+.navbar__logo {
+  display: grid;
+  place-items: center;
+  width: 38px;
+  height: 38px;
+  border-radius: var(--radius-md);
+  background: var(--color-primary);
+  color: var(--color-text-primary);
+  font-size: var(--font-size-lg);
+  box-shadow: var(--shadow-sm);
+}
 
+.navbar__brand-text {
+  display: flex;
+  flex-direction: column;
+  line-height: 1.1;
+}
+
+.navbar__brand-name {
+  font-weight: var(--weight-bold);
+  font-size: var(--font-size-lg);
+  color: var(--color-text-primary);
+  letter-spacing: 0.02em;
+}
+
+.navbar__brand-portal {
+  font-size: var(--font-size-xs);
+  font-weight: var(--weight-semibold);
+  color: var(--color-text-muted);
+  text-transform: uppercase;
+  letter-spacing: 0.08em;
+}
+
+/* ── Liens de navigation ───────────────────────────────── */
 .navbar__links {
   display: flex;
+  align-items: center;
   list-style: none;
   margin: 0;
   padding: 0;
-  gap: var(--spacing-2);
+  gap: var(--spacing-1);
 }
 
 .navbar__links a {
-  display: flex;
+  display: inline-flex;
   align-items: center;
   gap: var(--spacing-2);
   padding: var(--spacing-2) var(--spacing-4);
   border-radius: var(--radius-md);
   font-size: var(--font-size-sm);
-  font-weight: 500;
+  font-weight: var(--weight-medium);
   color: var(--color-text-secondary);
   text-decoration: none;
-  transition: background 0.15s, color 0.15s;
+  transition: background var(--transition-base), color var(--transition-base);
 }
 
-.navbar__links a:hover,
-.navbar__links a.active {
-  background: var(--color-primary-light, #eff6ff);
-  color: var(--color-primary);
+.navbar__links a i {
+  font-size: var(--font-size-sm);
+  color: var(--color-text-muted);
+  transition: color var(--transition-base);
+}
+
+.navbar__links a:hover {
+  background: var(--color-surface);
+  color: var(--color-text-primary);
+}
+
+.navbar__links a:hover i {
+  color: var(--color-accent);
+}
+
+.navbar__link--active,
+.navbar__link--active:hover {
+  background: var(--color-bg-light);
+  color: var(--color-text-primary);
+  font-weight: var(--weight-semibold);
+}
+
+.navbar__link--active i {
+  color: var(--color-accent);
+}
+
+/* ── Accès administration ──────────────────────────────── */
+.navbar__admin {
+  display: inline-flex;
+  align-items: center;
+  gap: var(--spacing-2);
+  padding: var(--spacing-2) var(--spacing-4);
+  border: 1px solid var(--color-border);
+  border-radius: var(--radius-full);
+  font-size: var(--font-size-sm);
+  font-weight: var(--weight-medium);
+  color: var(--color-text-secondary);
+  text-decoration: none;
+  transition: border-color var(--transition-base), color var(--transition-base), background var(--transition-base);
+}
+
+.navbar__admin:hover {
+  background: var(--color-surface);
+  border-color: var(--color-border-strong);
+  color: var(--color-text-primary);
+}
+
+/* ── Responsive ────────────────────────────────────────── */
+@media (max-width: 640px) {
+  .navbar {
+    gap: var(--spacing-3);
+    padding: 0 var(--spacing-3);
+  }
+  .navbar__brand-portal { display: none; }
+  .navbar__links a span,
+  .navbar__admin span { display: none; }
+  .navbar__links a,
+  .navbar__admin { padding: var(--spacing-2); }
 }

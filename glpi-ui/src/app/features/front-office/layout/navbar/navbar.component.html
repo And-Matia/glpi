@@ -1,18 +1,26 @@
 <nav class="navbar">
-  <div class="navbar__brand">
-    <span class="navbar__logo"><i class="fa-solid fa-server"></i></span>
-    <span class="navbar__title">GLPI Store</span>
-  </div>
+  <a class="navbar__brand" routerLink="/front-office/items" aria-label="GLPI Front Office">
+    <span class="navbar__logo"><i class="fa-solid fa-headset"></i></span>
+    <span class="navbar__brand-text">
+      <span class="navbar__brand-name">GLPI</span>
+      <span class="navbar__brand-portal">Front Office</span>
+    </span>
+  </a>
+
   <ul class="navbar__links">
     <li>
-      <a routerLink="/store/items" routerLinkActive="active">
-        <i class="fa-solid fa-desktop"></i> Éléments
+      <a routerLink="/front-office/items" routerLinkActive="navbar__link--active">
+        <i class="fa-solid fa-desktop"></i><span>Éléments</span>
       </a>
     </li>
     <li>
-      <a routerLink="/store/tickets/new" routerLinkActive="active">
-        <i class="fa-solid fa-plus"></i> Nouveau ticket
+      <a routerLink="/front-office/tickets/new" routerLinkActive="navbar__link--active">
+        <i class="fa-solid fa-circle-plus"></i><span>Nouveau ticket</span>
       </a>
     </li>
   </ul>
+
+  <a class="navbar__admin" routerLink="/back-office" aria-label="Espace administration">
+    <i class="fa-solid fa-user-shield"></i><span>Administration</span>
+  </a>
 </nav>

@@ -1,0 +1,27 @@
+<div
+  class="dropzone"
+  [class.dropzone--active]="isDragOver()"
+  [class.dropzone--disabled]="disabled()"
+  (dragover)="onDragOver($event)"
+  (dragleave)="onDragLeave()"
+  (drop)="onDrop($event)"
+>
+  <i [class]="icon() + ' dropzone__icon'"></i>
+  <p class="dropzone__label">{{ label() }}</p>
+
+  <input
+    #fileInput
+    type="file"
+    class="dropzone__input"
+    [accept]="accept()"
+    [multiple]="multiple()"
+    [disabled]="disabled()"
+    (change)="onFileChange($event)"
+    hidden
+  />
+  <app-button variant="ghost" size="sm" [disabled]="disabled()" (clicked)="fileInput.click()">
+    Parcourir
+  </app-button>
+
+  @if (hint()) { <p class="dropzone__hint">{{ hint() }}</p> }
+</div>

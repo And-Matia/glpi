@@ -64,7 +64,7 @@ features/
 │   ├── import/
 │   └── reset/
 └── front-office/
-    ├── layout/                (StoreLayout + Navbar)
+    ├── layout/                (FrontOfficeLayout + Navbar)
     ├── items/ item-list/
     └── tickets/ ticket-create/
 ```

@@ -89,7 +89,7 @@ TicketCreateComponent
         from(selectedItems).pipe(
           concatMap(item => TicketV1Service.addItem(id, item.item_type, item.id))  → POST /Item_Ticket
         )))
-      .subscribe({ complete: → toast.success + navigate('/store/items'),
+      .subscribe({ complete: → toast.success + navigate('/front-office/items'),
                    error:    → toast.error })
 ```
 Remarque : `create` puis `addItem` en boucle **séquentielle** (`concatMap`), car les liaisons

@@ -11,7 +11,7 @@ Une feature complète de bout en bout : service + RxJS + route + UI + état + ca
 montre tous ses champs **et** les tickets qui le référencent.
 
 **Objectifs.**
-1. Route `/store/items/:type/:id` (le type est nécessaire car l'endpoint dépend du type).
+1. Route `/front-office/items/:type/:id` (le type est nécessaire car l'endpoint dépend du type).
 2. Composant `item-detail` qui charge l'élément (`ItemV2Service.getById(id, type)`).
 3. Afficher les champs dans des `app-card` + `app-badge` pour le statut.
 4. (Bonus) Lister les tickets liés via `Item_Ticket`.
@@ -45,7 +45,7 @@ ngOnInit() {
 }
 ```
 Liste cliquable : ajouter une colonne action ou un `(click)` qui
-`router.navigate(['/store/items', item.item_type, item.id])`.
+`router.navigate(['/front-office/items', item.item_type, item.id])`.
 
 Bonus tickets liés : `GET /api.php/v1/Item_Ticket?searchText[items_id]=<id>&searchText[itemtype]=<type>`
 puis pour chaque `tickets_id`, `TicketV1Service.getById` (via `forkJoin`).

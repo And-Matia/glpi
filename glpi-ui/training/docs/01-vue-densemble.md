@@ -9,7 +9,7 @@ consomme et offre deux portails :
 | Portail | Route racine | Public | Rôle |
 |---------|--------------|--------|------|
 | **Back-office** | `/back-office` | Administrateur | Tableau de bord, liste & fiche des tickets, **import** de données, **réinitialisation** |
-| **Front-office** | `/store` | Utilisateur | Liste des éléments du parc (avec recherche), **création de ticket** |
+| **Front-office** | `/front-office` | Utilisateur | Liste des éléments du parc (avec recherche), **création de ticket** |
 
 Le back-office est protégé par un **code unique** (pas de login/mot de passe classique :
 le code joue le rôle de mot de passe, prérempli sur le formulaire).

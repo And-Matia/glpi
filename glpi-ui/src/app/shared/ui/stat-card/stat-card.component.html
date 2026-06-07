@@ -1,0 +1,12 @@
+<div class="stat-card">
+  @if (icon()) {
+    <span [class]="'stat-card__icon stat-card__icon--' + variant()">
+      <i [class]="icon()"></i>
+    </span>
+  }
+  <div class="stat-card__body">
+    <span class="stat-card__value">{{ value() }}</span>
+    <span class="stat-card__label">{{ label() }}</span>
+  </div>
+  <div class="stat-card__extra"><ng-content /></div>
+</div>

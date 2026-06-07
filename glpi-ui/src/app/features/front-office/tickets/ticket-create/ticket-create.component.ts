@@ -118,7 +118,7 @@ export class TicketCreateComponent implements OnInit {
       complete: () => {
         this.submitting.set(false);
         this.toast.success('Ticket créé avec succès !');
-        this.router.navigate(['/store/items']);
+        this.router.navigate(['/front-office/items']);
       },
       error: () => {
         this.submitting.set(false);
@@ -128,6 +128,6 @@ export class TicketCreateComponent implements OnInit {
   }
 
   goBack(): void {
-    this.router.navigate(['/store/items']);
+    this.router.navigate(['/front-office/items']);
   }
 }

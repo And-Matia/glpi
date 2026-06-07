@@ -1,0 +1,16 @@
+@if (visible()) {
+  <div [class]="'alert alert--' + variant()" role="alert">
+    <i [class]="resolvedIcon() + ' alert__icon'"></i>
+    <div class="alert__content">
+      @if (title()) {
+        <p class="alert__title">{{ title() }}</p>
+      }
+      <div class="alert__message"><ng-content /></div>
+    </div>
+    @if (dismissible()) {
+      <button class="alert__close" (click)="dismiss()" aria-label="Fermer">
+        <i class="fa-solid fa-xmark"></i>
+      </button>
+    }
+  </div>
+}

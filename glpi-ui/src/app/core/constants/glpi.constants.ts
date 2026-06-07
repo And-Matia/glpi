@@ -79,43 +79,79 @@ export const TICKET_PRIORITY_CODE: Record<string, number> = {
  *  one-liner: add an entry below. Every service/component derives its
  *  behaviour from this list, so nothing else has to change.
  *
- *  Field naming follows GLPI's strict convention (verified against 11.0.7):
- *    - v1 endpoint        = itemtype                       (e.g. "Printer")
+ *  Field naming follows GLPI's strict convention (verified live against 11.0.7):
  *    - v2 path            = "Assets/" + itemtype           (e.g. "Assets/Printer")
  *    - model dropdown     = itemtype + "Model"             (e.g. "PrinterModel")
  *    - model FK field     = lowercase(itemtype) + "models_id" (e.g. "printermodels_id")
+ *
+ *  Assets are CREATED via the v2 API (POST /Assets/{itemtype}) — not v1. The v1
+ *  REST layer can't reach a few itemtypes by their plain name (e.g. `Socket` is
+ *  the namespaced class `Glpi\Socket`), whereas the v2 `Assets/{itemtype}` path
+ *  is uniform for every type. Dropdowns (State, Location, …, {itemtype}Model) are
+ *  still resolved/created over v1, which exposes them cleanly.
  * ========================================================================== */
 
 export interface AssetTypeConfig {
   /** GLPI itemtype — also the v1 REST endpoint and the CSV `Item_Type` value. */
-  itemtype:   string;
+  itemtype:     string;
   /** French label shown in the UI. */
-  label:      string;
+  label:        string;
   /** High-level v2 API path segment. */
-  v2Path:     string;
-  /** Model dropdown itemtype (find-or-create at import time). */
-  modelType:  string;
-  /** Foreign-key field carrying the model on the asset. */
-  modelField: string;
+  v2Path:       string;
+  /** Class name GLPI stores in relation tables (e.g. Document_Item.itemtype).
+   *  Equals `itemtype` for global classes; namespaced for a few (e.g. `Glpi\Socket`). */
+  relationType: string;
+  /** Model dropdown itemtype (find-or-create at import time). null = no model in GLPI. */
+  modelType:    string | null;
+  /** Foreign-key field carrying the model on the asset. null = no model in GLPI. */
+  modelField:   string | null;
+  /** v2 property carrying the State dropdown. GLPI names it `status` for classic
+   *  inventory assets but `state` for the DCIM/cable family; a few types have no
+   *  state at all (null). Verified live against 11.0.7. */
+  stateField:   'status' | 'state' | null;
 }
 
-function asset(itemtype: string, label: string): AssetTypeConfig {
+function asset(
+  itemtype: string,
+  label: string,
+  modelType?: string | null,
+  relationType?: string,
+  stateField: 'status' | 'state' | null = 'status',
+): AssetTypeConfig {
+  const mt = modelType !== undefined ? modelType : `${itemtype}Model`;
   return {
     itemtype,
     label,
-    v2Path:     `Assets/${itemtype}`,
-    modelType:  `${itemtype}Model`,
-    modelField: `${itemtype.toLowerCase()}models_id`,
+    v2Path:       `Assets/${itemtype}`,
+    relationType: relationType ?? itemtype,
+    modelType:    mt,
+    modelField:   mt ? `${itemtype.toLowerCase()}models_id` : null,
+    stateField,
   };
 }
 
 export const ASSET_TYPES: AssetTypeConfig[] = [
-  asset('Computer',         'Ordinateur'),
-  asset('Monitor',          'Moniteur'),
-  asset('Printer',          'Imprimante'),
-  asset('Phone',            'Téléphone'),
-  asset('Peripheral',       'Périphérique'),
-  asset('NetworkEquipment', 'Équipement réseau'),
+  asset('Computer',          'Ordinateur'),
+  asset('Monitor',           'Moniteur'),
+  asset('Printer',           'Imprimante'),
+  asset('Phone',             'Téléphone'),
+  asset('Peripheral',        'Périphérique'),
+  asset('NetworkEquipment',  'Équipement réseau'),
+  // DCIM/cable family: GLPI's v2 schema exposes the State dropdown as `state`.
+  asset('Enclosure',         'Boîtier',            undefined, undefined, 'state'),
+  asset('PDU',               'PDU',                undefined, undefined, 'state'),
+  asset('PassiveDCEquipment','Équipement DC passif', undefined, undefined, 'state'),
+  asset('Rack',              'Rack',               undefined, undefined, 'state'),
+  asset('Cable',             'Câble',              null, undefined, 'state'),
+  // Socket is the namespaced class Glpi\Socket: created via Assets/Socket (v2),
+  // but relation tables (Document_Item) need the fully-qualified class name.
+  // Socket has no State field in GLPI.
+  asset('Socket',            'Prise',              null, 'Glpi\\Socket', null),
+  asset('Appliance',         'Appliance',          null),
+  // Software itself has no State (status lives on SoftwareVersion).
+  asset('Software',          'Logiciel',           null, undefined, null),
+  asset('SoftwareLicense',   'Licence logicielle', null),
+  asset('Certificate',       'Certificat',         null),
 ];
 
 /** All supported GLPI itemtypes, e.g. for CSV validation. */

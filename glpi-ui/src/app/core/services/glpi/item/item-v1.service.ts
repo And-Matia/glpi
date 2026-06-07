@@ -67,7 +67,7 @@ export class ItemV1Service {
       location: raw.locations_id,
       manufacturer: raw.manufacturers_id,
       item_type: cfg.itemtype,
-      model: String(raw[cfg.modelField] ?? ''),
+      model: String((cfg.modelField ? raw[cfg.modelField] : undefined) ?? ''),
       inventory_number: raw.otherserial,
       // CSV "User" is stored in the asset's `contact` field at import time.
       user: raw.contact || raw.users_id_tech

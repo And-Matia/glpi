@@ -1,0 +1,9 @@
+<button
+  type="button"
+  [class]="'icon-btn icon-btn--' + variant() + ' icon-btn--' + size()"
+  [disabled]="disabled()"
+  [attr.aria-label]="ariaLabel()"
+  (click)="onClick()"
+>
+  <i [class]="icon()"></i>
+</button>
