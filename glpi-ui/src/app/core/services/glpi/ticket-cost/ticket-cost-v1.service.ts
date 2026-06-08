@@ -37,8 +37,8 @@ export class TicketCostV1Service {
     return this.http.put<void>(`${this.base}/${id}`, { input: data });
   }
 
-  delete(id: number): Observable<void> {
-    return this.http.delete<void>(`${this.base}/${id}`);
+  delete(id: number,forcePurge?: boolean): Observable<void> {
+    return this.http.delete<void>(forcePurge?`${this.base}/${id}/`:`${this.base}/${id}`);
   }
 
   private mapCost(raw: GlpiTicketCostRaw): TicketCost {

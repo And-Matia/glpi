@@ -1,26 +1,13 @@
 import { inject, Injectable } from '@angular/core';
 import { HttpClient } from '@angular/common/http';
-import { defer, firstValueFrom, from, Observable } from 'rxjs';
+import { firstValueFrom, from, Observable } from 'rxjs';
 import JSZip from 'jszip';
 import { environment } from '../../../../environment';
 import { ImportStats, ItemType } from '@app/core/models';
 import { GlpiImportLookupService } from './glpi-import-lookup.service';
-import { apiTypeOf } from '@app/core/constants/glpi.constants';
+import { apiTypeOf } from '@app/core/models/glpi/assets/glpi-asset.model';
+import { detectImageType} from '@app/core/utils/file-type.utils';
 
-/** Maps real magic-byte content to a GLPI-accepted extension/mime. */
-function detectImage(bytes: Uint8Array): { mime: string; ext: string } | null {
-  if (bytes.length >= 3 && bytes[0] === 0xff && bytes[1] === 0xd8 && bytes[2] === 0xff)
-    return { mime: 'image/jpeg', ext: 'jpg' };
-  if (bytes.length >= 4 && bytes[0] === 0x89 && bytes[1] === 0x50 && bytes[2] === 0x4e && bytes[3] === 0x47)
-    return { mime: 'image/png', ext: 'png' };
-  if (bytes.length >= 4 && bytes[0] === 0x47 && bytes[1] === 0x49 && bytes[2] === 0x46 && bytes[3] === 0x38)
-    return { mime: 'image/gif', ext: 'gif' };
-  if (bytes.length >= 2 && bytes[0] === 0x42 && bytes[1] === 0x4d)
-    return { mime: 'image/bmp', ext: 'bmp' };
-  return null;
-}
-
-/** "images/PC-ADM-001.png" → "PC-ADM-001" */
 function itemNameFromPath(path: string): string {
   const file = path.split('/').pop() ?? path;
   return file.replace(/\.[^.]+$/, '');
@@ -34,7 +21,6 @@ export class ImageImportService {
 
   async validateFile(file: File): Promise<string[]> {
     const arr = new Uint8Array(await file.slice(0, 4).arrayBuffer());
-    // ZIP magic bytes: "PK" (0x50 0x4B)
     if (arr[0] !== 0x50 || arr[1] !== 0x4b) {
       return ['Le fichier doit être une archive ZIP valide (signature PK manquante).'];
     }
@@ -42,10 +28,7 @@ export class ImageImportService {
   }
 
   importFile(file: File): Observable<ImportStats> {
-    // `defer` so the work (unzip + item lookup + upload) only starts when this
-    // step is actually reached in the import sequence — never eagerly, in
-    // parallel with the items import, which would look up items before they exist.
-    return defer(() => from(this.run(file)));
+    return from(this.run(file));
   }
 
   private async run(file: File): Promise<ImportStats> {
@@ -70,13 +53,13 @@ export class ImageImportService {
       const row = line++;
       try {
         const bytes = await entry.async('uint8array');
-        const kind = detectImage(bytes);
+        const kind = detectImageType(bytes);
         if (!kind) {
           throw new Error(`Format image non reconnu pour "${entry.name}".`);
         }
 
         const itemName = itemNameFromPath(entry.name);
-        const target = await firstValueFrom(this.lookup.findItemByName(itemName));
+        const target = await this.lookup.findItemByName(itemName);
         if (!target) {
           throw new Error(`Aucun élément GLPI nommé "${itemName}".`);
         }

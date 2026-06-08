@@ -1,6 +1,5 @@
 import { Component, ChangeDetectionStrategy, inject, signal, computed } from '@angular/core';
-import { defer, from, Observable, throwError } from 'rxjs';
-import { catchError, concatMap, tap, toArray } from 'rxjs/operators';
+import { firstValueFrom } from 'rxjs';
 import { ImportStats } from '@app/core/models';
 import { GlpiDropdownService } from '@app/core/services/glpi/dropdown.service';
 import { ItemImportService } from '@app/core/services/import/item-import.service';
@@ -112,49 +111,38 @@ export class ImportComponent {
 
   // ── Import ────────────────────────────────────────────────────────────────
 
-  startImport(): void {
+  async startImport(): Promise<void> {
     // Cross-sheet references (costs→tickets, images/tickets→items) are resolved by
     // querying GLPI directly (ticket `externalid`, item `name`), so no client-side
     // registry is needed. Only the dropdown cache is reset between runs.
     this.dropdown.clearCache();
 
-    const tasks = this.steps()
+    const validatedSteps = this.steps()
       .map((step, i) => ({ step, i }))
-      .filter(({ step }) => step.status === 'validated' && step.selectedFile)
-      .map(({ step, i }) => this.runStep(step.selectedFile!, i));
+      .filter(({ step }) => step.status === 'validated' && step.selectedFile);
 
-    from(tasks).pipe(
-      concatMap(task$ => task$),
-      toArray(),
-    ).subscribe();
+    // Steps run sequentially: images look up items by name, so items must be
+    // created first. A simple for loop makes this dependency obvious.
+    for (const { step, i } of validatedSteps) {
+      await this.runStep(step.selectedFile!, i);
+    }
   }
 
-  private runStep(file: File, index: number): Observable<ImportStats> {
-    // `defer` so a step only flips to "importing" and starts its work when the
-    // sequential concatMap actually reaches it — never eagerly while building
-    // the task list, which would run every step in parallel (e.g. images
-    // looking up items before the items step has created them).
-    return defer(() => {
-      this.patchStep(index, { status: 'importing' });
-      return this.getService(index).importFile(file);
-    }).pipe(
-      tap(stats => {
-        this.patchStep(index, {
-          result: stats,
-          status: stats.failed > 0 && stats.success === 0 ? 'error' : 'done',
-          errorMsg: stats.failed > 0
-            ? `${stats.failed} ligne(s) en erreur sur ${stats.total}.`
-            : null,
-        });
-      }),
-      catchError(err => {
-        this.patchStep(index, {
-          status: 'error',
-          errorMsg: err instanceof Error ? err.message : "Erreur lors de l'import",
-        });
-        return throwError(() => err);
-      })
-    );
+  private async runStep(file: File, index: number): Promise<void> {
+    this.patchStep(index, { status: 'importing' });
+    try {
+      const stats = await firstValueFrom(this.getService(index).importFile(file));
+      this.patchStep(index, {
+        result: stats,
+        status: stats.failed > 0 && stats.success === 0 ? 'error' : 'done',
+        errorMsg: stats.failed > 0 ? `${stats.failed} ligne(s) en erreur sur ${stats.total}.` : null,
+      });
+    } catch (err) {
+      this.patchStep(index, {
+        status: 'error',
+        errorMsg: err instanceof Error ? err.message : "Erreur lors de l'import",
+      });
+    }
   }
 
   // ── Reset ─────────────────────────────────────────────────────────────────

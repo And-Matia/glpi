@@ -5,7 +5,7 @@ import { TicketV1Service, CreateTicketInput } from '@app/core/services/glpi/tick
 import { ItemV2Service } from '@app/core/services/glpi/item/item-v2.service';
 import { GlpiAsset } from '@app/core/models/glpi/assets/glpi-asset.model';
 import { TICKET_TYPE_OPTIONS, TICKET_PRIORITY_OPTIONS } from '@app/core/constants/ticket.constants';
-import { assetLabel } from '@app/core/constants/glpi.constants';
+import { assetLabel } from '@app/core/models/glpi/assets/glpi-asset.model';
 import { ToastService } from '@app/core/services/toast.service';
 import { ButtonComponent } from '@app/shared/ui/button/button.component';
 import { InputComponent } from '@app/shared/ui/input/input.component';

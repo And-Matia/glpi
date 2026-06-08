@@ -2,7 +2,7 @@ import { Component, ChangeDetectionStrategy, inject, signal, OnInit } from '@ang
 import { ActivatedRoute, Router } from '@angular/router';
 import { TicketV1Service } from '@app/core/services/glpi/ticket/ticket-v1.service';
 import { Ticket } from '@app/core/models/ticket.model';
-import { GLPI_TICKET_STATUS, GLPI_TICKET_TYPE, GLPI_TICKET_PRIORITY } from '@app/core/constants/ticket.constants';
+import { GLPI_TICKET_STATUS, GLPI_TICKET_TYPE, GLPI_TICKET_PRIORITY } from '@app/core/models/ticket.model';
 import { CardComponent } from '@app/shared/ui/card/card.component';
 import { PageHeaderComponent } from '@app/shared/ui/page-header/page-header.component';
 import { BadgeComponent } from '@app/shared/ui/badge/badge.component';

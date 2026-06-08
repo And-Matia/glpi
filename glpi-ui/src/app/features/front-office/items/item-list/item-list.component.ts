@@ -1,7 +1,8 @@
 import { Component, OnInit, ChangeDetectionStrategy, inject, signal, computed } from '@angular/core';
 import { ItemV2Service } from '@app/core/services/glpi/item/item-v2.service';
 import { GlpiAsset } from '@app/core/models/glpi/assets/glpi-asset.model';
-import { ASSET_TYPE_OPTIONS, assetLabel } from '@app/core/constants/glpi.constants';
+import { ASSET_TYPE_OPTIONS } from '@app/core/constants/glpi.constants';
+import { assetLabel } from '@app/core/models/glpi/assets/glpi-asset.model';
 import { ITEM_STATUS_OPTIONS } from '@app/core/constants/item.constants';
 import { SelectComponent } from '@app/shared/ui/select/select.component';
 import { SearchInputComponent } from '@app/shared/ui/search-input/search-input.component';

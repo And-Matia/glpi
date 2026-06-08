@@ -5,7 +5,7 @@ import { catchError } from 'rxjs/operators';
 import { environment } from '../../../../../environment';
 import { GlpiAsset } from '@app/core/models/glpi/assets/glpi-asset.model';
 import { GlpiAssetRawV1, mapAssetRawV1 } from '../assets/base/base-asset-v1.service';
-import { ASSET_TYPES, assetType } from '@app/core/constants/glpi.constants';
+import { ASSET_TYPES, assetType } from '@app/core/models/glpi/assets/glpi-asset.model';
 import { ItemType } from '@app/core/models/item.model';
 
 @Injectable({ providedIn: 'root' })

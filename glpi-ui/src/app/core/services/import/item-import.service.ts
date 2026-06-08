@@ -1,97 +1,90 @@
-import { inject, Injectable } from '@angular/core';
-import { HttpClient } from '@angular/common/http';
-import { forkJoin, from, Observable, of } from 'rxjs';
-import { catchError, concatMap, map, switchMap, toArray } from 'rxjs/operators';
-import { environment } from '../../../../environment';
-import { ImportStats } from '@app/core/models/import.model';
-import { ItemType } from '@app/core/models/item.model';
-import { GlpiDropdownService } from '@app/core/services/glpi/dropdown.service';
-import { ASSET_ITEMTYPES, assetType } from '@app/core/constants/glpi.constants';
-import { parseCsvText, ParseResult } from '@app/core/utils/csv.utils';
+import {inject, Injectable} from '@angular/core';
+import {HttpClient} from '@angular/common/http';
+import {firstValueFrom, from, Observable} from 'rxjs';
+import {environment} from '../../../../environment';
+import {ImportStats} from '@app/core/models/import.model';
+import {ItemType} from '@app/core/models/item.model';
+import {GlpiDropdownService} from '@app/core/services/glpi/dropdown.service';
+import {ASSET_ITEMTYPES, assetType} from '@app/core/models/glpi/assets/glpi-asset.model';
+import {parseCsvText, ParseResult} from '@app/core/utils/csv.utils';
+import {UserV1Service} from "../glpi/entities/user/user-v1.service";
 
 interface ItemRow {
-  name:             string;
-  status:           string;
-  location:         string;
-  manufacturer:     string;
-  item_type:        ItemType;
-  model:            string;
+  name: string;
+  status: string;
+  location: string;
+  manufacturer: string;
+  item_type: ItemType;
+  model: string;
   inventory_number: string;
-  user:             string;
+  user: string;
 }
 
-@Injectable({ providedIn: 'root' })
+@Injectable({providedIn: 'root'})
 export class ItemImportService {
-  private readonly http     = inject(HttpClient);
+  private readonly http = inject(HttpClient);
   private readonly dropdown = inject(GlpiDropdownService);
-  private readonly base     = environment.glpi.v1ApiUrl;
+  private readonly userService = inject(UserV1Service);
+  private readonly base = environment.glpi.v1ApiUrl;
 
   importFile(file: File): Observable<ImportStats> {
-    return from(this.parseFile(file)).pipe(
-      switchMap(({ rows, errors: parseErrors }) =>
-        this.importRows(rows).pipe(
-          map(stats => ({
-            ...stats,
-            total:  stats.total  + parseErrors.length,
-            failed: stats.failed + parseErrors.length,
-            errors: [...parseErrors, ...stats.errors],
-          }))
-        )
-      )
-    );
+    return from(this.doImport(file));
   }
 
   async validateFile(file: File): Promise<string[]> {
     try {
-      const { errors } = await this.parseFile(file);
+      const {errors} = await this.parseFile(file);
       return errors.map(e => `Ligne ${e.row}: ${e.error}`);
     } catch (e) {
       return [e instanceof Error ? e.message : 'Erreur inconnue'];
     }
   }
 
-  private importRows(rows: ItemRow[]): Observable<ImportStats> {
-    const stats: ImportStats = { total: rows.length, success: 0, failed: 0, errors: [] };
-    if (!rows.length) return of(stats);
+  private async doImport(file: File): Promise<ImportStats> {
+    const {rows, errors: parseErrors} = await this.parseFile(file);
 
-    return from(rows).pipe(
-      concatMap((row, i) =>
-        this.importRow(row).pipe(
-          map(() => { stats.success++; return null; }),
-          catchError(err => {
-            stats.failed++;
-            stats.errors.push({ row: i + 2, error: this.errorText(err) });
-            return of(null);
-          })
-        )
-      ),
-      toArray(),
-      map(() => stats)
-    );
+    const stats: ImportStats = {
+      total: rows.length + parseErrors.length,
+      success: 0,
+      failed: parseErrors.length,
+      errors: [...parseErrors],
+    };
+
+    for (let i = 0; i < rows.length; i++) {
+      try {
+        await this.importRow(rows[i]);
+        stats.success++;
+      } catch (err) {
+        stats.failed++;
+        stats.errors.push({row: i + 2, error: this.errorText(err)});
+      }
+    }
+
+    return stats;
   }
 
-  private importRow(row: ItemRow): Observable<{ id: number }> {
+  private async importRow(row: ItemRow): Promise<void> {
     const cfg = assetType(row.item_type)!;
 
-    return forkJoin({
-      states_id:        this.dropdown.resolve('State', row.status),
-      locations_id:     this.dropdown.resolve('Location', row.location),
-      manufacturers_id: this.dropdown.resolve('Manufacturer', row.manufacturer),
-      model_id:         cfg.modelType ? this.dropdown.resolve(cfg.modelType, row.model) : of(0),
-    }).pipe(
-      switchMap(({ states_id, locations_id, manufacturers_id, model_id }) => {
-        const input: Record<string, unknown> = {
-          name:            row.name,
-          otherserial:     row.inventory_number,
-          contact:         row.user,
-          states_id,
-          locations_id,
-          manufacturers_id,
-        };
-        if (cfg.modelField) input[cfg.modelField] = model_id;
-        return this.http.post<{ id: number }>(`${this.base}/${encodeURIComponent(cfg.apiType)}`, { input });
-      })
-    );
+    // Resolve all dropdown/user IDs before creating the item.
+    // Each resolve() call is sequential to avoid race conditions in the dropdown cache.
+    const states_id       = await this.dropdown.resolve('State', row.status);
+    const locations_id    = await this.dropdown.resolve('Location', row.location);
+    const manufacturers_id = await this.dropdown.resolve('Manufacturer', row.manufacturer);
+    const users_id        = await this.userService.resolve(row.user);
+    const model_id        = cfg.modelType ? await this.dropdown.resolve(cfg.modelType, row.model) : 0;
+
+    const input: Record<string, unknown> = {
+      name: row.name,
+      otherserial: row.inventory_number,
+      users_id,
+      states_id,
+      locations_id,
+      manufacturers_id,
+    };
+    if (cfg.modelField) input[cfg.modelField] = model_id;
+
+    await firstValueFrom(this.http.post<{ id: number }>(`${this.base}/${encodeURIComponent(cfg.apiType)}`, {input}));
   }
 
   private errorText(err: unknown): string {
@@ -112,14 +105,14 @@ export class ItemImportService {
           throw new Error(`Type inconnu: ${type} (attendus : ${ASSET_ITEMTYPES.join(', ')})`);
         }
         return {
-          name:             record['Name'],
-          status:           record['Status']           ?? '',
-          location:         record['Location']         ?? '',
-          manufacturer:     record['Manufacturer']     ?? '',
-          item_type:        type as ItemType,
-          model:            record['Model']            ?? '',
+          name: record['Name'],
+          status: record['Status'] ?? '',
+          location: record['Location'] ?? '',
+          manufacturer: record['Manufacturer'] ?? '',
+          item_type: type as ItemType,
+          model: record['Model'] ?? '',
           inventory_number: record['Inventory_Number'] ?? '',
-          user:             record['User']             ?? '',
+          user: record['User'] ?? '',
         };
       })
     );

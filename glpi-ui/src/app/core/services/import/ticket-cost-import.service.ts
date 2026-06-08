@@ -1,7 +1,6 @@
 import { inject, Injectable } from '@angular/core';
 import { HttpClient } from '@angular/common/http';
-import { from, Observable, of, throwError } from 'rxjs';
-import { catchError, concatMap, map, switchMap, toArray } from 'rxjs/operators';
+import { firstValueFrom, from, Observable } from 'rxjs';
 import { environment } from '../../../../environment';
 import { ImportStats } from '@app/core/models';
 import { GlpiImportLookupService } from './glpi-import-lookup.service';
@@ -21,18 +20,7 @@ export class TicketCostImportService {
   private readonly base   = environment.glpi.v1ApiUrl;
 
   importFile(file: File): Observable<ImportStats> {
-    return from(this.parseFile(file)).pipe(
-      switchMap(({ rows, errors: parseErrors }) =>
-        this.importRows(rows).pipe(
-          map(stats => ({
-            ...stats,
-            total:  stats.total  + parseErrors.length,
-            failed: stats.failed + parseErrors.length,
-            errors: [...parseErrors, ...stats.errors],
-          }))
-        )
-      )
-    );
+    return from(this.doImport(file));
   }
 
   async validateFile(file: File): Promise<string[]> {
@@ -44,46 +32,47 @@ export class TicketCostImportService {
     }
   }
 
-  private importRows(rows: TicketCostRow[]): Observable<ImportStats> {
-    const stats: ImportStats = { total: rows.length, success: 0, failed: 0, errors: [] };
-    if (!rows.length) return of(stats);
+  private async doImport(file: File): Promise<ImportStats> {
+    const { rows, errors: parseErrors } = await this.parseFile(file);
 
-    return from(rows).pipe(
-      concatMap((row, i) =>
-        this.importRow(row).pipe(
-          map(() => { stats.success++; return null; }),
-          catchError(err => {
-            stats.failed++;
-            stats.errors.push({ row: i + 2, error: err instanceof Error ? err.message : String(err) });
-            return of(null);
-          })
-        )
-      ),
-      toArray(),
-      map(() => stats)
-    );
+    const stats: ImportStats = {
+      total: rows.length + parseErrors.length,
+      success: 0,
+      failed: parseErrors.length,
+      errors: [...parseErrors],
+    };
+
+    for (let i = 0; i < rows.length; i++) {
+      try {
+        await this.importRow(rows[i]);
+        stats.success++;
+      } catch (err) {
+        stats.failed++;
+        stats.errors.push({ row: i + 2, error: err instanceof Error ? err.message : String(err) });
+      }
+    }
+
+    return stats;
   }
 
-  private importRow(row: TicketCostRow): Observable<void> {
+  private async importRow(row: TicketCostRow): Promise<void> {
     // Map the CSV ticket reference to the real GLPI id by querying the ticket whose
     // `externalid` carries that reference (set during the ticket import). GLPI ids
     // are auto-incremented, so we must NOT assume num_ticket === id.
-    return this.lookup.findTicketIdByRef(row.num_ticket).pipe(
-      switchMap(ticketId => {
-        if (ticketId === null) {
-          return throwError(() => new Error(
-            `Ticket #${row.num_ticket} introuvable : importez d'abord la feuille des tickets (feuille 2).`,
-          ));
-        }
-        return this.http.post<void>(`${this.base}/TicketCost`, {
-          input: {
-            tickets_id:  ticketId,
-            actiontime:  row.duration_second,
-            cost_time:   row.time_cost,
-            cost_fixed:  row.fixed_cost,
-          },
-        });
-      }),
+    const ticketId = await this.lookup.findTicketIdByRef(row.num_ticket);
+    if (ticketId === null) {
+      throw new Error(`Ticket #${row.num_ticket} introuvable : importez d'abord la feuille des tickets (feuille 2).`);
+    }
+
+    await firstValueFrom(
+      this.http.post<void>(`${this.base}/TicketCost`, {
+        input: {
+          tickets_id:  ticketId,
+          actiontime:  row.duration_second,
+          cost_time:   row.time_cost,
+          cost_fixed:  row.fixed_cost,
+        },
+      })
     );
   }
 

@@ -4,7 +4,7 @@ import { map, Observable, of } from 'rxjs';
 import { catchError } from 'rxjs/operators';
 import { environment } from '../../../../../../environment';
 import { GlpiAsset } from '@app/core/models/glpi/assets/glpi-asset.model';
-import { AssetTypeConfig } from '@app/core/constants/glpi.constants';
+import { AssetTypeConfig } from '@app/core/models/glpi/assets/glpi-asset.model';
 
 export interface GlpiAssetRawV1 {
   id: number;
