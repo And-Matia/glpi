@@ -1,7 +1,7 @@
 import { Component, ChangeDetectionStrategy, inject, signal, OnInit } from '@angular/core';
 import { Router } from '@angular/router';
 import { TicketV1Service } from '@app/core/services/glpi/ticket/ticket-v1.service';
-import { GLPI_TICKET_STATUS, GLPI_TICKET_TYPE, GLPI_TICKET_PRIORITY } from '@app/core/constants/glpi.constants';
+import { GLPI_TICKET_STATUS, GLPI_TICKET_TYPE, GLPI_TICKET_PRIORITY } from '@app/core/constants/ticket.constants';
 import { TableComponent, TableColumn } from '@app/shared/ui/table/table.component';
 import { TableCellDirective } from '@app/shared/ui/table/table-cell.directive';
 import { PageHeaderComponent } from '@app/shared/ui/page-header/page-header.component';

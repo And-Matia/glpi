@@ -62,7 +62,7 @@
           </div>
         } @else {
           <ul class="items-panel__list">
-            @for (item of visibleItems(); track item.id) {
+            @for (item of visibleAssets(); track item.id) {
               <li
                 class="items-panel__item"
                 [class.items-panel__item--selected]="isSelected(item.id)"

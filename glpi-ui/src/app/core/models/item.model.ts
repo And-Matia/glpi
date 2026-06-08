@@ -1,18 +1,4 @@
-/**
- * A GLPI asset itemtype (e.g. "Computer", "Monitor", "Printer"…).
- * The supported set is defined centrally in `ASSET_TYPES`
- * (see core/constants/glpi.constants.ts).
- */
-export type ItemType = string;
+export type { GlpiAsset as Item } from './glpi/assets/glpi-asset.model';
 
-export interface Item {
-  id: number;
-  name: string;
-  status: string;
-  location: string;
-  manufacturer: string;
-  item_type: ItemType;
-  model: string;
-  inventory_number: string;
-  user: string;
-}
+/** A GLPI asset itemtype string (e.g. "Computer", "Monitor"…). */
+export type ItemType = string;

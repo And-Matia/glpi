@@ -1,7 +1,8 @@
 import { Component, OnInit, ChangeDetectionStrategy, inject, signal, computed } from '@angular/core';
 import { ItemV2Service } from '@app/core/services/glpi/item/item-v2.service';
-import { Item } from '@app/core/models';
-import { ASSET_TYPE_OPTIONS, ITEM_STATUS_OPTIONS, assetLabel } from '@app/core/constants/glpi.constants';
+import { GlpiAsset } from '@app/core/models/glpi/assets/glpi-asset.model';
+import { ASSET_TYPE_OPTIONS, assetLabel } from '@app/core/constants/glpi.constants';
+import { ITEM_STATUS_OPTIONS } from '@app/core/constants/item.constants';
 import { SelectComponent } from '@app/shared/ui/select/select.component';
 import { SearchInputComponent } from '@app/shared/ui/search-input/search-input.component';
 import { SpinnerComponent } from '@app/shared/ui/spinner/spinner.component';
@@ -32,50 +33,48 @@ export class ItemListComponent implements OnInit {
 
   readonly loading = signal(true);
   readonly error   = signal('');
-  readonly items   = signal<Item[]>([]);
+  readonly assets  = signal<GlpiAsset[]>([]);
 
-  readonly searchText  = signal('');
-  readonly filterType  = signal<string>('');
-  readonly filterStatus = signal<string>('');
+  readonly searchText   = signal('');
+  readonly filterType   = signal('');
+  readonly filterStatus = signal('');
 
   readonly typeOptions   = ASSET_TYPE_OPTIONS;
   readonly statusOptions = ITEM_STATUS_OPTIONS;
 
   readonly columns: TableColumn[] = [
-    { key: 'name',             label: 'Nom',             sortable: true  },
-    { key: 'item_type',        label: 'Type'                             },
-    { key: 'status',           label: 'Statut'                           },
-    { key: 'location',         label: 'Localisation'                     },
-    { key: 'user',             label: 'Utilisateur'                      },
-    { key: 'inventory_number', label: 'N° inventaire'                    },
+    { key: 'name',             label: 'Nom',           sortable: true },
+    { key: 'item_type',        label: 'Type'                         },
+    { key: 'status',           label: 'Statut'                       },
+    { key: 'location',         label: 'Localisation'                 },
+    { key: 'user',             label: 'Utilisateur'                  },
+    { key: 'inventory_number', label: 'N° inventaire'                },
   ];
 
-  readonly filteredItems = computed(() => {
+  readonly filteredAssets = computed(() => {
     const text   = this.searchText().toLowerCase().trim();
     const type   = this.filterType();
     const status = this.filterStatus();
 
-    return this.items().filter(item => {
-      const matchText = !text || [item.name, item.inventory_number, item.user, item.location]
-        .some(v => v.toLowerCase().includes(text));
-      const matchType   = !type   || item.item_type === type;
-      const matchStatus = !status || item.status === status;
+    return this.assets().filter(a => {
+      const matchText   = !text   || [a.name, a.inventory_number, a.user, a.location].some(v => v.toLowerCase().includes(text));
+      const matchType   = !type   || a.item_type === type;
+      const matchStatus = !status || a.status === status;
       return matchText && matchType && matchStatus;
     });
   });
 
   readonly rows = computed(() =>
-    this.filteredItems().map(item => ({
-      name:             item.name,
-      item_type:        assetLabel(item.item_type),
-      status:           item.status,
-      location:         item.location,
-      user:             item.user,
-      inventory_number: item.inventory_number,
+    this.filteredAssets().map(a => ({
+      name:             a.name,
+      item_type:        assetLabel(a.item_type),
+      status:           a.status,
+      location:         a.location,
+      user:             a.user,
+      inventory_number: a.inventory_number,
     }))
   );
 
-  /** Maps a GLPI item status label to a badge colour. */
   statusVariant(status: string): BadgeVariant {
     switch (status) {
       case 'En production': return 'success';
@@ -89,8 +88,8 @@ export class ItemListComponent implements OnInit {
 
   ngOnInit(): void {
     this.itemService.getAll().subscribe({
-      next:  items => { this.items.set(items); this.loading.set(false); },
-      error: ()    => { this.error.set('Impossible de charger les éléments.'); this.loading.set(false); },
+      next:  assets => { this.assets.set(assets); this.loading.set(false); },
+      error: ()     => { this.error.set('Impossible de charger les éléments.'); this.loading.set(false); },
     });
   }
 }

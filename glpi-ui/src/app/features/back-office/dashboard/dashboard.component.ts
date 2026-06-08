@@ -2,9 +2,10 @@ import { Component, ChangeDetectionStrategy, inject, signal, computed, OnInit } 
 import { forkJoin } from 'rxjs';
 import { ItemV1Service } from '@app/core/services/glpi/item/item-v1.service';
 import { TicketV1Service } from '@app/core/services/glpi/ticket/ticket-v1.service';
+import { GlpiAsset } from '@app/core/models/glpi/assets/glpi-asset.model';
 import { Ticket } from '@app/core/models/ticket.model';
-import { Item } from '@app/core/models/item.model';
-import { ASSET_TYPES, GLPI_TICKET_STATUS, GLPI_TICKET_TYPE } from '@app/core/constants/glpi.constants';
+import { ASSET_TYPES } from '@app/core/constants/glpi.constants';
+import { GLPI_TICKET_STATUS, GLPI_TICKET_TYPE } from '@app/core/constants/ticket.constants';
 import { PageHeaderComponent } from '@app/shared/ui/page-header/page-header.component';
 import { CardComponent } from '@app/shared/ui/card/card.component';
 import { SpinnerComponent } from '@app/shared/ui/spinner/spinner.component';
@@ -24,14 +25,13 @@ export class DashboardComponent implements OnInit {
   readonly loading = signal(true);
   readonly error   = signal('');
   readonly tickets = signal<Ticket[]>([]);
-  readonly items   = signal<Item[]>([]);
+  readonly assets  = signal<GlpiAsset[]>([]);
 
-  // One {label, count} entry per supported asset type (only types that have items).
   readonly itemsByType = computed(() =>
     ASSET_TYPES
       .map(cfg => ({
         label: cfg.label,
-        count: this.items().filter(i => i.item_type === cfg.itemtype).length,
+        count: this.assets().filter(a => a.item_type === cfg.itemtype).length,
       }))
       .filter(entry => entry.count > 0)
   );
@@ -53,11 +53,11 @@ export class DashboardComponent implements OnInit {
   ngOnInit(): void {
     forkJoin({
       tickets: this.ticketService.getAll(),
-      items:   this.itemService.getAll(),
+      assets:  this.itemService.getAll(),
     }).subscribe({
-      next: ({ tickets, items }) => {
+      next: ({ tickets, assets }) => {
         this.tickets.set(tickets);
-        this.items.set(items);
+        this.assets.set(assets);
         this.loading.set(false);
       },
       error: (err) => {

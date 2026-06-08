@@ -3,7 +3,8 @@ import { HttpClient } from '@angular/common/http';
 import { forkJoin, from, Observable, of } from 'rxjs';
 import { catchError, concatMap, map, switchMap, toArray } from 'rxjs/operators';
 import { environment } from '../../../../environment';
-import { ImportStats, ItemType } from '@app/core/models';
+import { ImportStats } from '@app/core/models/import.model';
+import { ItemType } from '@app/core/models/item.model';
 import { GlpiDropdownService } from '@app/core/services/glpi/dropdown.service';
 import { ASSET_ITEMTYPES, assetType } from '@app/core/constants/glpi.constants';
 import { parseCsvText, ParseResult } from '@app/core/utils/csv.utils';
@@ -53,14 +54,10 @@ export class ItemImportService {
     const stats: ImportStats = { total: rows.length, success: 0, failed: 0, errors: [] };
     if (!rows.length) return of(stats);
 
-    // Sequential (concatMap) so the dropdown cache is shared safely across rows.
     return from(rows).pipe(
       concatMap((row, i) =>
         this.importRow(row).pipe(
-          map(() => {
-            stats.success++;
-            return null;
-          }),
+          map(() => { stats.success++; return null; }),
           catchError(err => {
             stats.failed++;
             stats.errors.push({ row: i + 2, error: this.errorText(err) });
@@ -84,9 +81,9 @@ export class ItemImportService {
     }).pipe(
       switchMap(({ states_id, locations_id, manufacturers_id, model_id }) => {
         const input: Record<string, unknown> = {
-          name:           row.name,
-          otherserial:    row.inventory_number,
-          contact:        row.user,
+          name:            row.name,
+          otherserial:     row.inventory_number,
+          contact:         row.user,
           states_id,
           locations_id,
           manufacturers_id,

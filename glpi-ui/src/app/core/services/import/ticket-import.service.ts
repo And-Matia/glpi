@@ -5,7 +5,8 @@ import { catchError, concatMap, map, switchMap, toArray } from 'rxjs/operators';
 import { environment } from '../../../../environment';
 import { ImportStats } from '@app/core/models';
 import { GlpiImportLookupService } from './glpi-import-lookup.service';
-import { TICKET_TYPE_CODE, TICKET_STATUS_CODE, TICKET_PRIORITY_CODE, apiTypeOf } from '@app/core/constants/glpi.constants';
+import { TICKET_TYPE_CODE, TICKET_STATUS_CODE, TICKET_PRIORITY_CODE } from '@app/core/constants/ticket.constants';
+import { apiTypeOf } from '@app/core/constants/glpi.constants';
 import { parseCsvText, ParseResult } from '@app/core/utils/csv.utils';
 
 interface TicketRow {

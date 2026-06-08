@@ -1,12 +1,3 @@
-/**
- * Détection de type de fichier par "magic bytes" (signature en début de fichier),
- * indépendante de l'extension — qui peut mentir (ex. un JPEG renommé en .png).
- *
- * Source de vérité = le CONTENU. GLPI 11 (et beaucoup de serveurs stricts) valident
- * le type réel vs l'extension : il faut donc détecter le vrai type et nommer le
- * fichier avec la bonne extension avant l'upload.
- */
-
 export interface DetectedType {
   ext: string;
   mime: string;
