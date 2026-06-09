@@ -7,6 +7,7 @@ export type ChipVariant = 'neutral' | 'primary' | 'success' | 'warning' | 'dange
   selector: 'app-chip',
   templateUrl: './chip.component.html',
   styleUrl: './chip.component.css',
+  standalone: true
 })
 export class ChipComponent {
   variant   = input<ChipVariant>('neutral');

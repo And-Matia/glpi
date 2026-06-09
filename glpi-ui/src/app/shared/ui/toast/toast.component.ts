@@ -6,6 +6,7 @@ import { ToastService } from '@app/core/services/toast.service';
   selector: 'app-toast',
   templateUrl: './toast.component.html',
   styleUrl: './toast.component.css',
+  standalone: true
 })
 export class ToastComponent {
   protected readonly toastService = inject(ToastService);

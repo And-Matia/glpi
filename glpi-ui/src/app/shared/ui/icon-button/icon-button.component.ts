@@ -8,6 +8,7 @@ export type IconButtonSize    = 'sm' | 'md';
   selector: 'app-icon-button',
   templateUrl: './icon-button.component.html',
   styleUrl: './icon-button.component.css',
+  standalone: true
 })
 export class IconButtonComponent {
   icon      = input.required<string>();

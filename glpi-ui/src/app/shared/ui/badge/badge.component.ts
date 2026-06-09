@@ -8,6 +8,7 @@ export type BadgeSize    = 'sm' | 'md';
   selector: 'app-badge',
   templateUrl: './badge.component.html',
   styleUrl: './badge.component.css',
+  standalone: true
 })
 export class BadgeComponent {
   variant = input<BadgeVariant>('neutral');

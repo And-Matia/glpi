@@ -5,6 +5,7 @@ import { Component, input, ChangeDetectionStrategy } from '@angular/core';
   selector: 'app-skeleton',
   templateUrl: './skeleton.component.html',
   styleUrl: './skeleton.component.css',
+  standalone: true
 })
 export class SkeletonComponent {
   width  = input<string>('100%');

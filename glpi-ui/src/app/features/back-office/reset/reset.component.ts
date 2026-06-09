@@ -35,7 +35,7 @@ export class ResetComponent {
     this.success.set(false);
     this.error.set('');
 
-    this.resetService.resetAll().subscribe({
+    this.resetService.resetAllWithTrash().subscribe({
       complete: () => {
         this.loading.set(false);
         this.success.set(true);

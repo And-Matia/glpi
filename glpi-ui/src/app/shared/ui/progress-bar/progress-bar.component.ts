@@ -7,6 +7,7 @@ export type ProgressVariant = 'primary' | 'success' | 'warning' | 'danger' | 'in
   selector: 'app-progress-bar',
   templateUrl: './progress-bar.component.html',
   styleUrl: './progress-bar.component.css',
+  standalone: true
 })
 export class ProgressBarComponent {
   value     = input<number>(0);

@@ -1,6 +1,5 @@
 <div class="item-list">
-  <app-page-header title="Éléments" subtitle="Parc informatique">
-  </app-page-header>
+  <app-page-header title="Éléments" subtitle="Parc informatique" />
 
   <div class="item-list__filters">
     <app-search-input
@@ -8,16 +7,8 @@
       placeholder="Rechercher (nom, inventaire, utilisateur…)"
       [(value)]="searchText"
     />
-    <app-select
-      label="Type"
-      [options]="typeOptions"
-      [(value)]="filterType"
-    />
-    <app-select
-      label="Statut"
-      [options]="statusOptions"
-      [(value)]="filterStatus"
-    />
+    <app-select label="Type"   [options]="typeOptions"   [(value)]="filterType"   />
+    <app-select label="Statut" [options]="statusOptions" [(value)]="filterStatus" />
   </div>
 
   @if (loading()) {
@@ -26,40 +17,65 @@
     </div>
   } @else if (error()) {
     <p class="item-list__error">{{ error() }}</p>
+  } @else if (filteredAssets().length === 0) {
+    <app-empty-state
+      icon="fa-solid fa-desktop"
+      title="Aucun élément trouvé"
+      message="Essayez de modifier vos filtres de recherche."
+    />
   } @else {
-    <app-table
-      [columns]="columns"
-      [rows]="rows()"
-      [showToolbar]="false"
-      emptyIcon="fa-solid fa-desktop"
-      emptyLabel="Aucun élément trouvé"
-    >
-      <ng-template appCell="item_type" let-value="value">
-        <app-badge variant="neutral" size="sm">{{ value }}</app-badge>
-      </ng-template>
+    <div class="item-grid">
+      @for (asset of filteredAssets(); track asset.id) {
+        <div class="item-card">
+          <div class="item-card__photo">
+            @if (getImage(asset)) {
+              <img [src]="getImage(asset)" [alt]="asset.name" class="item-card__img" />
+            } @else {
+              <div class="item-card__icon-placeholder">
+                <i [class]="typeIcon(asset.item_type)"></i>
+              </div>
+            }
+          </div>
 
-      <ng-template appCell="status" let-value="value">
-        <app-badge [variant]="statusVariant(value)" size="sm">{{ value }}</app-badge>
-      </ng-template>
+          <div class="item-card__body">
+            <div class="item-card__header">
+              <span class="item-card__name">{{ asset.name }}</span>
+              <app-badge [variant]="statusVariant(asset.status)" size="sm">
+                {{ asset.status || '—' }}
+              </app-badge>
+            </div>
 
-      <ng-template appCell="user" let-value="value">
-        @if (value) {
-          <span class="item-list__user">
-            <app-avatar [name]="value" size="sm" />
-            <span>{{ value }}</span>
-          </span>
-        } @else {
-          <span class="item-list__muted">—</span>
-        }
-      </ng-template>
+            <app-badge variant="neutral" size="sm">{{ assetLabel(asset.item_type) }}</app-badge>
 
-      <ng-template appCell="inventory_number" let-value="value">
-        @if (value) {
-          <code class="item-list__inv">{{ value }}</code>
-        } @else {
-          <span class="item-list__muted">—</span>
-        }
-      </ng-template>
-    </app-table>
+            <ul class="item-card__meta">
+              @if (asset.model) {
+                <li>
+                  <i class="fa-solid fa-tag item-card__meta-icon"></i>
+                  <span>{{ asset.model }}</span>
+                </li>
+              }
+              @if (asset.location) {
+                <li>
+                  <i class="fa-solid fa-location-dot item-card__meta-icon"></i>
+                  <span>{{ asset.location }}</span>
+                </li>
+              }
+              @if (asset.user) {
+                <li>
+                  <i class="fa-solid fa-user item-card__meta-icon"></i>
+                  <span>{{ asset.user }}</span>
+                </li>
+              }
+              @if (asset.inventory_number) {
+                <li>
+                  <i class="fa-solid fa-barcode item-card__meta-icon"></i>
+                  <code class="item-card__inv">{{ asset.inventory_number }}</code>
+                </li>
+              }
+            </ul>
+          </div>
+        </div>
+      }
+    </div>
   }
 </div>

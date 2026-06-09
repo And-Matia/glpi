@@ -7,6 +7,7 @@ import { FormsModule } from '@angular/forms';
   templateUrl: './textarea.component.html',
   styleUrl: './textarea.component.css',
   imports: [FormsModule],
+  standalone: true
 })
 export class TextareaComponent {
   label        = input.required<string>();

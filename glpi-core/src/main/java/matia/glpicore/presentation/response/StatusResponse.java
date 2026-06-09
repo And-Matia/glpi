@@ -1,4 +1,4 @@
-package matia.glpicore.presentation.request;
+package matia.glpicore.presentation.response;
 
 import lombok.AllArgsConstructor;
 import lombok.Builder;
@@ -9,8 +9,8 @@ import lombok.NoArgsConstructor;
 @NoArgsConstructor
 @AllArgsConstructor
 @Builder
-public class UpdateUserRequest {
-    private String fullName;
-    private String phoneNumber;
-    private Boolean active;
+public class StatusResponse {
+    private Long id;
+    private String name;
+    private String malgacheName;
 }

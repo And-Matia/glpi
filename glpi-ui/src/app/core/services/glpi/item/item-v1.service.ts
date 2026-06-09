@@ -15,9 +15,20 @@ export class ItemV1Service {
   private readonly params = new HttpParams().set('expand_dropdowns', '1');
 
   getAll(): Observable<GlpiAsset[]> {
+    return this.fetch(false);
+  }
+
+  getTrash(): Observable<GlpiAsset[]> {
+    return this.fetch(true);
+  }
+
+  private fetch(deleted: boolean): Observable<GlpiAsset[]> {
+    const params = deleted
+      ? this.params.set('is_deleted', '1')
+      : this.params;
     return forkJoin(
       ASSET_TYPES.map(cfg =>
-        this.http.get<GlpiAssetRawV1[]>(`${this.base}/${encodeURIComponent(cfg.apiType)}`, { params: this.params }).pipe(
+        this.http.get<GlpiAssetRawV1[]>(`${this.base}/${encodeURIComponent(cfg.apiType)}/`, { params }).pipe(
           catchError(() => of([] as GlpiAssetRawV1[])),
           map(raws => raws.map(raw => mapAssetRawV1(raw, cfg))),
         )

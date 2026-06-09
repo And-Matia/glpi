@@ -7,6 +7,7 @@ export type AvatarSize = 'sm' | 'md' | 'lg' | 'xl';
   selector: 'app-avatar',
   templateUrl: './avatar.component.html',
   styleUrl: './avatar.component.css',
+  standalone: true
 })
 export class AvatarComponent {
   name  = input<string>('');

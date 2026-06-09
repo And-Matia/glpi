@@ -12,6 +12,7 @@ export interface SelectOption {
   templateUrl: './select.component.html',
   styleUrl: './select.component.css',
   imports: [FormsModule],
+  standalone: true
 })
 export class SelectComponent {
   label        = input.required<string>();

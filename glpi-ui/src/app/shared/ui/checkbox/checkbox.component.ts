@@ -5,6 +5,7 @@ import { Component, input, model, ChangeDetectionStrategy } from '@angular/core'
   selector: 'app-checkbox',
   templateUrl: './checkbox.component.html',
   styleUrl: './checkbox.component.css',
+  standalone: true
 })
 export class CheckboxComponent {
   label    = input<string>('');

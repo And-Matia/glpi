@@ -13,6 +13,7 @@ export interface BreadcrumbItem {
   templateUrl: './breadcrumb.component.html',
   styleUrl: './breadcrumb.component.css',
   imports: [RouterLink],
+  standalone: true
 })
 export class BreadcrumbComponent {
   items = input.required<BreadcrumbItem[]>();

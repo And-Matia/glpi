@@ -7,6 +7,7 @@ export type AlertVariant = 'success' | 'danger' | 'warning' | 'info';
   selector: 'app-alert',
   templateUrl: './alert.component.html',
   styleUrl: './alert.component.css',
+  standalone: true
 })
 export class AlertComponent {
   variant     = input<AlertVariant>('info');

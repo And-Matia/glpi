@@ -5,6 +5,7 @@ import { Component, input, model, ChangeDetectionStrategy } from '@angular/core'
   selector: 'app-switch',
   templateUrl: './switch.component.html',
   styleUrl: './switch.component.css',
+  standalone: true
 })
 export class SwitchComponent {
   label    = input<string>('');

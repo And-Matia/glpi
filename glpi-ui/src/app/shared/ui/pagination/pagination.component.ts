@@ -5,6 +5,7 @@ import { Component, input, model, computed, ChangeDetectionStrategy } from '@ang
   selector: 'app-pagination',
   templateUrl: './pagination.component.html',
   styleUrl: './pagination.component.css',
+  standalone: true
 })
 export class PaginationComponent {
   total    = input.required<number>();

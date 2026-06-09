@@ -5,6 +5,7 @@ import { Component, input, output, model, ChangeDetectionStrategy } from '@angul
   selector: 'app-search-input',
   templateUrl: './search-input.component.html',
   styleUrl: './search-input.component.css',
+  standalone: true
 })
 export class SearchInputComponent {
   placeholder = input<string>('Rechercher…');

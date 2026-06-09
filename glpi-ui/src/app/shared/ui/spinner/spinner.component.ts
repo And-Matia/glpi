@@ -7,6 +7,7 @@ export type SpinnerSize = 'sm' | 'md' | 'lg';
   selector: 'app-spinner',
   templateUrl: './spinner.component.html',
   styleUrl: './spinner.component.css',
+  standalone: true
 })
 export class SpinnerComponent {
   size = input<SpinnerSize>('md');

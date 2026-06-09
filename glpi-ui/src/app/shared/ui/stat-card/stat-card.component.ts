@@ -7,6 +7,7 @@ export type StatCardVariant = 'primary' | 'success' | 'warning' | 'danger' | 'in
   selector: 'app-stat-card',
   templateUrl: './stat-card.component.html',
   styleUrl: './stat-card.component.css',
+  standalone: true
 })
 export class StatCardComponent {
   label   = input<string>('');

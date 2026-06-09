@@ -25,6 +25,7 @@ export interface TableColumn {
   templateUrl: './table.component.html',
   styleUrl: './table.component.css',
   imports: [NgTemplateOutlet],
+  standalone: true
 })
 export class TableComponent {
   columns     = input.required<TableColumn[]>();

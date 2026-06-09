@@ -7,6 +7,7 @@ import { ModalComponent } from '@app/shared/ui/modal/modal.component';
   selector: 'app-confirm-dialog',
   templateUrl: './confirm-dialog.component.html',
   styleUrl: './confirm-dialog.component.css',
+  standalone: true,
   imports: [ModalComponent, ButtonComponent],
 })
 export class ConfirmDialogComponent {

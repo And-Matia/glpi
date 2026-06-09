@@ -5,6 +5,7 @@ export type ModalSize = 'sm' | 'md' | 'lg' | 'xl';
 @Component({
   changeDetection: ChangeDetectionStrategy.OnPush,
   selector: 'app-modal',
+  standalone: true,
   templateUrl: './modal.component.html',
   styleUrl: './modal.component.css',
 })

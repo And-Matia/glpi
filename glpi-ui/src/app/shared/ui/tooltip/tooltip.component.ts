@@ -7,6 +7,7 @@ export type TooltipPosition = 'top' | 'bottom' | 'left' | 'right';
   selector: 'app-tooltip',
   templateUrl: './tooltip.component.html',
   styleUrl: './tooltip.component.css',
+  standalone: true
 })
 export class TooltipComponent {
   text     = input.required<string>();

@@ -7,6 +7,7 @@ import { ButtonComponent } from '@app/shared/ui/button/button.component';
   templateUrl: './dropzone.component.html',
   styleUrl: './dropzone.component.css',
   imports: [ButtonComponent],
+  standalone: true
 })
 export class DropzoneComponent {
   /** Accept attribute, e.g. ".csv" or "image/*". */

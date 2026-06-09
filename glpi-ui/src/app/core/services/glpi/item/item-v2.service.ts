@@ -14,7 +14,16 @@ export class ItemV2Service {
   private readonly base = environment.glpi.v2ApiUrl;
 
   getAll(filter?: string): Observable<GlpiAsset[]> {
-    const params = filter ? new HttpParams().set('filter', filter) : undefined;
+    return this.fetch(false, filter);
+  }
+
+  getTrash(): Observable<GlpiAsset[]> {
+    return this.fetch(true);
+  }
+
+  private fetch(deleted: boolean, filter?: string): Observable<GlpiAsset[]> {
+    let params = new HttpParams().set('filter[is_deleted]', deleted ? '1' : '0');
+    if (filter) params = params.set('filter', filter);
     return forkJoin(
       ASSET_TYPES.map(cfg =>
         this.http.get<GlpiAssetRawV2[]>(`${this.base}/${cfg.v2Path}`, { params }).pipe(

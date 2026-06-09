@@ -5,6 +5,7 @@ export type ButtonSize    = 'sm' | 'md' | 'lg';
 
 @Component({
   changeDetection: ChangeDetectionStrategy.OnPush,
+  standalone: true,
   selector: 'app-button',
   templateUrl: './button.component.html',
   styleUrl: './button.component.css',
