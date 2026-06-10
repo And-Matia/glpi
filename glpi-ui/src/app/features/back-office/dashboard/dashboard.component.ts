@@ -1,10 +1,9 @@
 import { Component, ChangeDetectionStrategy, inject, signal, computed, OnInit } from '@angular/core';
-import { forkJoin } from 'rxjs';
-import { ItemV1Service } from '@app/core/services/glpi/item/item-v1.service';
-import { TicketV1Service } from '@app/core/services/glpi/ticket/ticket-v1.service';
-import { GlpiAsset } from '@app/core/models/glpi/assets/glpi-asset.model';
+import { AssetService } from '@app/core/services/glpi/asset.service';
+import { TicketService } from '@app/core/services/glpi/ticket.service';
+import { GlpiAsset } from '@app/core/models/asset.model';
 import { Ticket } from '@app/core/models/ticket.model';
-import { ASSET_TYPES } from '@app/core/models/glpi/assets/glpi-asset.model';
+import { ASSET_TYPES } from '@app/core/models/asset.model';
 import { GLPI_TICKET_STATUS, GLPI_TICKET_TYPE } from '@app/core/models/ticket.model';
 import { PageHeaderComponent } from '@app/shared/ui/page-header/page-header.component';
 import { CardComponent } from '@app/shared/ui/card/card.component';
@@ -19,8 +18,8 @@ import { BadgeComponent } from '@app/shared/ui/badge/badge.component';
   changeDetection: ChangeDetectionStrategy.OnPush,
 })
 export class DashboardComponent implements OnInit {
-  private readonly itemService   = inject(ItemV1Service);
-  private readonly ticketService = inject(TicketV1Service);
+  private readonly itemService   = inject(AssetService);
+  private readonly ticketService = inject(TicketService);
 
   readonly loading = signal(true);
   readonly error   = signal('');
@@ -51,19 +50,18 @@ export class DashboardComponent implements OnInit {
   );
 
   ngOnInit(): void {
-    forkJoin({
-      tickets: this.ticketService.getAll(),
-      assets:  this.itemService.getAll(),
-    }).subscribe({
-      next: ({ tickets, assets }) => {
+    Promise.all([
+      this.ticketService.getAll(),
+      this.itemService.getAll(),
+    ])
+      .then(([tickets, assets]) => {
         this.tickets.set(tickets);
         this.assets.set(assets);
         this.loading.set(false);
-      },
-      error: (err) => {
+      })
+      .catch((err: Error) => {
         this.error.set(err.message ?? 'Erreur de chargement');
         this.loading.set(false);
-      },
-    });
+      });
   }
 }

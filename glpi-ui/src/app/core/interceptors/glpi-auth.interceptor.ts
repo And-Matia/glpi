@@ -1,6 +1,6 @@
 import { HttpInterceptorFn } from '@angular/common/http';
 import { inject } from '@angular/core';
-import { GlpiSessionService } from '../services/glpi-session.service';
+import { GlpiSessionService } from '../services/glpi/session.service';
 import { environment } from '../../../environment';
 
 export const glpiAuthInterceptor: HttpInterceptorFn = (req, next) => {
@@ -9,11 +9,6 @@ export const glpiAuthInterceptor: HttpInterceptorFn = (req, next) => {
   if (req.url === environment.glpi.tokenUrl) {
     return next(req);
   }
-
-  // Only declare a JSON Content-Type when we actually send a JSON body.
-  // - On a bodyless GET/DELETE, the GLPI v2 API tries to parse the (empty) body
-  //   and answers 400 "Contenu du JSON invalide".
-  // - On FormData uploads, the browser must set the multipart boundary itself.
   const isFormData = req.body instanceof FormData;
   const wantsJson = req.body != null && !isFormData;
 

@@ -1,9 +1,9 @@
 import { inject, Injectable } from '@angular/core';
 import { HttpClient } from '@angular/common/http';
-import { firstValueFrom, from, Observable } from 'rxjs';
+import { firstValueFrom } from 'rxjs';
 import { environment } from '../../../../environment';
 import { ImportStats } from '@app/core/models';
-import { GlpiImportLookupService } from './glpi-import-lookup.service';
+import { GlpiLookupService } from './lookup.service';
 import { parseCsvText, parseFrenchFloat, ParseResult } from '@app/core/utils/csv.utils';
 
 interface TicketCostRow {
@@ -16,11 +16,11 @@ interface TicketCostRow {
 @Injectable({ providedIn: 'root' })
 export class TicketCostImportService {
   private readonly http   = inject(HttpClient);
-  private readonly lookup = inject(GlpiImportLookupService);
+  private readonly lookup = inject(GlpiLookupService);
   private readonly base   = environment.glpi.v1ApiUrl;
 
-  importFile(file: File): Observable<ImportStats> {
-    return from(this.doImport(file));
+  importFile(file: File): Promise<ImportStats> {
+    return this.doImport(file);
   }
 
   async validateFile(file: File): Promise<string[]> {

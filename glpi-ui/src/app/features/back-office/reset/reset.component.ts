@@ -1,5 +1,5 @@
 import { Component, ChangeDetectionStrategy, inject, signal } from '@angular/core';
-import { ResetService } from '@app/core/services/reset.service';
+import { ResetService } from '@app/core/services/glpi/reset.service';
 import { ToastService } from '@app/core/services/toast.service';
 import { ButtonComponent } from '@app/shared/ui/button/button.component';
 import { ConfirmDialogComponent } from '@app/shared/ui/confirm-dialog/confirm-dialog.component';
@@ -35,17 +35,16 @@ export class ResetComponent {
     this.success.set(false);
     this.error.set('');
 
-    this.resetService.resetAllWithTrash().subscribe({
-      complete: () => {
+    this.resetService.resetAllWithTrash()
+      .then(() => {
         this.loading.set(false);
         this.success.set(true);
         this.toast.success('Données réinitialisées avec succès');
-      },
-      error: (err) => {
+      })
+      .catch((err: Error) => {
         this.loading.set(false);
         this.error.set(err.message ?? 'Erreur lors de la réinitialisation');
         this.toast.error('Erreur lors de la réinitialisation');
-      }
-    });
+      });
   }
 }

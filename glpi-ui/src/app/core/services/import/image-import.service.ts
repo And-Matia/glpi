@@ -1,11 +1,11 @@
 import { inject, Injectable } from '@angular/core';
 import { HttpClient } from '@angular/common/http';
-import { firstValueFrom, from, Observable } from 'rxjs';
+import { firstValueFrom } from 'rxjs';
 import JSZip from 'jszip';
 import { environment } from '../../../../environment';
 import { ImportStats, ItemType } from '@app/core/models';
-import { GlpiImportLookupService } from './glpi-import-lookup.service';
-import { apiTypeOf } from '@app/core/models/glpi/assets/glpi-asset.model';
+import { GlpiLookupService } from './lookup.service';
+import { apiTypeOf } from '@app/core/models/asset.model';
 import { detectImageType} from '@app/core/utils/file-type.utils';
 
 function itemNameFromPath(path: string): string {
@@ -16,7 +16,7 @@ function itemNameFromPath(path: string): string {
 @Injectable({ providedIn: 'root' })
 export class ImageImportService {
   private readonly http   = inject(HttpClient);
-  private readonly lookup = inject(GlpiImportLookupService);
+  private readonly lookup = inject(GlpiLookupService);
   private readonly base   = environment.glpi.v1ApiUrl;
 
   async validateFile(file: File): Promise<string[]> {
@@ -27,8 +27,8 @@ export class ImageImportService {
     return [];
   }
 
-  importFile(file: File): Observable<ImportStats> {
-    return from(this.run(file));
+  importFile(file: File): Promise<ImportStats> {
+    return this.run(file);
   }
 
   private async run(file: File): Promise<ImportStats> {

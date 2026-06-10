@@ -1,6 +1,6 @@
 import { Component, ChangeDetectionStrategy, inject, signal, OnInit } from '@angular/core';
 import { ActivatedRoute, Router } from '@angular/router';
-import { TicketV1Service } from '@app/core/services/glpi/ticket/ticket-v1.service';
+import { TicketService } from '@app/core/services/glpi/ticket.service';
 import { Ticket } from '@app/core/models/ticket.model';
 import { GLPI_TICKET_STATUS, GLPI_TICKET_TYPE, GLPI_TICKET_PRIORITY } from '@app/core/models/ticket.model';
 import { CardComponent } from '@app/shared/ui/card/card.component';
@@ -19,7 +19,7 @@ import { ButtonComponent } from '@app/shared/ui/button/button.component';
 export class TicketDetailComponent implements OnInit {
   private readonly route         = inject(ActivatedRoute);
   private readonly router        = inject(Router);
-  private readonly ticketService = inject(TicketV1Service);
+  private readonly ticketService = inject(TicketService);
 
   readonly loading = signal(true);
   readonly error   = signal('');
@@ -31,16 +31,15 @@ export class TicketDetailComponent implements OnInit {
 
   ngOnInit(): void {
     const id = Number(this.route.snapshot.paramMap.get('id'));
-    this.ticketService.getById(id).subscribe({
-      next: (ticket) => {
+    this.ticketService.getById(id)
+      .then(ticket => {
         this.ticket.set(ticket);
         this.loading.set(false);
-      },
-      error: (err) => {
+      })
+      .catch((err: Error) => {
         this.error.set(err.message ?? 'Erreur de chargement');
         this.loading.set(false);
-      },
-    });
+      });
   }
 
   goBack(): void {

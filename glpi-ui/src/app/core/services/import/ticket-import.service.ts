@@ -1,11 +1,11 @@
 import { inject, Injectable } from '@angular/core';
 import { HttpClient } from '@angular/common/http';
-import { firstValueFrom, from, Observable } from 'rxjs';
+import { firstValueFrom } from 'rxjs';
 import { environment } from '../../../../environment';
 import { ImportStats } from '@app/core/models';
-import { GlpiImportLookupService } from './glpi-import-lookup.service';
+import { GlpiLookupService } from './lookup.service';
 import { TICKET_TYPE_CODE, TICKET_STATUS_CODE, TICKET_PRIORITY_CODE } from '@app/core/models/ticket.model';
-import { apiTypeOf } from '@app/core/models/glpi/assets/glpi-asset.model';
+import { apiTypeOf } from '@app/core/models/asset.model';
 import { parseCsvText, ParseResult } from '@app/core/utils/csv.utils';
 
 interface TicketRow {
@@ -28,12 +28,12 @@ function toGlpiDate(date: string, heure: string): string {
 @Injectable({ providedIn: 'root' })
 export class TicketImportService {
   private readonly http       = inject(HttpClient);
-  private readonly lookup     = inject(GlpiImportLookupService);
+  private readonly lookup     = inject(GlpiLookupService);
   private readonly base       = environment.glpi.v1ApiUrl;
   private readonly itemTicket = `${environment.glpi.v1ApiUrl}/Item_Ticket`;
 
-  importFile(file: File): Observable<ImportStats> {
-    return from(this.doImport(file));
+  importFile(file: File): Promise<ImportStats> {
+    return this.doImport(file);
   }
 
   async validateFile(file: File): Promise<string[]> {

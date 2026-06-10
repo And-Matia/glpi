@@ -27,9 +27,9 @@ export const routes: Routes = [
           import('./features/back-office/tickets/ticket-list/ticket-list.component').then(m => m.TicketListComponent),
       },
       {
-        path: 'settings-kanban',
+        path: 'kanban-configuration',
         loadComponent: () =>
-          import('@app/features/back-office/settings-kanban/settings-kanban').then(m => m.SettingsKanban),
+          import('@app/features/back-office/kanban-configuration/kanban-configuration.component').then(m => m.KanbanConfigurationComponent),
       },
       {
         path: 'tickets/:id',
@@ -45,11 +45,6 @@ export const routes: Routes = [
         path: 'reset',
         loadComponent: () =>
           import('./features/back-office/reset/reset.component').then(m => m.ResetComponent),
-      },
-      {
-        path: 'kanban-settings',
-        loadComponent: () =>
-          import('./features/back-office/kanban-settings/kanban-settings.component').then(m => m.KanbanSettingsComponent),
       },
     ],
   },

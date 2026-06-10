@@ -1,0 +1,35 @@
+<form (ngSubmit)="save()">
+
+  <label>Statut</label>
+  <select [value]="selectedId()" (change)="onSelectChange($any($event.target).value)">
+    @for (s of statuses(); track s.id) {
+      <option [value]="s.id">{{ displayName(s) }}</option>
+    }
+  </select>
+
+  <br>
+  <label>Couleur</label>
+  <input
+    type="color"
+    [value]="selectedStatus()?.color ?? '#ffffff'"
+    (input)="updateColor($any($event.target).value)"
+  />
+
+  @if (selectedStatus()) {
+    @for (nameEntry of selectedStatus()!.names; track nameEntry.id; let i = $index) {
+      <br>
+      <label>Nom ({{ nameEntry.language.name }})</label>
+      <input
+        type="text"
+        [value]="nameEntry.name"
+        (input)="updateName(i, $any($event.target).value)"
+      />
+    }
+  }
+
+  <br>
+  <button type="submit" [disabled]="saving()">
+    {{ saving() ? 'Sauvegarde...' : 'Sauvegarder' }}
+  </button>
+
+</form>

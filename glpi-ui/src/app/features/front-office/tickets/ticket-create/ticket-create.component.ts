@@ -1,11 +1,10 @@
 import { Component, OnInit, ChangeDetectionStrategy, inject, signal, computed } from '@angular/core';
 import { Router } from '@angular/router';
-import { from, concatMap, Observable } from 'rxjs';
-import { TicketV1Service, CreateTicketInput } from '@app/core/services/glpi/ticket/ticket-v1.service';
-import { ItemV2Service } from '@app/core/services/glpi/item/item-v2.service';
-import { GlpiAsset } from '@app/core/models/glpi/assets/glpi-asset.model';
+import { TicketService, CreateTicketInput } from '@app/core/services/glpi/ticket.service';
+import { AssetService } from '@app/core/services/glpi/asset.service';
+import { GlpiAsset } from '@app/core/models/asset.model';
 import { TICKET_TYPE_OPTIONS, TICKET_PRIORITY_OPTIONS } from '@app/core/constants/ticket.constants';
-import { assetLabel } from '@app/core/models/glpi/assets/glpi-asset.model';
+import { assetLabel } from '@app/core/models/asset.model';
 import { ToastService } from '@app/core/services/toast.service';
 import { ButtonComponent } from '@app/shared/ui/button/button.component';
 import { InputComponent } from '@app/shared/ui/input/input.component';
@@ -35,8 +34,8 @@ import { BadgeComponent } from '@app/shared/ui/badge/badge.component';
   changeDetection: ChangeDetectionStrategy.OnPush,
 })
 export class TicketCreateComponent implements OnInit {
-  private readonly ticketService = inject(TicketV1Service);
-  private readonly itemService   = inject(ItemV2Service);
+  private readonly ticketService = inject(TicketService);
+  private readonly itemService   = inject(AssetService);
   private readonly router        = inject(Router);
   private readonly toast         = inject(ToastService);
 
@@ -66,10 +65,9 @@ export class TicketCreateComponent implements OnInit {
   readonly selectedCount = computed(() => this.selectedIds().size);
 
   ngOnInit(): void {
-    this.itemService.getAll().subscribe({
-      next:  assets => { this.allAssets.set(assets); this.loadingItems.set(false); },
-      error: ()     => this.loadingItems.set(false),
-    });
+    this.itemService.getAll()
+      .then(assets => { this.allAssets.set(assets); this.loadingItems.set(false); })
+      .catch(() => this.loadingItems.set(false));
   }
 
   toggleItem(id: number): void {
@@ -84,7 +82,7 @@ export class TicketCreateComponent implements OnInit {
     return this.selectedIds().has(id);
   }
 
-  onSubmit(): void {
+  async onSubmit(): Promise<void> {
     const titre       = this.titre().trim();
     const description = this.description().trim();
     const type        = this.type();
@@ -98,25 +96,19 @@ export class TicketCreateComponent implements OnInit {
     const input: CreateTicketInput = { titre, description, type: Number(type), priority: Number(priority) };
     this.submitting.set(true);
 
-    this.ticketService.create(input).pipe(
-      concatMap(({ id: ticketId }) => {
-        const selected = this.allAssets().filter(a => this.selectedIds().has(a.id));
-        if (!selected.length) return new Observable<void>(obs => { obs.next(); obs.complete(); });
-        return from(selected).pipe(
-          concatMap(a => this.ticketService.addItem(ticketId, a.item_type, a.id))
-        );
-      })
-    ).subscribe({
-      complete: () => {
-        this.submitting.set(false);
-        this.toast.success('Ticket créé avec succès !');
-        this.router.navigate(['/front-office/items']);
-      },
-      error: () => {
-        this.submitting.set(false);
-        this.toast.error('Erreur lors de la création du ticket.');
-      },
-    });
+    try {
+      const { id: ticketId } = await this.ticketService.create(input);
+      const selected = this.allAssets().filter(a => this.selectedIds().has(a.id));
+      for (const asset of selected) {
+        await this.ticketService.addItem(ticketId, asset.item_type, asset.id);
+      }
+      this.submitting.set(false);
+      this.toast.success('Ticket créé avec succès !');
+      this.router.navigate(['/front-office/items']);
+    } catch {
+      this.submitting.set(false);
+      this.toast.error('Erreur lors de la création du ticket.');
+    }
   }
 
   goBack(): void {

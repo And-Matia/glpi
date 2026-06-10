@@ -1,8 +1,7 @@
 import { Component, ChangeDetectionStrategy, inject, signal, computed } from '@angular/core';
-import { firstValueFrom } from 'rxjs';
 import { ImportStats } from '@app/core/models';
 import { GlpiDropdownService } from '@app/core/services/glpi/dropdown.service';
-import { ItemImportService } from '@app/core/services/import/item-import.service';
+import { AssetImportService } from '@app/core/services/import/asset-import.service';
 import { TicketImportService } from '@app/core/services/import/ticket-import.service';
 import { TicketCostImportService } from '@app/core/services/import/ticket-cost-import.service';
 import { ImageImportService } from '@app/core/services/import/image-import.service';
@@ -52,7 +51,7 @@ function emptyStep(): ImportStep {
 })
 export class ImportComponent {
   private readonly dropdown         = inject(GlpiDropdownService);
-  private readonly itemImport       = inject(ItemImportService);
+  private readonly itemImport       = inject(AssetImportService);
   private readonly ticketImport     = inject(TicketImportService);
   private readonly ticketCostImport = inject(TicketCostImportService);
   private readonly imageImport      = inject(ImageImportService);
@@ -131,7 +130,7 @@ export class ImportComponent {
   private async runStep(file: File, index: number): Promise<void> {
     this.patchStep(index, { status: 'importing' });
     try {
-      const stats = await firstValueFrom(this.getService(index).importFile(file));
+      const stats = await this.getService(index).importFile(file);
       this.patchStep(index, {
         result: stats,
         status: stats.failed > 0 && stats.success === 0 ? 'error' : 'done',
@@ -157,7 +156,7 @@ export class ImportComponent {
 
   // ── Helpers ───────────────────────────────────────────────────────────────
 
-  private getService(index: number): ItemImportService | TicketImportService | TicketCostImportService | ImageImportService {
+  private getService(index: number): AssetImportService | TicketImportService | TicketCostImportService | ImageImportService {
     switch (index) {
       case 0: return this.itemImport;
       case 1: return this.ticketImport;

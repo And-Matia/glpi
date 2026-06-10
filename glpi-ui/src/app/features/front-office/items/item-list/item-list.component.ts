@@ -1,7 +1,7 @@
 import { Component, OnInit, ChangeDetectionStrategy, inject, signal, computed } from '@angular/core';
-import { ItemV2Service } from '@app/core/services/glpi/item/item-v2.service';
-import { ItemImageService } from '@app/core/services/glpi/item/item-image.service';
-import { GlpiAsset, assetLabel, apiTypeOf } from '@app/core/models/glpi/assets/glpi-asset.model';
+import { AssetService } from '@app/core/services/glpi/asset.service';
+import { AssetImageService } from '@app/core/services/glpi/asset-image.service';
+import { GlpiAsset, assetLabel, apiTypeOf } from '@app/core/models/asset.model';
 import { ASSET_TYPE_OPTIONS } from '@app/core/constants/glpi.constants';
 import { ITEM_STATUS_OPTIONS } from '@app/core/constants/item.constants';
 import { SelectComponent } from '@app/shared/ui/select/select.component';
@@ -10,7 +10,6 @@ import { SpinnerComponent } from '@app/shared/ui/spinner/spinner.component';
 import { PageHeaderComponent } from '@app/shared/ui/page-header/page-header.component';
 import { BadgeComponent, BadgeVariant } from '@app/shared/ui/badge/badge.component';
 import { EmptyStateComponent } from '@app/shared/ui/empty-state/empty-state.component';
-import {ItemV1Service} from '@app/core/services/glpi/item/item-v1.service';
 
 @Component({
   selector: 'app-item-list',
@@ -27,12 +26,12 @@ import {ItemV1Service} from '@app/core/services/glpi/item/item-v1.service';
   changeDetection: ChangeDetectionStrategy.OnPush,
 })
 export class ItemListComponent implements OnInit {
-  private readonly itemService  = inject(ItemV2Service);
-  private readonly imageService = inject(ItemImageService);
+  private readonly itemService  = inject(AssetService);
+  private readonly imageService = inject(AssetImageService);
 
-  readonly loading = signal(true);
-  readonly error   = signal('');
-  readonly assets  = signal<GlpiAsset[]>([]);
+  readonly loading   = signal(true);
+  readonly error     = signal('');
+  readonly assets    = signal<GlpiAsset[]>([]);
   readonly imageUrls = signal<Record<string, string>>({});
 
   readonly searchText   = signal('');
@@ -94,23 +93,22 @@ export class ItemListComponent implements OnInit {
   }
 
   ngOnInit(): void {
-    this.itemService.getAll().subscribe({
-      next: assets => {
+    this.itemService.getAll()
+      .then(assets => {
         this.assets.set(assets);
         this.loading.set(false);
         this.loadImages(assets);
-      },
-      error: () => {
+      })
+      .catch(() => {
         this.error.set('Impossible de charger les éléments.');
         this.loading.set(false);
-      },
-    });
+      });
   }
 
   private loadImages(assets: GlpiAsset[]): void {
     for (const asset of assets) {
       const apiType = apiTypeOf(asset.item_type);
-      this.imageService.getImageUrl(asset.id, apiType).subscribe(url => {
+      this.imageService.getImageUrl(asset.id, apiType).then(url => {
         if (url) {
           this.imageUrls.update(prev => ({ ...prev, [this.imageKey(asset)]: url }));
         }
