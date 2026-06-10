@@ -1,0 +1,26 @@
+<form (ngSubmit)="save()">
+  <select [value]="selectedCode()" (change)="onSelectChange($any($event.target).value)">
+    @for (col of columns(); track col.statusCode) {
+      <option [value]="col.statusCode">{{ col.labelFr }}</option>
+    }
+  </select>
+
+  <br>
+  <label>Couleur</label>
+  <input
+    [value]="selectedColumn()?.color ?? '#f0f0f0'"
+    type="color"
+    (input)="updateColor($any($event.target).value)"
+  />
+
+  <br>
+  <label>Nom Malgache</label>
+  <input
+    type="text"
+    [value]="selectedColumn()?.labelMg ?? ''"
+    (input)="updateLabelMg($any($event.target).value)"
+  />
+
+  <br>
+  <button type="submit">Save</button>
+</form>

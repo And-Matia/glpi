@@ -27,6 +27,11 @@ export const routes: Routes = [
           import('./features/back-office/tickets/ticket-list/ticket-list.component').then(m => m.TicketListComponent),
       },
       {
+        path: 'settings-kanban',
+        loadComponent: () =>
+          import('@app/features/back-office/settings-kanban/settings-kanban').then(m => m.SettingsKanban),
+      },
+      {
         path: 'tickets/:id',
         loadComponent: () =>
           import('./features/back-office/tickets/ticket-detail/ticket-detail.component').then(m => m.TicketDetailComponent),
@@ -40,6 +45,11 @@ export const routes: Routes = [
         path: 'reset',
         loadComponent: () =>
           import('./features/back-office/reset/reset.component').then(m => m.ResetComponent),
+      },
+      {
+        path: 'kanban-settings',
+        loadComponent: () =>
+          import('./features/back-office/kanban-settings/kanban-settings.component').then(m => m.KanbanSettingsComponent),
       },
     ],
   },
