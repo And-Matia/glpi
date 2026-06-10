@@ -1,5 +1,5 @@
 import { Component, input, output, ChangeDetectionStrategy } from '@angular/core';
-import { ButtonComponent } from '@app/shared/ui/button/button.component';
+import { MatButtonModule } from '@angular/material/button';
 import { ModalComponent } from '@app/shared/ui/modal/modal.component';
 
 @Component({
@@ -8,7 +8,7 @@ import { ModalComponent } from '@app/shared/ui/modal/modal.component';
   templateUrl: './confirm-dialog.component.html',
   styleUrl: './confirm-dialog.component.css',
   standalone: true,
-  imports: [ModalComponent, ButtonComponent],
+  imports: [ModalComponent, MatButtonModule],
 })
 export class ConfirmDialogComponent {
   open          = input.required<boolean>();

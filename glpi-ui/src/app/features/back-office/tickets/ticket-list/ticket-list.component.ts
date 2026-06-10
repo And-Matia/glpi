@@ -2,15 +2,15 @@ import { Component, ChangeDetectionStrategy, inject, signal, OnInit } from '@ang
 import { Router } from '@angular/router';
 import { TicketService } from '@app/core/services/glpi/ticket.service';
 import { GLPI_TICKET_STATUS, GLPI_TICKET_TYPE, GLPI_TICKET_PRIORITY } from '@app/core/models/ticket.model';
+import { MatButtonModule } from '@angular/material/button';
 import { TableComponent, TableColumn } from '@app/shared/ui/table/table.component';
 import { TableCellDirective } from '@app/shared/ui/table/table-cell.directive';
 import { PageHeaderComponent } from '@app/shared/ui/page-header/page-header.component';
 import { SpinnerComponent } from '@app/shared/ui/spinner/spinner.component';
-import { ButtonComponent } from '@app/shared/ui/button/button.component';
 
 @Component({
   selector: 'app-ticket-list',
-  imports: [TableComponent, TableCellDirective, PageHeaderComponent, SpinnerComponent, ButtonComponent],
+  imports: [MatButtonModule, TableComponent, TableCellDirective, PageHeaderComponent, SpinnerComponent],
   templateUrl: './ticket-list.component.html',
   styleUrl: './ticket-list.component.css',
   changeDetection: ChangeDetectionStrategy.OnPush,

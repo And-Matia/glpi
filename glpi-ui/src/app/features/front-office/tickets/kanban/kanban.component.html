@@ -1,0 +1,104 @@
+<div class="kanban-page">
+
+  <div class="kanban-page__header">
+    <div>
+      <h1 class="kanban-page__title">Tickets Kanban</h1>
+    </div>
+    <button mat-flat-button routerLink="/front-office/tickets/new">
+      <i class="fa-solid fa-plus"></i> Ajouter 1 ticket
+    </button>
+  </div>
+
+  @if (loading()) {
+    <div class="kanban__loader"><app-spinner size="lg" /></div>
+  } @else if (error()) {
+    <p class="kanban__error">{{ error() }}</p>
+  } @else {
+    <div class="kanban-board" cdkDropListGroup>
+      @for (col of settings.columns(); track col.statusCode) {
+        <div class="kanban-col" [style.background-color]="col.color">
+
+          <div class="kanban-col__header">
+            <div class="kanban-col__titles">
+              <span class="kanban-col__label-fr">{{ col.labelFr }}</span>
+              <span class="kanban-col__label-mg">{{ col.labelMg }}</span>
+            </div>
+            <span class="kanban-col__count">{{ ticketsForColumn(col.statusCode).length }}</span>
+          </div>
+
+          <div
+            cdkDropList
+            [cdkDropListData]="ticketsForColumn(col.statusCode)"
+            (cdkDropListDropped)="onDrop($event, col.statusCode)"
+            class="kanban-col__list"
+          >
+            @for (ticket of ticketsForColumn(col.statusCode); track ticket.id) {
+              <div
+                cdkDrag
+                [cdkDragData]="ticket"
+                class="kanban-card"
+                (click)="openDetail(ticket, $event)"
+              >
+                <p class="kanban-card__title">{{ ticket.titre }}</p>
+                <div class="kanban-card__footer">
+                  <app-badge variant="neutral" size="sm">#{{ ticket.ref_ticket }}</app-badge>
+                  <app-badge variant="info" size="sm">{{ typeLabel(ticket.type) }}</app-badge>
+                </div>
+                <ng-template cdkDragPlaceholder>
+                  <div class="kanban-drag-placeholder"></div>
+                </ng-template>
+              </div>
+            }
+          </div>
+
+        </div>
+      }
+    </div>
+  }
+
+</div>
+
+<!-- Ticket detail -->
+<app-modal
+  [open]="detailOpen()"
+  [title]="'Ticket #' + (selectedTicket()?.ref_ticket ?? '')"
+  size="md"
+  (closed)="detailOpen.set(false)"
+>
+  @if (selectedTicket(); as t) {
+    <div class="ticket-detail">
+      <div class="ticket-detail__row">
+        <span class="ticket-detail__label">Titre</span>
+        <span>{{ t.titre }}</span>
+      </div>
+      <div class="ticket-detail__row">
+        <span class="ticket-detail__label">Description</span>
+        <p class="ticket-detail__desc">{{ t.description }}</p>
+      </div>
+      <div class="ticket-detail__row">
+        <span class="ticket-detail__label">Date</span>
+        <span>{{ t.date }} {{ t.heure }}</span>
+      </div>
+      <div class="ticket-detail__row">
+        <span class="ticket-detail__label">Type</span>
+        <app-badge variant="info">{{ typeLabel(t.type) }}</app-badge>
+      </div>
+      <div class="ticket-detail__row">
+        <span class="ticket-detail__label">Priorité</span>
+        <app-badge variant="warning">{{ priorityLabel(t.priority) }}</app-badge>
+      </div>
+    </div>
+  }
+</app-modal>
+
+<!-- Confirmation changement de statut vers Résolu -->
+<app-confirm-dialog
+  [open]="confirmOpen()"
+  title="Marquer comme résolu"
+  message="Voulez-vous marquer ce ticket comme résolu ? Cette action indique que le problème a été traité."
+  confirmLabel="Oui, résoudre"
+  cancelLabel="Annuler"
+  [danger]="false"
+  (confirmed)="onConfirmed()"
+  (cancelled)="onCancelled()"
+/>

@@ -1,13 +1,14 @@
 import { Component, input, model, ChangeDetectionStrategy } from '@angular/core';
-import { FormsModule } from '@angular/forms';
+import { MatFormFieldModule } from '@angular/material/form-field';
+import { MatInputModule } from '@angular/material/input';
 
 @Component({
   changeDetection: ChangeDetectionStrategy.OnPush,
   selector: 'app-textarea',
+  standalone: true,
+  imports: [MatFormFieldModule, MatInputModule],
   templateUrl: './textarea.component.html',
   styleUrl: './textarea.component.css',
-  imports: [FormsModule],
-  standalone: true
 })
 export class TextareaComponent {
   label        = input.required<string>();

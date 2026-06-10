@@ -1,19 +1,11 @@
-<div class="select-field">
-  <label class="select-field__label">{{ label() }}</label>
-  <div class="select-field__wrapper">
-    <select
-      class="select-field__control"
-      [class.select-field__control--error]="errorMessage()"
-      [(ngModel)]="value"
-    >
-      <option [value]="null" disabled>{{ placeholder() }}</option>
-      @for (opt of options(); track opt.value) {
-        <option [value]="opt.value">{{ opt.label }}</option>
-      }
-    </select>
-    <i class="fa-solid fa-chevron-down select-field__icon"></i>
-  </div>
+<mat-form-field>
+  <mat-label>{{ label() }}</mat-label>
+  <mat-select [value]="value()" (selectionChange)="value.set($event.value)">
+    @for (opt of options(); track opt.value) {
+      <mat-option [value]="opt.value">{{ opt.label }}</mat-option>
+    }
+  </mat-select>
   @if (errorMessage()) {
-    <p class="select-field__error">{{ errorMessage() }}</p>
+    <mat-error>{{ errorMessage() }}</mat-error>
   }
-</div>
+</mat-form-field>

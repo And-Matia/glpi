@@ -5,9 +5,9 @@ import { AssetImportService } from '@app/core/services/import/asset-import.servi
 import { TicketImportService } from '@app/core/services/import/ticket-import.service';
 import { TicketCostImportService } from '@app/core/services/import/ticket-cost-import.service';
 import { ImageImportService } from '@app/core/services/import/image-import.service';
+import { MatCardModule } from '@angular/material/card';
+import { MatButtonModule } from '@angular/material/button';
 import { PageHeaderComponent } from '@app/shared/ui/page-header/page-header.component';
-import { CardComponent } from '@app/shared/ui/card/card.component';
-import { ButtonComponent } from '@app/shared/ui/button/button.component';
 import { BadgeComponent } from '@app/shared/ui/badge/badge.component';
 import { SpinnerComponent } from '@app/shared/ui/spinner/spinner.component';
 
@@ -44,7 +44,7 @@ function emptyStep(): ImportStep {
 
 @Component({
   selector: 'app-import',
-  imports: [PageHeaderComponent, CardComponent, ButtonComponent, BadgeComponent, SpinnerComponent],
+  imports: [PageHeaderComponent, MatCardModule, MatButtonModule, BadgeComponent, SpinnerComponent],
   templateUrl: './import.component.html',
   styleUrl: './import.component.css',
   changeDetection: ChangeDetectionStrategy.OnPush,
@@ -71,8 +71,6 @@ export class ImportComponent {
     return steps.some(s => s.status === 'validated') && !this.isProcessing();
   });
 
-  // ── Drag & drop ───────────────────────────────────────────────────────────
-
   onDragOver(event: DragEvent, index: number): void {
     event.preventDefault();
     this.patchStep(index, { isDragOver: true });
@@ -94,8 +92,6 @@ export class ImportComponent {
     if (file) this.handleFile(file, index);
   }
 
-  // ── Validation ────────────────────────────────────────────────────────────
-
   private handleFile(file: File, index: number): void {
     this.patchStep(index, { selectedFile: file, status: 'validating', validationErrors: [], errorMsg: null });
 
@@ -108,20 +104,13 @@ export class ImportComponent {
     });
   }
 
-  // ── Import ────────────────────────────────────────────────────────────────
-
   async startImport(): Promise<void> {
-    // Cross-sheet references (costs→tickets, images/tickets→items) are resolved by
-    // querying GLPI directly (ticket `externalid`, item `name`), so no client-side
-    // registry is needed. Only the dropdown cache is reset between runs.
     this.dropdown.clearCache();
 
     const validatedSteps = this.steps()
       .map((step, i) => ({ step, i }))
       .filter(({ step }) => step.status === 'validated' && step.selectedFile);
 
-    // Steps run sequentially: images look up items by name, so items must be
-    // created first. A simple for loop makes this dependency obvious.
     for (const { step, i } of validatedSteps) {
       await this.runStep(step.selectedFile!, i);
     }
@@ -144,8 +133,6 @@ export class ImportComponent {
     }
   }
 
-  // ── Reset ─────────────────────────────────────────────────────────────────
-
   reset(index: number): void {
     this.steps.update(steps => {
       const next = [...steps];
@@ -153,8 +140,6 @@ export class ImportComponent {
       return next;
     });
   }
-
-  // ── Helpers ───────────────────────────────────────────────────────────────
 
   private getService(index: number): AssetImportService | TicketImportService | TicketCostImportService | ImageImportService {
     switch (index) {

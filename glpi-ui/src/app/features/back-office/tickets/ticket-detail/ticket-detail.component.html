@@ -7,41 +7,45 @@
     <p class="ticket-detail__error">{{ error() }}</p>
   } @else if (ticket(); as t) {
     <app-page-header [title]="'Ticket #' + t.ref_ticket" [subtitle]="t.titre">
-      <app-button variant="ghost" size="sm" (clicked)="goBack()">
-        ← Retour
-      </app-button>
+      <button mat-button (click)="goBack()">← Retour</button>
     </app-page-header>
 
     <div class="ticket-detail__grid">
 
-      <app-card title="Informations générales">
-        <div class="detail-list">
-          <div class="detail-list__row">
-            <span class="detail-list__label">Référence</span>
-            <span>#{{ t.ref_ticket }}</span>
+      <mat-card>
+        <mat-card-header><mat-card-title>Informations générales</mat-card-title></mat-card-header>
+        <mat-card-content>
+          <div class="detail-list">
+            <div class="detail-list__row">
+              <span class="detail-list__label">Référence</span>
+              <span>#{{ t.ref_ticket }}</span>
+            </div>
+            <div class="detail-list__row">
+              <span class="detail-list__label">Date</span>
+              <span>{{ t.date }} {{ t.heure }}</span>
+            </div>
+            <div class="detail-list__row">
+              <span class="detail-list__label">Type</span>
+              <app-badge variant="info">{{ typeLabel(t.type) }}</app-badge>
+            </div>
+            <div class="detail-list__row">
+              <span class="detail-list__label">Statut</span>
+              <app-badge variant="primary">{{ statusLabel(t.status) }}</app-badge>
+            </div>
+            <div class="detail-list__row">
+              <span class="detail-list__label">Priorité</span>
+              <app-badge variant="warning">{{ priorityLabel(t.priority) }}</app-badge>
+            </div>
           </div>
-          <div class="detail-list__row">
-            <span class="detail-list__label">Date</span>
-            <span>{{ t.date }} {{ t.heure }}</span>
-          </div>
-          <div class="detail-list__row">
-            <span class="detail-list__label">Type</span>
-            <app-badge variant="info">{{ typeLabel(t.type) }}</app-badge>
-          </div>
-          <div class="detail-list__row">
-            <span class="detail-list__label">Statut</span>
-            <app-badge variant="primary">{{ statusLabel(t.status) }}</app-badge>
-          </div>
-          <div class="detail-list__row">
-            <span class="detail-list__label">Priorité</span>
-            <app-badge variant="warning">{{ priorityLabel(t.priority) }}</app-badge>
-          </div>
-        </div>
-      </app-card>
+        </mat-card-content>
+      </mat-card>
 
-      <app-card title="Description">
-        <p class="ticket-detail__description">{{ t.description }}</p>
-      </app-card>
+      <mat-card>
+        <mat-card-header><mat-card-title>Description</mat-card-title></mat-card-header>
+        <mat-card-content>
+          <p class="ticket-detail__description">{{ t.description }}</p>
+        </mat-card-content>
+      </mat-card>
 
     </div>
   }

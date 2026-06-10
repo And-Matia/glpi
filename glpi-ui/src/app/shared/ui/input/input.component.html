@@ -1,14 +1,13 @@
-<!-- Labeled input — shows error message below if errorMessage is provided -->
-<div class="input-field">
-  <label class="input-field__label">{{ label() }}</label>
+<mat-form-field>
+  <mat-label>{{ label() }}</mat-label>
   <input
-    class="input-field__control"
-    [class.input-field__control--error]="errorMessage()"
+    matInput
     [type]="type()"
     [placeholder]="placeholder()"
-    [formControl]="control"
+    [value]="value()"
+    (input)="value.set($any($event.target).value)"
   />
   @if (errorMessage()) {
-    <p class="input-field__error">{{ errorMessage() }}</p>
+    <mat-error>{{ errorMessage() }}</mat-error>
   }
-</div>
+</mat-form-field>

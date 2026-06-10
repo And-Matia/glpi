@@ -66,6 +66,11 @@ export const routes: Routes = [
         loadComponent: () =>
           import('./features/front-office/tickets/ticket-create/ticket-create.component').then(m => m.TicketCreateComponent),
       },
+      {
+        path: 'tickets/kanban',
+        loadComponent: () =>
+          import('./features/front-office/tickets/kanban/kanban.component').then(m => m.KanbanComponent),
+      },
     ],
   },
   { path: '', redirectTo: 'front-office', pathMatch: 'full' },

@@ -41,29 +41,58 @@ Each feature area has its own `layout/` shell and its feature pages as sibling f
 
 ## Shared UI components
 
+Custom components live in `src/app/shared/ui/`. These wrap Material/CDK where it saves boilerplate but keep a clean signal-based API.
+
 | Component         | Selector               | Key inputs                                      |
 |-------------------|------------------------|-------------------------------------------------|
-| Button            | `app-button`           | `variant`, `size`, `loading`, `disabled`        |
-| Badge             | `app-badge`            | `variant`, `size`                               |
 | Input             | `app-input`            | `label`, `[(value)]`, `errorMessage`, `type`    |
 | Textarea          | `app-textarea`         | `label`, `[(value)]`, `errorMessage`, `rows`    |
 | Select            | `app-select`           | `label`, `options`, `[(value)]`, `errorMessage` |
-| SearchInput       | `app-search-input`     | —                                               |
+| SearchInput       | `app-search-input`     | `[(value)]`, `placeholder`                      |
 | Table             | `app-table`            | `columns`, `rows`, `searchKeys`                 |
 | Modal             | `app-modal`            | `[open]`, `title`, `size` — `(closed)` output, `slot="footer"` for footer content |
 | ConfirmDialog     | `app-confirm-dialog`   | `[open]`, `title`, `message`, `[danger]` — `(confirmed)` / `(cancelled)` outputs |
-| Card              | `app-card`             | `title`, `[padding]` — `slot="header-actions"` for header buttons |
+| Spinner           | `app-spinner`          | `size` (`sm`/`md`/`lg`)                         |
+| ProgressBar       | `app-progress-bar`     | `value`, `max`, `variant`, `showLabel`          |
 | Badge             | `app-badge`            | `variant`, `size`                               |
-| Spinner           | `app-spinner`          | `size`                                          |
-| Tabs              | `app-tabs`             | `tabs`, `[(activeKey)]`                         |
 | Avatar            | `app-avatar`           | `name`, `src`, `size` — shows initials if no src |
-| Pagination        | `app-pagination`       | `total`, `pageSize`, `[(page)]`                 |
-| Tooltip           | `app-tooltip`          | `text`, `position` — wraps any element          |
-| Divider           | `app-divider`          | `label` (optional)                              |
 | PageHeader        | `app-page-header`      | `title`, `subtitle` — `ng-content` for actions |
 | EmptyState        | `app-empty-state`      | `icon`, `title`, `message`                      |
+| Alert             | `app-alert`            | `variant`, `title`, `dismissible`               |
+| Breadcrumb        | `app-breadcrumb`       | `items`                                         |
+| Dropzone          | `app-dropzone`         | `accept`, `multiple` — `(filesSelected)` output |
+| Skeleton          | `app-skeleton`         | `width`, `height`, `variant`                    |
+| StatCard          | `app-stat-card`        | `label`, `value`, `icon`, `trend`               |
 
 Toast is driven by `ToastService` (inject it, call `.success()` / `.error()` / `.warning()` / `.info()`). Place `<app-toast />` once in `app.html`.
+
+## Angular Material / CDK — use directly in templates
+
+Do not create `app-*` wrappers for these — use them straight from Material/CDK:
+
+| Need                    | Use                                                        |
+|-------------------------|------------------------------------------------------------|
+| Button (primary/filled) | `<button mat-flat-button>`                                 |
+| Button (text/ghost)     | `<button mat-button>`                                      |
+| Button (outlined)       | `<button mat-stroked-button>`                              |
+| Button (danger/warn)    | `<button mat-flat-button color="warn">`                    |
+| Icon button             | `<button mat-icon-button>`                                 |
+| Card                    | `<mat-card>` + `<mat-card-header>` + `<mat-card-content>` |
+| Tabs                    | `<mat-tab-group>` + `<mat-tab>`                            |
+| Paginator               | `<mat-paginator>`                                          |
+| Tooltip                 | `matTooltip="text"` directive                              |
+| Checkbox                | `<mat-checkbox>`                                           |
+| Toggle / switch         | `<mat-slide-toggle>`                                       |
+| Divider                 | `<mat-divider>`                                            |
+| Chip                    | `<mat-chip>` / `<mat-chip-set>`                            |
+| Date picker             | `<mat-datepicker>` + `<mat-form-field>`                    |
+| Autocomplete            | `<mat-autocomplete>`                                       |
+| Menu                    | `<mat-menu>`                                               |
+| Stepper                 | `<mat-stepper>`                                            |
+| Virtual scroll          | `<cdk-virtual-scroll-viewport>`                            |
+| Drag & drop             | `cdkDrag` / `cdkDropList`                                  |
+
+`app-modal` uses CDK focus trap + scroll blocking internally — callers still use `<app-modal>`.
 
 ## Key conventions
 

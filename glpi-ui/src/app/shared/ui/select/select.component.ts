@@ -1,5 +1,6 @@
 import { Component, input, model, ChangeDetectionStrategy } from '@angular/core';
-import { FormsModule } from '@angular/forms';
+import { MatFormFieldModule } from '@angular/material/form-field';
+import { MatSelectModule } from '@angular/material/select';
 
 export interface SelectOption {
   value: string | number;
@@ -9,10 +10,10 @@ export interface SelectOption {
 @Component({
   changeDetection: ChangeDetectionStrategy.OnPush,
   selector: 'app-select',
+  standalone: true,
+  imports: [MatFormFieldModule, MatSelectModule],
   templateUrl: './select.component.html',
   styleUrl: './select.component.css',
-  imports: [FormsModule],
-  standalone: true
 })
 export class SelectComponent {
   label        = input.required<string>();

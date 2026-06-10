@@ -13,14 +13,9 @@
       <p class="reset-page__error">{{ error() }}</p>
     }
 
-    <app-button
-      variant="danger"
-      [loading]="loading()"
-      [disabled]="loading()"
-      (clicked)="openConfirm()"
-    >
+    <button mat-flat-button color="warn" [disabled]="loading()" (click)="openConfirm()">
       Réinitialiser les données
-    </app-button>
+    </button>
   </div>
 </div>
 

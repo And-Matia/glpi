@@ -6,27 +6,27 @@ import { GlpiAsset } from '@app/core/models/asset.model';
 import { TICKET_TYPE_OPTIONS, TICKET_PRIORITY_OPTIONS } from '@app/core/constants/ticket.constants';
 import { assetLabel } from '@app/core/models/asset.model';
 import { ToastService } from '@app/core/services/toast.service';
-import { ButtonComponent } from '@app/shared/ui/button/button.component';
+import { MatButtonModule } from '@angular/material/button';
+import { MatCardModule } from '@angular/material/card';
 import { InputComponent } from '@app/shared/ui/input/input.component';
 import { TextareaComponent } from '@app/shared/ui/textarea/textarea.component';
 import { SelectComponent } from '@app/shared/ui/select/select.component';
 import { SearchInputComponent } from '@app/shared/ui/search-input/search-input.component';
 import { SpinnerComponent } from '@app/shared/ui/spinner/spinner.component';
 import { PageHeaderComponent } from '@app/shared/ui/page-header/page-header.component';
-import { CardComponent } from '@app/shared/ui/card/card.component';
 import { BadgeComponent } from '@app/shared/ui/badge/badge.component';
 
 @Component({
   selector: 'app-ticket-create',
   imports: [
-    ButtonComponent,
+    MatButtonModule,
+    MatCardModule,
     InputComponent,
     TextareaComponent,
     SelectComponent,
     SearchInputComponent,
     SpinnerComponent,
     PageHeaderComponent,
-    CardComponent,
     BadgeComponent,
   ],
   templateUrl: './ticket-create.component.html',

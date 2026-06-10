@@ -19,9 +19,9 @@
     (change)="onFileChange($event)"
     hidden
   />
-  <app-button variant="ghost" size="sm" [disabled]="disabled()" (clicked)="fileInput.click()">
+  <button mat-button [disabled]="disabled()" (click)="fileInput.click()">
     Parcourir
-  </app-button>
+  </button>
 
   @if (hint()) { <p class="dropzone__hint">{{ hint() }}</p> }
 </div>

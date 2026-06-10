@@ -1,9 +1,0 @@
-<span [class]="'chip chip--' + variant()">
-  @if (icon()) { <i [class]="icon() + ' chip__icon'"></i> }
-  <span class="chip__label"><ng-content /></span>
-  @if (removable()) {
-    <button class="chip__remove" (click)="removed.emit()" aria-label="Retirer">
-      <i class="fa-solid fa-xmark"></i>
-    </button>
-  }
-</span>

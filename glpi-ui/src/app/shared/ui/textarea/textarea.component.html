@@ -1,13 +1,13 @@
-<div class="textarea-field">
-  <label class="textarea-field__label">{{ label() }}</label>
+<mat-form-field>
+  <mat-label>{{ label() }}</mat-label>
   <textarea
-    class="textarea-field__control"
-    [class.textarea-field__control--error]="errorMessage()"
-    [placeholder]="placeholder()"
+    matInput
     [rows]="rows()"
-    [(ngModel)]="value"
+    [placeholder]="placeholder()"
+    [value]="value()"
+    (input)="value.set($any($event.target).value)"
   ></textarea>
   @if (errorMessage()) {
-    <p class="textarea-field__error">{{ errorMessage() }}</p>
+    <mat-error>{{ errorMessage() }}</mat-error>
   }
-</div>
+</mat-form-field>

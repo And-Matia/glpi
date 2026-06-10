@@ -14,9 +14,7 @@
       [searchKeys]="['titre', 'ref_ticket', 'status', 'type']"
     >
       <ng-template appCell="actions" let-row>
-        <app-button size="sm" variant="ghost" (clicked)="openTicket(row)">
-          Voir
-        </app-button>
+        <button mat-button (click)="openTicket(row)">Voir</button>
       </ng-template>
     </app-table>
   }

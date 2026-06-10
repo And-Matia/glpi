@@ -2,9 +2,9 @@
   <p class="confirm-dialog__message">{{ message() }}</p>
 
   <div slot="footer">
-    <app-button variant="ghost" (clicked)="cancelled.emit()">{{ cancelLabel() }}</app-button>
-    <app-button [variant]="danger() ? 'danger' : 'primary'" (clicked)="confirmed.emit()">
+    <button mat-button (click)="cancelled.emit()">{{ cancelLabel() }}</button>
+    <button mat-flat-button [color]="danger() ? 'warn' : 'primary'" (click)="confirmed.emit()">
       {{ confirmLabel() }}
-    </app-button>
+    </button>
   </div>
 </app-modal>

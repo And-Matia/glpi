@@ -1,13 +1,13 @@
-import {Component, inject, signal, ChangeDetectionStrategy} from '@angular/core';
-import {Router} from '@angular/router';
-import {AuthService} from '@app/core/services/auth.service';
-import {environment} from '../../../../environment';
-import {InputComponent} from '@app/shared/ui/input/input.component';
-import {ButtonComponent} from '@app/shared/ui/button/button.component';
+import { Component, inject, signal, ChangeDetectionStrategy } from '@angular/core';
+import { Router } from '@angular/router';
+import { AuthService } from '@app/core/services/auth.service';
+import { environment } from '../../../../environment';
+import { MatButtonModule } from '@angular/material/button';
+import { InputComponent } from '@app/shared/ui/input/input.component';
 
 @Component({
   selector: 'app-login',
-  imports: [InputComponent, ButtonComponent],
+  imports: [InputComponent, MatButtonModule],
   templateUrl: './login.component.html',
   styleUrl: './login.component.css',
   changeDetection: ChangeDetectionStrategy.OnPush,

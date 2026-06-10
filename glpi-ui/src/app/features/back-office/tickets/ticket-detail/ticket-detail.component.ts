@@ -3,15 +3,15 @@ import { ActivatedRoute, Router } from '@angular/router';
 import { TicketService } from '@app/core/services/glpi/ticket.service';
 import { Ticket } from '@app/core/models/ticket.model';
 import { GLPI_TICKET_STATUS, GLPI_TICKET_TYPE, GLPI_TICKET_PRIORITY } from '@app/core/models/ticket.model';
-import { CardComponent } from '@app/shared/ui/card/card.component';
+import { MatCardModule } from '@angular/material/card';
+import { MatButtonModule } from '@angular/material/button';
 import { PageHeaderComponent } from '@app/shared/ui/page-header/page-header.component';
 import { BadgeComponent } from '@app/shared/ui/badge/badge.component';
 import { SpinnerComponent } from '@app/shared/ui/spinner/spinner.component';
-import { ButtonComponent } from '@app/shared/ui/button/button.component';
 
 @Component({
   selector: 'app-ticket-detail',
-  imports: [CardComponent, PageHeaderComponent, BadgeComponent, SpinnerComponent, ButtonComponent],
+  imports: [MatCardModule, MatButtonModule, PageHeaderComponent, BadgeComponent, SpinnerComponent],
   templateUrl: './ticket-detail.component.html',
   styleUrl: './ticket-detail.component.css',
   changeDetection: ChangeDetectionStrategy.OnPush,

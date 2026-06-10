@@ -7,113 +7,108 @@
 
   <div class="import-wizard">
     @for (step of steps(); track $index) {
-      <app-card>
-        <div class="step-header">
-          <span class="step-number">{{ $index + 1 }}</span>
-          <i [class]="stepIcons[$index]" class="step-icon"></i>
-          <span class="step-label">{{ stepLabels[$index] }}</span>
-          @if (step.status === 'validated') {
-            <app-badge variant="success">Valide</app-badge>
-          }
-          @if (step.status === 'done') {
-            <app-badge variant="success">Terminé</app-badge>
-          }
-          @if (step.status === 'error') {
-            <app-badge variant="danger">Erreur</app-badge>
-          }
-          @if (step.status === 'importing') {
-            <app-badge variant="info">Import…</app-badge>
-          }
-        </div>
-
-        @if (step.status === 'idle') {
-          <div
-            class="drop-zone"
-            [class.drop-zone--active]="step.isDragOver"
-            (dragover)="onDragOver($event, $index)"
-            (dragleave)="onDragLeave($index)"
-            (drop)="onDrop($event, $index)"
-          >
-            <i class="fa-solid fa-file-arrow-up drop-zone__icon"></i>
-            <p class="drop-zone__text">Glissez un fichier ici ou</p>
-            <input type="file" [accept]="accept[$index]" (change)="onFileChange($event, $index)" hidden #fileInput />
-            <app-button variant="ghost" size="sm" (clicked)="fileInput.click()">
-              Parcourir
-            </app-button>
-          </div>
-        }
-
-        @if (step.status === 'validating') {
-          <div class="step-loading">
-            <app-spinner size="sm" />
-            <span>Validation en cours…</span>
-          </div>
-        }
-
-        @if (step.status === 'importing') {
-          <div class="step-loading">
-            <app-spinner size="sm" />
-            <span>Import en cours…</span>
-          </div>
-        }
-
-        @if (step.status === 'validated' || step.status === 'done' || step.status === 'error') {
-          <div class="step-file">
-            <i class="fa-solid fa-file step-file__icon"></i>
-            <span class="step-file__name">{{ step.selectedFile?.name }}</span>
-            <app-button variant="ghost" size="sm" (clicked)="reset($index)">
-              <i class="fa-solid fa-rotate-left"></i> Recommencer
-            </app-button>
+      <mat-card>
+        <mat-card-content>
+          <div class="step-header">
+            <span class="step-number">{{ $index + 1 }}</span>
+            <i [class]="stepIcons[$index]" class="step-icon"></i>
+            <span class="step-label">{{ stepLabels[$index] }}</span>
+            @if (step.status === 'validated') {
+              <app-badge variant="success">Valide</app-badge>
+            }
+            @if (step.status === 'done') {
+              <app-badge variant="success">Terminé</app-badge>
+            }
+            @if (step.status === 'error') {
+              <app-badge variant="danger">Erreur</app-badge>
+            }
+            @if (step.status === 'importing') {
+              <app-badge variant="info">Import…</app-badge>
+            }
           </div>
 
-          @if (step.status === 'done' && step.result) {
-            <div class="step-result">
-              <span class="step-result__ok">
-                <i class="fa-solid fa-circle-check"></i>
-                {{ step.result.success }} importé(s)
-              </span>
-              @if (step.result.failed > 0) {
-                <span class="step-result__ko">
-                  <i class="fa-solid fa-triangle-exclamation"></i>
-                  {{ step.result.failed }} erreur(s)
-                </span>
-              }
+          @if (step.status === 'idle') {
+            <div
+              class="drop-zone"
+              [class.drop-zone--active]="step.isDragOver"
+              (dragover)="onDragOver($event, $index)"
+              (dragleave)="onDragLeave($index)"
+              (drop)="onDrop($event, $index)"
+            >
+              <i class="fa-solid fa-file-arrow-up drop-zone__icon"></i>
+              <p class="drop-zone__text">Glissez un fichier ici ou</p>
+              <input type="file" [accept]="accept[$index]" (change)="onFileChange($event, $index)" hidden #fileInput />
+              <button mat-button (click)="fileInput.click()">Parcourir</button>
             </div>
           }
 
-          @if (step.validationErrors.length > 0) {
-            <ul class="step-errors">
-              @for (err of step.validationErrors; track $index) {
-                <li>{{ err }}</li>
-              }
-            </ul>
+          @if (step.status === 'validating') {
+            <div class="step-loading">
+              <app-spinner size="sm" />
+              <span>Validation en cours…</span>
+            </div>
           }
 
-          @if (step.result && step.result.errors.length > 0) {
-            <ul class="step-errors">
-              @for (err of step.result.errors; track $index) {
-                <li>Ligne {{ err.row }} : {{ err.error }}</li>
-              }
-            </ul>
+          @if (step.status === 'importing') {
+            <div class="step-loading">
+              <app-spinner size="sm" />
+              <span>Import en cours…</span>
+            </div>
           }
 
-          @if (step.errorMsg) {
-            <p class="step-error-msg">{{ step.errorMsg }}</p>
+          @if (step.status === 'validated' || step.status === 'done' || step.status === 'error') {
+            <div class="step-file">
+              <i class="fa-solid fa-file step-file__icon"></i>
+              <span class="step-file__name">{{ step.selectedFile?.name }}</span>
+              <button mat-button (click)="reset($index)">
+                <i class="fa-solid fa-rotate-left"></i> Recommencer
+              </button>
+            </div>
+
+            @if (step.status === 'done' && step.result) {
+              <div class="step-result">
+                <span class="step-result__ok">
+                  <i class="fa-solid fa-circle-check"></i>
+                  {{ step.result.success }} importé(s)
+                </span>
+                @if (step.result.failed > 0) {
+                  <span class="step-result__ko">
+                    <i class="fa-solid fa-triangle-exclamation"></i>
+                    {{ step.result.failed }} erreur(s)
+                  </span>
+                }
+              </div>
+            }
+
+            @if (step.validationErrors.length > 0) {
+              <ul class="step-errors">
+                @for (err of step.validationErrors; track $index) {
+                  <li>{{ err }}</li>
+                }
+              </ul>
+            }
+
+            @if (step.result && step.result.errors.length > 0) {
+              <ul class="step-errors">
+                @for (err of step.result.errors; track $index) {
+                  <li>Ligne {{ err.row }} : {{ err.error }}</li>
+                }
+              </ul>
+            }
+
+            @if (step.errorMsg) {
+              <p class="step-error-msg">{{ step.errorMsg }}</p>
+            }
           }
-        }
-      </app-card>
+        </mat-card-content>
+      </mat-card>
     }
   </div>
 
   <div class="import-actions">
-    <app-button
-      variant="primary"
-      [disabled]="!canImport() || isProcessing()"
-      [loading]="isProcessing()"
-      (clicked)="startImport()"
-    >
+    <button mat-flat-button [disabled]="!canImport() || isProcessing()" (click)="startImport()">
       Lancer l'importation
-    </app-button>
+    </button>
   </div>
 
 </div>

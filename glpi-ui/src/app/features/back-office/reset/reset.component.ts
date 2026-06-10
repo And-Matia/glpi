@@ -1,13 +1,13 @@
 import { Component, ChangeDetectionStrategy, inject, signal } from '@angular/core';
 import { ResetService } from '@app/core/services/glpi/reset.service';
 import { ToastService } from '@app/core/services/toast.service';
-import { ButtonComponent } from '@app/shared/ui/button/button.component';
+import { MatButtonModule } from '@angular/material/button';
 import { ConfirmDialogComponent } from '@app/shared/ui/confirm-dialog/confirm-dialog.component';
 import { PageHeaderComponent } from '@app/shared/ui/page-header/page-header.component';
 
 @Component({
   selector: 'app-reset',
-  imports: [ButtonComponent, ConfirmDialogComponent, PageHeaderComponent],
+  imports: [MatButtonModule, ConfirmDialogComponent, PageHeaderComponent],
   templateUrl: './reset.component.html',
   styleUrl: './reset.component.css',
   changeDetection: ChangeDetectionStrategy.OnPush,

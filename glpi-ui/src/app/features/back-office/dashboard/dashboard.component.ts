@@ -5,14 +5,14 @@ import { GlpiAsset } from '@app/core/models/asset.model';
 import { Ticket } from '@app/core/models/ticket.model';
 import { ASSET_TYPES } from '@app/core/models/asset.model';
 import { GLPI_TICKET_STATUS, GLPI_TICKET_TYPE } from '@app/core/models/ticket.model';
+import { MatCardModule } from '@angular/material/card';
 import { PageHeaderComponent } from '@app/shared/ui/page-header/page-header.component';
-import { CardComponent } from '@app/shared/ui/card/card.component';
 import { SpinnerComponent } from '@app/shared/ui/spinner/spinner.component';
 import { BadgeComponent } from '@app/shared/ui/badge/badge.component';
 
 @Component({
   selector: 'app-dashboard',
-  imports: [PageHeaderComponent, CardComponent, SpinnerComponent, BadgeComponent],
+  imports: [MatCardModule, PageHeaderComponent, SpinnerComponent, BadgeComponent],
   templateUrl: './dashboard.component.html',
   styleUrl: './dashboard.component.css',
   changeDetection: ChangeDetectionStrategy.OnPush,

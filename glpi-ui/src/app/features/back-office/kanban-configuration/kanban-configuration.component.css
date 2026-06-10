@@ -1,0 +1,62 @@
+.kconf__loader {
+  display: flex;
+  justify-content: center;
+  padding: var(--space-48);
+}
+
+.kconf__grid {
+  display: grid;
+  grid-template-columns: repeat(3, 1fr);
+  gap: var(--space-20);
+  padding: var(--space-24);
+}
+
+.kconf-card {
+  display: flex;
+  flex-direction: column;
+}
+
+.kconf-card mat-card-content {
+  display: flex;
+  flex-direction: column;
+  gap: var(--space-12);
+  padding-top: var(--space-12);
+}
+
+/* Color row */
+.kconf-card__color-row {
+  display: flex;
+  align-items: center;
+  gap: var(--space-12);
+}
+
+.kconf-card__color-label {
+  font-size: var(--text-14);
+  color: var(--color-text-secondary);
+  min-width: 110px;
+}
+
+.kconf-card__color-preview {
+  width: 44px;
+  height: 44px;
+  border-radius: var(--radius-8);
+  border: 1px solid var(--color-border);
+  overflow: hidden;
+  cursor: pointer;
+  position: relative;
+}
+
+.kconf-card__color-input {
+  position: absolute;
+  inset: 0;
+  width: 150%;
+  height: 150%;
+  opacity: 0;
+  cursor: pointer;
+  border: none;
+  padding: 0;
+}
+
+.kconf-card__field {
+  width: 100%;
+}
