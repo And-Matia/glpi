@@ -37,12 +37,13 @@ le code joue le rôle de mot de passe, prérempli sur le formulaire).
 |---------|-------|---------|----------|
 | Framework | **Angular** | 21 | Composants standalone, **signals**, nouvelle syntaxe de contrôle `@if/@for` |
 | Langage | **TypeScript** | ~5.9 | Typage strict, modèles propres |
-| Réactivité | **RxJS** | ~7.8 | Tous les appels HTTP et enchaînements asynchrones |
+| Réactivité | **Angular Signals** + **RxJS** | ~7.8 | Signals pour l'état UI ; RxJS pour les pipelines d'import |
+| UI | **Angular Material 21** (M3) | — | Composants thémés (`mat-flat-button`, `mat-card`, etc.) — directs dans les templates |
 | HTTP | `@angular/common/http` (`HttpClient`) | — | Appels REST vers GLPI |
 | Tests | **Vitest** | 4 | Runner rapide (PAS Karma/Jest) via `@angular/build` |
 | Décompression ZIP | **JSZip** | 3.10 | Lire les images du ZIP côté navigateur |
 | Icônes | **FontAwesome 6** | CDN | `fa-solid fa-*` dans les templates |
-| Styles | **CSS pur + design tokens** | — | Variables CSS, pas de framework CSS |
+| Styles | **CSS pur + design tokens + thème Material** | — | Variables CSS + `material-theme.scss` |
 | Backend | **GLPI** | 11.0.7 | API REST v1 (legacy) + v2 (high-level) + GraphQL + OAuth |
 
 > ⚠️ **Vitest, pas Jest/Karma.** `npm test` lance Vitest via Angular CLI.

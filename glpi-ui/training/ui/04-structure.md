@@ -1,7 +1,10 @@
-# 04 — Structure : `PageHeader`, `Card`, `Divider`, `Avatar`, `Tabs`, `Breadcrumb`, `StatCard`
+# 04 — Structure : `PageHeader`, `Avatar`, `Breadcrumb`, `StatCard` + `mat-card` / `mat-tab-group` / `mat-divider`
 
 Les composants qui **organisent** une page : en-tête, conteneurs, séparateurs, navigation interne,
 indicateurs.
+
+> 🪦 `app-card`, `app-divider` et `app-tabs` **n'existent plus**. Remplacés par Material direct :
+> `mat-card`, `mat-divider`, `mat-tab-group`.
 
 ---
 
@@ -14,7 +17,7 @@ indicateurs.
 
 ```html
 <app-page-header title="Tickets" subtitle="Liste de tous les tickets GLPI">
-  <app-button (clicked)="create()">Nouveau</app-button>
+  <button mat-flat-button (click)="create()">Nouveau</button>
 </app-page-header>
 ```
 > Toute page de feature commence par un `app-page-header`. Les boutons projetés se placent
@@ -22,37 +25,92 @@ indicateurs.
 
 ---
 
-## `app-card` — conteneur encadré
-| Membre | Type | Défaut |
-|--------|------|--------|
-| `title` | `string` | `''` |
-| `padding` | `boolean` | `true` |
-| *(contenu)* | `ng-content` | le corps |
-| `[slot=header-actions]` | projection nommée | boutons dans l'en-tête de la carte |
+## Carte : `mat-card` (Material direct)
 
-```html
-<app-card title="Informations">
-  <app-button slot="header-actions" variant="ghost" (clicked)="edit()">Modifier</app-button>
-  <p>Nom : {{ item().name }}</p>
-</app-card>
+> 🪦 `app-card` est supprimé. Utilise `mat-card` :
 
-<!-- Carte sans padding (ex. pour y mettre un tableau pleine largeur) -->
-<app-card [padding]="false">
-  <app-table [columns]="cols" [rows]="rows()" />
-</app-card>
+```ts
+import { MatCardModule } from '@angular/material/card';
 ```
+```html
+<!-- Carte standard -->
+<mat-card>
+  <mat-card-header>
+    <mat-card-title>Informations</mat-card-title>
+  </mat-card-header>
+  <mat-card-content>
+    <p>Contenu de la carte…</p>
+  </mat-card-content>
+</mat-card>
+
+<!-- Carte avec actions en bas -->
+<mat-card>
+  <mat-card-header>
+    <mat-card-title>Détails</mat-card-title>
+  </mat-card-header>
+  <mat-card-content>
+    <dl class="fiche">
+      <dt>Statut</dt> <dd>{{ item().status }}</dd>
+    </dl>
+  </mat-card-content>
+  <mat-card-actions align="end">
+    <button mat-button (click)="goBack()">Retour</button>
+    <button mat-flat-button (click)="save()">Enregistrer</button>
+  </mat-card-actions>
+</mat-card>
+```
+
+> `mat-card-actions` est optionnel. Pour les actions en haut (en-tête), utilise une ligne `flex`
+> à l'intérieur de `mat-card-header` avec `justify-content: space-between`.
 
 ---
 
-## `app-divider` — séparateur (optionnellement avec libellé)
-| Membre | Type | Défaut |
-|--------|------|--------|
-| `label` | `string` | `''` |
+## Séparateur : `mat-divider` (Material direct)
 
-```html
-<app-divider />
-<app-divider label="Éléments liés" />
+> 🪦 `app-divider` est supprimé. Utilise `mat-divider` :
+
+```ts
+import { MatDividerModule } from '@angular/material/divider';
 ```
+```html
+<!-- Séparateur horizontal -->
+<mat-divider />
+
+<!-- Avec espacement parent (ex. entre deux sections) -->
+<section>…</section>
+<mat-divider />
+<section>…</section>
+```
+
+> `mat-divider` est un trait horizontal pur. L'espacement autour vient du **parent**
+> (`gap` en flex/grid), pas de marges sur le divider lui-même.
+
+---
+
+## Onglets : `mat-tab-group` (Material direct)
+
+> 🪦 `app-tabs` est supprimé. Utilise `mat-tab-group` :
+
+```ts
+import { MatTabsModule } from '@angular/material/tabs';
+```
+```html
+<mat-tab-group>
+  <mat-tab label="Informations">
+    <!-- contenu onglet 1 -->
+  </mat-tab>
+  <mat-tab label="Éléments liés">
+    <!-- contenu onglet 2 -->
+  </mat-tab>
+  <mat-tab label="Coûts">
+    <!-- contenu onglet 3 -->
+  </mat-tab>
+</mat-tab-group>
+```
+
+> Avec `mat-tab-group`, le **contenu est dans le template** (pas de `@switch` externe).
+> Si tu as besoin de savoir quel onglet est actif, utilise `(selectedIndexChange)` ou
+> `(selectedTabChange)` sur `mat-tab-group`.
 
 ---
 
@@ -68,35 +126,6 @@ indicateurs.
 ```
 > Le composant coerce l'entrée en chaîne ; il affiche `?` si `name` est vide. Sans `src`, il
 > affiche les initiales (1 mot → 1 lettre, 2+ mots → 1re + dernière).
-
----
-
-## `app-tabs` — onglets internes
-```ts
-export interface Tab { key: string; label: string; icon?: string; badge?: string | number; }
-```
-| Membre | Type | Défaut |
-|--------|------|--------|
-| `tabs` | `Tab[]` (**requis**) | — |
-| `activeKey` | `model<string>` (**requis**) | — (**two-way**) |
-
-```ts
-readonly tabs: Tab[] = [
-  { key: 'infos',  label: 'Informations', icon: 'fa-solid fa-circle-info' },
-  { key: 'items',  label: 'Éléments liés', badge: 3 },
-];
-readonly activeTab = signal('infos');
-```
-```html
-<app-tabs [tabs]="tabs" [(activeKey)]="activeTab" />
-
-@switch (activeTab()) {
-  @case ('infos') { <!-- contenu onglet 1 --> }
-  @case ('items') { <!-- contenu onglet 2 --> }
-}
-```
-> `activeKey` est **requis** et bidirectionnel → fournis toujours un signal initialisé sur une
-> `key` existante.
 
 ---
 
@@ -142,17 +171,22 @@ readonly crumbs: BreadcrumbItem[] = [
 
 ## Imports
 ```ts
+// Composants maison
 import { PageHeaderComponent } from '@app/shared/ui/page-header/page-header.component';
-import { CardComponent } from '@app/shared/ui/card/card.component';
-import { DividerComponent } from '@app/shared/ui/divider/divider.component';
 import { AvatarComponent } from '@app/shared/ui/avatar/avatar.component';
-import { TabsComponent, Tab } from '@app/shared/ui/tabs/tabs.component';
 import { BreadcrumbComponent, BreadcrumbItem } from '@app/shared/ui/breadcrumb/breadcrumb.component';
 import { StatCardComponent } from '@app/shared/ui/stat-card/stat-card.component';
+
+// Material direct (remplacent les anciens wrappers)
+import { MatCardModule } from '@angular/material/card';        // mat-card
+import { MatTabsModule } from '@angular/material/tabs';        // mat-tab-group
+import { MatDividerModule } from '@angular/material/divider';  // mat-divider
+import { MatButtonModule } from '@angular/material/button';
 ```
 
 ## Pièges récurrents
-- Oublier d'initialiser `activeKey` des `Tabs` (requis) → erreur.
+- Chercher `app-card` / `app-tabs` / `app-divider` : ces wrappers ont été **supprimés**. Utilise Material.
+- Oublier `mat-card-header` ou `mat-card-content` → le contenu s'affiche sans le style M3.
+- Gérer l'espacement entre cartes avec des marges : utilise une grille parente (`display:grid; gap`).
 - Mettre un `link` sur le **dernier** crumb (il doit représenter la page courante, sans lien).
 - Recréer des cartes de stats en HTML brut alors que `app-stat-card` existe.
-- Gérer l'espacement entre cartes avec des marges : utilise une grille parente (`display:grid; gap`).

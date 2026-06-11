@@ -1,31 +1,57 @@
-# 🎨 Bootcamp UI — la bibliothèque `shared/ui` de A à Z
+# 🎨 Bootcamp UI — Angular Material/CDK + la bibliothèque `shared/ui`
 
-Ce parcours couvre **tous** les composants réutilisables du projet : à quoi ils servent,
-leur **API exacte** (inputs / outputs / model / slots), des **exemples** (minimal + réel) et
-les **pièges**. Objectif : ne plus jamais écrire de HTML brut quand un composant existe.
+Ce parcours couvre **tout l'outillage UI** du projet. Depuis la refonte, l'UI repose sur
+**deux niveaux** :
+
+1. **Angular Material / CDK, utilisés directement** dans les templates pour tout ce qui est
+   générique : boutons, cartes, onglets, paginator, tooltip, checkbox, menu, drag & drop…
+   → **on ne crée plus de wrapper `app-*` pour ça.**
+2. **`shared/ui`** : une bibliothèque réduite de composants maison, gardée uniquement là où un
+   wrapper apporte une vraie valeur (API signal propre, logique métier d'affichage, ou look
+   spécifique au projet) : formulaires, table, modal, feedback…
+
+Objectif : savoir **choisir le bon niveau** (Material direct vs `app-*`) et connaître l'**API
+exacte** de chaque composant maison.
 
 ## 📂 Sommaire
 
-| Fichier | Composants couverts |
-|---------|---------------------|
-| `01-boutons.md` | **Button · IconButton** |
-| `02-formulaires.md` | **Input · Textarea · Select · SearchInput · Checkbox · Switch** |
-| `03-feedback.md` | **Spinner · Badge · Chip · Alert · EmptyState · Toast · Tooltip · ProgressBar · Skeleton** |
-| `04-structure.md` | **PageHeader · Card · Divider · Avatar · Tabs · Breadcrumb · StatCard** |
+| Fichier | Contenu |
+|---------|---------|
+| `00-material-cdk.md` | **Comment utiliser Material & le CDK** : thème, imports de modules, tableau besoin → solution, drag & drop |
+| `01-boutons.md` | **Boutons Material** : `mat-flat-button`, `mat-button`, `mat-stroked-button`, `mat-icon-button`, `color="warn"` |
+| `02-formulaires.md` | **Input · Textarea · Select · SearchInput** (wrappers Material) + `mat-checkbox` / `mat-slide-toggle` |
+| `03-feedback.md` | **Spinner · Badge · Alert · EmptyState · Toast · ProgressBar · Skeleton** + `matTooltip` / `mat-chip` |
+| `04-structure.md` | **PageHeader · Avatar · Breadcrumb · StatCard** + `mat-card` / `mat-tab-group` / `mat-divider` |
 | `05-table.md` | **Table** + directive **appCell** (cellules personnalisées, tri, recherche, filtres) |
-| `06-overlays.md` | **Modal · ConfirmDialog · Dropzone** |
-| `07-pagination.md` | **Pagination** |
-| `08-recettes.md` | **Compositions complètes** (page liste, fiche, formulaire, CRUD avec modale) |
+| `06-overlays.md` | **Modal · ConfirmDialog · Dropzone** (CDK overlay/focus-trap à l'intérieur) |
+| `07-pagination.md` | **`mat-paginator`** (le composant `app-pagination` n'existe plus) |
+| `08-recettes.md` | **Compositions complètes** (page liste, fiche, formulaire, CRUD avec modale, kanban) |
 
 > Pour brancher ces composants à un **service + GLPI** (créer un élément, un utilisateur, éditer,
 > supprimer), voir `../docs/13-recettes-features.md`.
 
 ---
 
+## 🚦 La règle de décision : Material direct ou `app-*` ?
+
+| Besoin | Solution | Pourquoi |
+|--------|----------|----------|
+| Bouton (toutes variantes) | **Material direct** (`mat-flat-button`, `mat-button`…) | générique, thémé |
+| Carte, onglets, divider, chip, tooltip, checkbox, toggle, menu, datepicker, paginator | **Material direct** | générique, thémé |
+| Drag & drop, virtual scroll, focus trap | **CDK direct** (`cdkDrag`, `cdk-virtual-scroll-viewport`…) | primitives |
+| Champ de formulaire lié à un signal | `app-input` / `app-textarea` / `app-select` | wrappe `mat-form-field` + expose `[(value)]` signal |
+| Tableau de données (tri/recherche/cellules custom) | `app-table` + `appCell` | logique maison |
+| Modale / confirmation | `app-modal` / `app-confirm-dialog` | CDK focus-trap + scroll block intégrés |
+| Statut coloré, état vide, skeleton, stat… | `app-badge`, `app-empty-state`, etc. | look projet |
+
+**Ne crée jamais un nouveau wrapper `app-*` pour un widget Material existant.** Inversement, ne
+réécris pas en HTML brut ce qu'un composant `shared/ui` fait déjà.
+
+---
+
 ## 🧭 Rappels de base : comment brancher un composant
 
-Tous les composants sont **standalone + OnPush + signals**. Côté parent, la façon de les
-brancher dépend du type de membre exposé :
+Tous les composants maison sont **standalone + OnPush + signals**. Côté parent :
 
 | Le composant expose… | Tu écris dans le template parent | Sens |
 |----------------------|----------------------------------|------|
@@ -36,29 +62,25 @@ brancher dépend du type de membre exposé :
 | `<ng-content>` | tout ce que tu mets **entre les balises** | projection |
 | `<ng-content select="[slot=x]">` | un élément avec `slot="x"` | projection nommée |
 
-**Exemple complet, qui illustre les 4 cas :**
+**Exemple complet :**
 ```html
-<app-button
-  variant="danger"                       <!-- input littéral -->
-  [loading]="isSaving()"                  <!-- input lié -->
-  (clicked)="save()">                     <!-- output -->
-  Enregistrer                             <!-- ng-content -->
-</app-button>
+<button mat-flat-button [disabled]="submitting()" (click)="save()">Enregistrer</button>
 
-<app-input label="Titre" [(value)]="titre" />   <!-- model bidirectionnel -->
+<app-input label="Titre" [(value)]="titre" />        <!-- model bidirectionnel -->
+<app-modal [open]="modalOpen()" (closed)="modalOpen.set(false)">…</app-modal>
 ```
 
-> ⚠️ **Penser à `imports`** : un composant standalone que tu utilises dans un template doit
-> figurer dans le tableau `imports: [...]` du `@Component`. Sinon : erreur de template. Et un
-> composant importé **mais non utilisé** → warning `NG8113`.
+> ⚠️ **Penser à `imports`** : un composant standalone (maison **ou** module Material) utilisé
+> dans un template doit figurer dans le tableau `imports: [...]` du `@Component`. Pour Material,
+> on importe le **module** : `MatButtonModule`, `MatCardModule`… Sinon : erreur de template.
+> Un composant importé **mais non utilisé** → warning `NG8113`.
 
 ---
 
-## 🗺️ Cheat-sheet : tous les composants d'un coup d'œil
+## 🗺️ Cheat-sheet : tous les composants `shared/ui` d'un coup d'œil
 
 | Composant | Sélecteur | Entrées principales | Sorties | `[(model)]` | Projection |
 |-----------|-----------|---------------------|---------|-------------|------------|
-| Button | `app-button` | `variant`, `size`, `loading`, `disabled` | `clicked` | — | label |
 | Input | `app-input` | `label`*, `placeholder`, `errorMessage`, `type` | — | `value` | — |
 | Textarea | `app-textarea` | `label`*, `placeholder`, `errorMessage`, `rows` | — | `value` | — |
 | Select | `app-select` | `label`*, `options`*, `placeholder`, `errorMessage` | — | `value` | — |
@@ -67,20 +89,11 @@ brancher dépend du type de membre exposé :
 | Spinner | `app-spinner` | `size` | — | — | — |
 | EmptyState | `app-empty-state` | `icon`, `title`, `message` | — | — | — |
 | Toast | `app-toast` | *(piloté par `ToastService`)* | — | — | — |
-| Tooltip | `app-tooltip` | `text`*, `position` | — | — | élément enveloppé |
 | PageHeader | `app-page-header` | `title`*, `subtitle` | — | — | actions |
-| Card | `app-card` | `title`, `padding` | — | — | corps + `[slot=header-actions]` |
-| Divider | `app-divider` | `label` | — | — | — |
 | Avatar | `app-avatar` | `name`, `src`, `size` | — | — | — |
-| Tabs | `app-tabs` | `tabs`* | — | `activeKey`* | — |
 | Table | `app-table` | `columns`*, `rows`*, `searchKeys`, `showToolbar`, `emptyIcon`, `emptyLabel` | — | — | `ng-template[appCell]` |
 | Modal | `app-modal` | `open`*, `title`, `size` | `closed` | — | corps + `[slot=footer]` |
 | ConfirmDialog | `app-confirm-dialog` | `open`*, `title`, `message`, `confirmLabel`, `cancelLabel`, `danger` | `confirmed`, `cancelled` | — | — |
-| Pagination | `app-pagination` | `total`*, `pageSize` | — | `page` | — |
-| IconButton | `app-icon-button` | `icon`*, `variant`, `size`, `disabled`, `ariaLabel` | `clicked` | — | — |
-| Checkbox | `app-checkbox` | `label`, `disabled` | — | `checked` | — |
-| Switch | `app-switch` | `label`, `disabled` | — | `checked` | — |
-| Chip | `app-chip` | `variant`, `icon`, `removable` | `removed` | — | contenu |
 | Alert | `app-alert` | `variant`, `title`, `icon`, `dismissible` | `dismissed` | — | message |
 | ProgressBar | `app-progress-bar` | `value`, `max`, `variant`, `showLabel` | — | — | — |
 | Skeleton | `app-skeleton` | `width`, `height`, `circle` | — | — | — |
@@ -88,13 +101,24 @@ brancher dépend du type de membre exposé :
 | StatCard | `app-stat-card` | `label`, `value`, `icon`, `variant` | — | — | — |
 | Dropzone | `app-dropzone` | `accept`, `multiple`, `disabled`, `label`, `hint`, `icon` | `filesSelected` | — | — |
 
-`*` = entrée **obligatoire** (`input.required` / `model.required`).
+`*` = entrée **obligatoire** (`input.required`).
+
+> 🪦 **Composants supprimés** (remplacés par Material — ne les cherche plus) :
+> `app-button` → `mat-flat-button`/`mat-button` · `app-icon-button` → `mat-icon-button` ·
+> `app-card` → `mat-card` · `app-tabs` → `mat-tab-group` · `app-tooltip` → `matTooltip` ·
+> `app-checkbox` → `mat-checkbox` · `app-switch` → `mat-slide-toggle` · `app-chip` → `mat-chip` ·
+> `app-divider` → `mat-divider` · `app-pagination` → `mat-paginator`.
 
 ---
 
-## 🎨 Rappel design tokens (voir `../docs/08-ui-ux-styles.md`)
-Tous ces composants stylent via tokens (`--spacing-*`, `--color-*`, `--radius-*`, `--font-size-*`).
-Quand tu poses un composant, gère son **espacement** depuis le parent (flex/grid + `gap`),
-pas avec des marges en dur.
+## 🎨 Rappel design tokens & thème (voir `../docs/08-ui-ux-styles.md`)
 
-Bon parcours — commence par `01-boutons.md`.
+- Les composants maison stylent via les **tokens CSS** (`--spacing-*`, `--color-*`, `--radius-*`,
+  `--font-size-*`) définis dans `src/styles/variables.css` et `src/styles/colors.css`.
+- Les composants **Material** sont thémés globalement dans `src/material-theme.scss`
+  (palette générée depuis le jaune `#FFD600` + overrides `mat.theme-overrides`). Tu n'as **rien
+  à configurer par composant** : `mat-flat-button` sort déjà aux couleurs du projet.
+- Quand tu poses un composant, gère son **espacement depuis le parent** (flex/grid + `gap`),
+  pas avec des marges en dur.
+
+Bon parcours — commence par `00-material-cdk.md`.

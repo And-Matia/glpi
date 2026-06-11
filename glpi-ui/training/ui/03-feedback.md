@@ -1,6 +1,9 @@
-# 03 — Feedback : `Spinner`, `Badge`, `Chip`, `Alert`, `EmptyState`, `Toast`, `Tooltip`, `ProgressBar`, `Skeleton`
+# 03 — Feedback : `Spinner`, `Badge`, `Alert`, `EmptyState`, `Toast`, `ProgressBar`, `Skeleton` + `matTooltip` / `mat-chip`
 
 Tout ce qui informe l'utilisateur : chargement, statut, messages, vide, progression.
+
+> 🪦 `app-chip` et `app-tooltip` **n'existent plus**. Remplacés par `mat-chip`/`mat-chip-set` et
+> la directive `matTooltip` (Angular Material direct).
 
 ---
 
@@ -49,24 +52,53 @@ statusVariant(status: string): BadgeVariant {
 
 ---
 
-## `app-chip` — étiquette **supprimable** (sélections, filtres actifs)
-| Membre | Type | Défaut |
-|--------|------|--------|
-| `variant` | `'neutral' \| 'primary' \| 'success' \| 'warning' \| 'danger' \| 'info'` | `'neutral'` |
-| `icon` | `string` | `''` |
-| `removable` | `boolean` | `false` |
-| `removed` | `output<void>()` | — |
+## Chip / étiquette retirable : `mat-chip` (Material direct)
 
+> 🪦 `app-chip` est supprimé. Utilise `mat-chip` / `mat-chip-set` :
+
+```ts
+import { MatChipsModule } from '@angular/material/chips';
+```
+```ts
+readonly selected = signal<Item[]>([]);
+```
 ```html
-@for (item of selected(); track item.id) {
-  <app-chip icon="fa-solid fa-desktop" [removable]="true" (removed)="unselect(item.id)">
-    {{ item.name }}
-  </app-chip>
-}
+<mat-chip-set>
+  @for (item of selected(); track item.id) {
+    <mat-chip (removed)="unselect(item.id)">
+      {{ item.name }}
+      <button matChipRemove aria-label="Retirer {{ item.name }}">
+        <i class="fa-solid fa-xmark"></i>
+      </button>
+    </mat-chip>
+  }
+</mat-chip-set>
 ```
 
-> Différence **Badge vs Chip** : le Badge est purement informatif ; le Chip représente une
-> sélection que l'utilisateur peut retirer (`removable` + `removed`).
+> **Badge vs Chip** : le Badge (`app-badge`) est purement informatif. Le Chip (`mat-chip`)
+> représente une sélection que l'utilisateur peut retirer — il a un bouton `matChipRemove`.
+
+---
+
+## Infobulle : `matTooltip` (Material direct)
+
+> 🪦 `app-tooltip` est supprimé. Utilise la directive `matTooltip` :
+
+```ts
+import { MatTooltipModule } from '@angular/material/tooltip';
+```
+```html
+<!-- Sur n'importe quel élément -->
+<button mat-icon-button matTooltip="Réinitialiser les données GLPI" aria-label="Reset"
+        (click)="reset()">
+  <i class="fa-solid fa-rotate-left"></i>
+</button>
+
+<!-- Position personnalisée -->
+<span matTooltip="Identifiant interne" matTooltipPosition="right">{{ item().id }}</span>
+```
+
+Positions disponibles : `above` (défaut), `below`, `left`, `right`.
 
 ---
 
@@ -126,22 +158,7 @@ this.toast.info('Import en cours…');
 ```
 
 > ⚠️ Toast = **résultat d'une action**. Pour une erreur persistante de chargement, préfère
-> `app-alert` ou un `<p class="error">` dans la page.
-
----
-
-## `app-tooltip` — infobulle (enveloppe un élément)
-| Membre | Type | Défaut |
-|--------|------|--------|
-| `text` | `string` (**requis**) | — |
-| `position` | `'top' \| 'bottom' \| 'left' \| 'right'` | `'top'` |
-| *(contenu)* | `ng-content` | l'élément survolé |
-
-```html
-<app-tooltip text="Réinitialise toutes les données GLPI" position="bottom">
-  <app-icon-button icon="fa-solid fa-rotate-left" ariaLabel="Reset" (clicked)="reset()" />
-</app-tooltip>
-```
+> `app-alert` ou un message d'erreur inline dans la page.
 
 ---
 
@@ -182,12 +199,12 @@ Idéal pour un import : `value = lignes traitées`, `max = total`.
 ```ts
 import { SpinnerComponent } from '@app/shared/ui/spinner/spinner.component';
 import { BadgeComponent } from '@app/shared/ui/badge/badge.component';
-import { ChipComponent } from '@app/shared/ui/chip/chip.component';
 import { AlertComponent } from '@app/shared/ui/alert/alert.component';
 import { EmptyStateComponent } from '@app/shared/ui/empty-state/empty-state.component';
-import { TooltipComponent } from '@app/shared/ui/tooltip/tooltip.component';
 import { ProgressBarComponent } from '@app/shared/ui/progress-bar/progress-bar.component';
 import { SkeletonComponent } from '@app/shared/ui/skeleton/skeleton.component';
+import { MatChipsModule } from '@angular/material/chips';          // chip direct
+import { MatTooltipModule } from '@angular/material/tooltip';      // tooltip direct
 // Toast : pas d'import composant dans les pages — inject ToastService.
 ```
 
@@ -196,3 +213,7 @@ import { SkeletonComponent } from '@app/shared/ui/skeleton/skeleton.component';
 - Utiliser un Badge là où il faut un Chip (besoin de retirer un élément) et vice-versa.
 - Mettre une Alert pour un succès éphémère (préfère un Toast) ou un Toast pour une erreur
   persistante (préfère une Alert).
+- Sur `mat-chip` avec suppression, oublier `matChipRemove` sur le bouton intérieur → le chip
+  ne se retire pas.
+- Sur `matTooltip` : l'infobulle n'apparaît pas si l'élément est `disabled` (comportement
+  Material par défaut).

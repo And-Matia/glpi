@@ -6,8 +6,8 @@ l'API **GLPI 11.0.7**.
 
 À la fin de ce parcours, tu dois être capable de **concevoir et implémenter seul, de bout
 en bout, une fonctionnalité complexe en ~2 heures** : comprendre le besoin, concevoir la
-solution, l'implémenter (services + RxJS + composants), l'intégrer dans l'UI, la déboguer
-et la faire entrer proprement dans l'architecture existante.
+solution, l'implémenter (services + `async/await` + composants Angular Material), l'intégrer
+dans l'UI, la déboguer et la faire entrer proprement dans l'architecture existante.
 
 ---
 
@@ -30,13 +30,13 @@ training/
 │   ├── 11-flux-de-donnees.md
 │   ├── 12-debugging.md
 │   └── 13-recettes-features.md   ← CRUD bout-en-bout (créer élément/user, éditer, supprimer)
-├── ui/                       ← la bibliothèque shared/ui de A à Z (API + exemples)
+├── ui/                       ← Angular Material/CDK + shared/ui de A à Z (API + exemples)
 │   ├── README.md
+│   ├── 00-material-cdk.md       05-table.md
 │   ├── 01-boutons.md            06-overlays.md
 │   ├── 02-formulaires.md        07-pagination.md
 │   ├── 03-feedback.md           08-recettes.md
-│   ├── 04-structure.md
-│   └── 05-table.md
+│   └── 04-structure.md
 └── exercises/                ← le parcours pratique, du débutant à l'examen
     ├── README.md
     ├── niveau-1-comprehension.md
@@ -62,13 +62,14 @@ training/
 | **J5 — CRUD & UI** | doc 13 (recettes) + dossier `ui/` | Exercices niveau 8 (création/édition/suppression) |
 | **J6 — Examen** | doc 12 (debug) + relecture | Exercices niveaux 6 et 7 (simulations chronométrées) |
 
-> 📚 Le dossier **`ui/`** documente **chaque composant** `shared/ui` (API exacte + exemples +
-> pièges). À garder ouvert pendant les exercices. La doc **13** est ton aide-mémoire CRUD :
-> créer un élément, étendre la création de ticket, créer un utilisateur, éditer, supprimer.
+> 📚 Le dossier **`ui/`** couvre **Angular Material/CDK** (utilisés directement) et **chaque
+> composant `shared/ui`** (API exacte + exemples + pièges). Commence par `ui/00-material-cdk.md`.
+> La doc **13** est ton aide-mémoire CRUD : créer un élément, étendre la création de ticket,
+> créer un utilisateur, éditer, supprimer (tous en `async/await`).
 
-> Tu peux accélérer si tu connais déjà Angular, mais **ne saute pas les docs 04 (RxJS),
-> 05 (services) et 09 (workflow import)** : c'est là que se concentre 80 % de la difficulté
-> réelle de l'examen.
+> Tu peux accélérer si tu connais déjà Angular, mais **ne saute pas les docs 05 (services),
+> 09 (workflow import) et 13 (recettes CRUD)** : c'est là que se concentre 80 % de la difficulté
+> réelle de l'examen. La doc 04 (RxJS) couvre les pipelines d'import uniquement.
 
 ---
 
@@ -117,6 +118,6 @@ Coche quand tu maîtrises **sans aide** :
 - [ ] Créer une entité GLPI de bout en bout : résoudre les dropdowns (libellé→id), POST `{ input }`,
       gérer succès/erreur (élément, **utilisateur**, ticket)
 - [ ] Éditer (charger→pré-remplir→PUT) et supprimer (ConfirmDialog + `force_purge`) une entité
-- [ ] Utiliser le bon composant `shared/ui` pour chaque besoin (cf. dossier `ui/`) sans HTML brut
+- [ ] Utiliser Material directement (`mat-flat-button`, `mat-card`, `mat-tab-group`…) et les composants `shared/ui` au bon endroit
 
 Quand toutes les cases sont cochées, tu es prêt. Bon courage 💪

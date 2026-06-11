@@ -1,8 +1,12 @@
-# 02 — Formulaires : `Input`, `Textarea`, `Select`, `SearchInput`, `Checkbox`, `Switch`
+# 02 — Formulaires : `Input`, `Textarea`, `Select`, `SearchInput` + Material direct
 
-Tous les champs de saisie exposent un **`model<T>()`** → tu les branches en **two-way** avec
+Tous les champs maison exposent un **`model<T>()`** → tu les branches en **two-way** avec
 `[(prop)]="monSignal"`. Pas de `FormsModule`, pas de `ReactiveFormsModule` : ici **un signal par
 champ**, et la validation se fait à la main dans `onSubmit()`.
+
+Depuis la refonte, `app-input` / `app-textarea` / `app-select` **wrappent Angular Material**
+(`mat-form-field` + `matInput` / `mat-select`) : tu profites du look Material thémé, mais avec
+une API signal minimaliste. Pour **checkbox** et **switch**, on utilise Material **directement**.
 
 > Rappel signals : `[(value)]="titre"` est du sucre pour `[value]="titre()" (valueChange)="titre.set($event)"`.
 > Donc tu passes **le signal lui-même** (`titre`), pas son appel (`titre()`).
@@ -11,12 +15,14 @@ champ**, et la validation se fait à la main dans `onSubmit()`.
 
 ## `app-input`
 
+Wrappe `mat-form-field` + `matInput` ; l'erreur s'affiche via `mat-error`.
+
 ### API exacte
 | Membre | Type | Défaut | Sens |
 |--------|------|--------|------|
 | `label` | `string` (**requis**) | — | input |
 | `placeholder` | `string` | `''` | input |
-| `errorMessage` | `string` | `''` | input — affiché en rouge sous le champ |
+| `errorMessage` | `string` | `''` | input — affiché sous le champ (`mat-error`) |
 | `type` | `string` | `'text'` | input — `text`, `email`, `password`, `number`… |
 | `value` | `model<string>('')` | `''` | **two-way** |
 
@@ -57,7 +63,7 @@ Identique à `Input` + `rows`.
 
 ## `app-select`
 
-Liste déroulante. `options` est un tableau `SelectOption`.
+Liste déroulante (wrappe `mat-select`). `options` est un tableau `SelectOption`.
 
 ```ts
 export interface SelectOption { value: string | number; label: string; }
@@ -73,7 +79,7 @@ export interface SelectOption { value: string | number; label: string; }
 
 ### Exemple réel (options depuis les constantes)
 ```ts
-import { TICKET_PRIORITY_OPTIONS } from '@app/core/constants/glpi.constants';
+import { TICKET_PRIORITY_OPTIONS } from '@app/core/constants/ticket.constants';
 readonly priorityOptions = TICKET_PRIORITY_OPTIONS;   // [{value:1,label:'Très basse'}, …]
 readonly priority = signal<number | null>(null);
 ```
@@ -86,14 +92,17 @@ readonly priority = signal<number | null>(null);
 
 ### Construire des options à la volée
 ```ts
+import { ASSET_TYPES } from '@app/core/models/asset.model';
 readonly typeOptions: SelectOption[] = ASSET_TYPES.map(a => ({ value: a.itemtype, label: a.label }));
 ```
+(Des listes prêtes existent déjà : `ASSET_TYPE_OPTIONS`, `TICKET_TYPE_OPTIONS`,
+`TICKET_PRIORITY_OPTIONS`, `ITEM_STATUS_OPTIONS` dans `core/constants/`.)
 
 ---
 
 ## `app-search-input`
 
-Champ de recherche avec icône loupe. Deux façons de réagir :
+Champ de recherche maison (icône loupe, pas de `mat-form-field`). Deux façons de réagir :
 - `[(value)]` → tu dérives une liste filtrée par `computed` (le plus courant).
 - `(search)` → sortie qui émet la valeur à chaque frappe (si tu préfères un handler).
 
@@ -120,48 +129,69 @@ readonly filtered = computed(() => {
 
 ---
 
-## `app-checkbox` & `app-switch`
+## Checkbox & switch : Material **direct**
 
-Deux variantes booléennes : `checkbox` (case classique) et `switch` (interrupteur). Même API.
-
-| Membre | Type | Défaut |
-|--------|------|--------|
-| `label` | `string` | `''` |
-| `disabled` | `boolean` | `false` |
-| `checked` | `model<boolean>(false)` | `false` |
+> 🪦 `app-checkbox` et `app-switch` n'existent plus. Utilise Material :
 
 ```ts
-readonly active = signal(true);
+import { MatCheckboxModule } from '@angular/material/checkbox';
+import { MatSlideToggleModule } from '@angular/material/slide-toggle';
+```
+```ts
+readonly active   = signal(true);
+readonly accepted = signal(false);
 ```
 ```html
-<app-switch label="Compte actif" [(checked)]="active" />
-<app-checkbox label="J'accepte les conditions" [(checked)]="accepted" />
+<mat-slide-toggle [checked]="active()" (change)="active.set($event.checked)">
+  Compte actif
+</mat-slide-toggle>
+
+<mat-checkbox [checked]="accepted()" (change)="accepted.set($event.checked)">
+  J'accepte les conditions
+</mat-checkbox>
 ```
+
+> Le `$event` de `(change)` est un `MatCheckboxChange` / `MatSlideToggleChange` → la valeur est
+> dans **`$event.checked`**.
+
+Champs Material avancés (à utiliser directement aussi, avec `mat-form-field`) :
+`mat-datepicker` (dates) et `mat-autocomplete` (suggestion) — voir `00-material-cdk.md` §2 pour
+les imports.
 
 ---
 
 ## Recette : un formulaire complet validé à la main
+
 ```ts
 readonly name = signal('');
 readonly type = signal<number | null>(null);
 readonly submitted = signal(false);
+readonly submitting = signal(false);
 
 readonly nameError = computed(() =>
   this.submitted() && !this.name().trim() ? 'Nom obligatoire' : '');
 
-onSubmit(): void {
+async onSubmit(): Promise<void> {
   this.submitted.set(true);
   if (!this.name().trim() || this.type() === null) {
     this.toast.warning('Veuillez remplir les champs obligatoires.');
     return;
   }
-  // … POST via le service …
+  this.submitting.set(true);
+  try {
+    await this.service.create({ name: this.name().trim() /* … */ });
+    this.toast.success('Créé avec succès !');
+  } catch {
+    this.toast.error('Erreur lors de la création.');
+  } finally {
+    this.submitting.set(false);
+  }
 }
 ```
 ```html
 <app-input label="Nom" [(value)]="name" [errorMessage]="nameError()" />
 <app-select label="Type" [options]="typeOptions" [(value)]="type" />
-<app-button [loading]="submitting()" (clicked)="onSubmit()">Créer</app-button>
+<button mat-flat-button [disabled]="submitting()" (click)="onSubmit()">Créer</button>
 ```
 
 ## Imports
@@ -170,12 +200,14 @@ import { InputComponent } from '@app/shared/ui/input/input.component';
 import { TextareaComponent } from '@app/shared/ui/textarea/textarea.component';
 import { SelectComponent, SelectOption } from '@app/shared/ui/select/select.component';
 import { SearchInputComponent } from '@app/shared/ui/search-input/search-input.component';
-import { CheckboxComponent } from '@app/shared/ui/checkbox/checkbox.component';
-import { SwitchComponent } from '@app/shared/ui/switch/switch.component';
+import { MatCheckboxModule } from '@angular/material/checkbox';      // checkbox direct
+import { MatSlideToggleModule } from '@angular/material/slide-toggle'; // switch direct
+import { MatButtonModule } from '@angular/material/button';
 ```
 
 ## Pièges récurrents
 - Passer `titre()` au lieu de `titre` dans `[(value)]` → erreur (le banana-in-a-box veut le signal).
 - Oublier que `input type="number"` renvoie une **string**.
 - Filtrer le signal source d'une recherche au lieu d'un `computed` dérivé.
-- Oublier d'ajouter le composant aux `imports` du `@Component`.
+- Oublier d'ajouter le composant / module aux `imports` du `@Component`.
+- Sur `mat-checkbox`/`mat-slide-toggle`, lire `$event` au lieu de **`$event.checked`**.

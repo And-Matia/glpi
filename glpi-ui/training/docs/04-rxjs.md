@@ -1,6 +1,10 @@
-# 04 — RxJS en profondeur (le cœur de la difficulté)
+# 04 — RxJS en profondeur (pipelines d'import)
 
-> 🎯 80 % des bugs et des points d'examen se jouent ici. Lis lentement, code en parallèle.
+> 🎯 Ce guide couvre RxJS tel qu'il est utilisé dans ce projet : **exclusivement dans les
+> services d'import** (`core/services/import/`). Les composants de feature (pages) consomment
+> les services via `firstValueFrom()` + `async/await` — pas de `.subscribe()` là-bas.
+>
+> Lis ce guide pour comprendre l'import. Pour les patterns CRUD des pages, voir `13-recettes-features.md`.
 
 RxJS modélise des **flux de valeurs dans le temps**. `HttpClient` renvoie des **Observables**.
 On les **compose** avec des opérateurs (`map`, `switchMap`, …) puis on s'y **abonne**

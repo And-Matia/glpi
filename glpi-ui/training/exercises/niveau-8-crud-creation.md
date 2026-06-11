@@ -29,21 +29,21 @@ signals, route lazy.
 
 Voir `docs/13-recettes-features.md` §1. Cœur :
 ```ts
-forkJoin({
-  states_id:        this.dropdown.resolve('State', this.status() ?? ''),
-  locations_id:     this.dropdown.resolve('Location', this.location()),
-  manufacturers_id: this.dropdown.resolve('Manufacturer', this.manufacturer()),
-  model_id:         cfg.modelType ? this.dropdown.resolve(cfg.modelType, this.model()) : of(0),
-}).pipe(
-  switchMap(ids => {
-    const input: Record<string, unknown> = {
-      name: this.name().trim(), otherserial: this.inventory(),
-      states_id: ids.states_id, locations_id: ids.locations_id, manufacturers_id: ids.manufacturers_id,
-    };
-    if (cfg.modelField) input[cfg.modelField] = ids.model_id;
-    return this.itemService.create(input, this.type()!);
-  }),
-).subscribe({ /* toast + navigate */ });
+async onSubmit(): Promise<void> {
+  const [states_id, locations_id, manufacturers_id, model_id] = await Promise.all([
+    firstValueFrom(this.dropdown.resolve('State', this.status() ?? '')),
+    firstValueFrom(this.dropdown.resolve('Location', this.location())),
+    firstValueFrom(this.dropdown.resolve('Manufacturer', this.manufacturer())),
+    cfg.modelType ? firstValueFrom(this.dropdown.resolve(cfg.modelType, this.model())) : Promise.resolve(0),
+  ]);
+  const input: Record<string, unknown> = {
+    name: this.name().trim(), otherserial: this.inventory(),
+    states_id, locations_id, manufacturers_id,
+  };
+  if (cfg.modelField) input[cfg.modelField] = model_id;
+  await firstValueFrom(this.itemService.create(input, this.type()!));
+  this.toast.success('Élément créé.'); this.router.navigate(['/front-office/items']);
+}
 ```
 </details>
 
@@ -70,7 +70,7 @@ mapping `name→login`, `realname→nom`, `firstname→prénom`.
 **Fichiers.** `core/models/user.model.ts`, `core/services/glpi/user/user-v1.service.ts`,
 `features/back-office/users/user-create/*`, `app.routes.ts`, `sidebar.component.html`.
 
-**Compétences.** Créer un service d'écriture neuf, mapping bidirectionnel, `app-switch`.
+**Compétences.** Créer un service d'écriture neuf, mapping bidirectionnel, `mat-slide-toggle` (interrupteur Material direct).
 
 <details><summary>Solution (extrait)</summary>
 
@@ -168,7 +168,7 @@ toast de succès.
 confirmation.
 
 **Objectifs.**
-- Colonne « actions » avec `app-icon-button` (corbeille, `danger`).
+- Colonne « actions » avec `<button mat-icon-button color="warn">` (corbeille).
 - `app-confirm-dialog` (`[danger]="true"`) ; supprimer via `ItemV1Service.delete(id, type)` ;
   recharger la liste.
 
@@ -183,14 +183,24 @@ confirmation.
 
 ```html
 <ng-template appCell="actions" let-row>
-  <app-icon-button icon="fa-solid fa-trash" variant="danger" ariaLabel="Supprimer" (clicked)="ask(row)" />
+  <button mat-icon-button color="warn" aria-label="Supprimer" (click)="ask(row)">
+    <i class="fa-solid fa-trash"></i>
+  </button>
 </ng-template>
 <app-confirm-dialog [open]="confirmOpen()" [danger]="true" title="Supprimer ?"
   (confirmed)="confirm()" (cancelled)="confirmOpen.set(false)" />
 ```
 ```ts
-confirm(){ const r=this.toDelete(); this.confirmOpen.set(false); if(!r) return;
-  this.itemService.delete(r.id, r.item_type).subscribe(()=>this.reload()); }
+async confirm(): Promise<void> {
+  const r = this.toDelete();
+  this.confirmOpen.set(false);
+  if (!r) return;
+  try {
+    await firstValueFrom(this.itemService.delete(r.id, r.item_type));
+    this.toast.success('Supprimé.');
+    await this.reload();
+  } catch { this.toast.error('Échec de la suppression.'); }
+}
 ```
 </details>
 

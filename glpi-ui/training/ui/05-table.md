@@ -68,7 +68,9 @@ Donc pour afficher la valeur d'une cellule, **il faut `let-value="value"`**. Éc
 
   <!-- ✅ ligne entière (pour des actions qui ont besoin de l'id, etc.) -->
   <ng-template appCell="actions" let-row>
-    <app-icon-button icon="fa-solid fa-eye" ariaLabel="Voir" (clicked)="open(row)" />
+    <button mat-icon-button aria-label="Voir" (click)="open(row)">
+      <i class="fa-solid fa-eye"></i>
+    </button>
   </ng-template>
 
   <!-- ✅ les deux à la fois -->
@@ -127,7 +129,8 @@ readonly rows = computed(() => this.items().map(i => ({
 ```ts
 import { TableComponent, TableColumn } from '@app/shared/ui/table/table.component';
 import { TableCellDirective } from '@app/shared/ui/table/table-cell.directive';
-// @Component({ imports: [TableComponent, TableCellDirective] })
+import { MatButtonModule } from '@angular/material/button';    // pour mat-icon-button dans les actions
+// @Component({ imports: [TableComponent, TableCellDirective, MatButtonModule] })
 ```
 > ⚠️ `TableCellDirective` doit être **importé séparément** dès que tu utilises `appCell`.
 
@@ -137,3 +140,4 @@ import { TableCellDirective } from '@app/shared/ui/table/table-cell.directive';
 3. Formater dans le template au lieu de préparer `rows` en amont.
 4. Deux barres de recherche (toolbar interne + la tienne) → `[showToolbar]="false"`.
 5. Mettre un objet (`{name:…}`) comme valeur de cellule → `[object Object]`. Aplatis en string.
+6. Utiliser `app-icon-button` dans `appCell` : ce composant n'existe plus → `<button mat-icon-button>`.

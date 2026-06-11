@@ -1,42 +1,62 @@
-# 07 — Pagination : `app-pagination`
+# 07 — Pagination : `mat-paginator` (Angular Material)
 
-Pour découper une longue liste en pages. Le composant **ne coupe pas** les données lui-même : il
-gère seulement le **numéro de page courant** ; à toi de dériver la tranche visible.
+> 🪦 `app-pagination` **n'existe plus**. La pagination est assurée par `mat-paginator`
+> d'Angular Material, utilisé directement.
 
-## API exacte
-| Membre | Type | Défaut |
-|--------|------|--------|
-| `total` | `number` (**requis**) | — (nombre **total** d'éléments) |
-| `pageSize` | `number` | `10` |
-| `page` | `model<number>(1)` | `1` (**two-way**, 1-based) |
+```ts
+import { MatPaginatorModule, PageEvent } from '@angular/material/paginator';
+```
 
-Le composant calcule en interne `totalPages = ceil(total / pageSize)` et la fenêtre de numéros.
+---
+
+## Comment ça marche
+
+`mat-paginator` affiche les contrôles (précédent, suivant, sélecteur de taille de page) et émet
+un `(page)` à chaque changement. **Il ne coupe pas les données lui-même** : tu tranches le
+tableau dans un `computed` en fonction de `pageIndex` et `pageSize`.
+
+> ⚠️ `mat-paginator` est **0-based** (`pageIndex` commence à 0). Adapte le calcul de la tranche.
+
+---
 
 ## Recette complète (liste paginée)
+
 ```ts
-readonly all      = signal<Row[]>([]);     // données complètes
-readonly page     = signal(1);
-readonly pageSize = 10;
+import { MatPaginatorModule, PageEvent } from '@angular/material/paginator';
+
+readonly all       = signal<Row[]>([]);
+readonly pageIndex = signal(0);   // 0-based
+readonly pageSize  = signal(10);
 
 readonly paged = computed(() => {
-  const start = (this.page() - 1) * this.pageSize;
-  return this.all().slice(start, start + this.pageSize);
+  const start = this.pageIndex() * this.pageSize();
+  return this.all().slice(start, start + this.pageSize());
 });
+
+onPage(e: PageEvent): void {
+  this.pageIndex.set(e.pageIndex);
+  this.pageSize.set(e.pageSize);
+}
 ```
 ```html
 <app-table [columns]="columns" [rows]="paged()" />
 
-<app-pagination
-  [total]="all().length"
-  [pageSize]="pageSize"
-  [(page)]="page" />
+<mat-paginator
+  [length]="all().length"
+  [pageSize]="pageSize()"
+  [pageSizeOptions]="[10, 25, 50]"
+  [pageIndex]="pageIndex()"
+  (page)="onPage($event)" />
 ```
 
-## Avec recherche/filtre : paginer la liste **filtrée**, et revenir page 1
+---
+
+## Avec recherche/filtre : paginer la liste filtrée, revenir page 0
+
 ```ts
-readonly q        = signal('');
-readonly page     = signal(1);
-readonly pageSize = 10;
+readonly q         = signal('');
+readonly pageIndex = signal(0);
+readonly pageSize  = signal(10);
 
 readonly filtered = computed(() => {
   const t = this.q().toLowerCase().trim();
@@ -44,29 +64,46 @@ readonly filtered = computed(() => {
 });
 
 readonly paged = computed(() => {
-  const start = (this.page() - 1) * this.pageSize;
-  return this.filtered().slice(start, start + this.pageSize);
+  const start = this.pageIndex() * this.pageSize();
+  return this.filtered().slice(start, start + this.pageSize());
 });
 
-// Revenir à la page 1 quand la recherche change (sinon page vide)
+onPage(e: PageEvent): void {
+  this.pageIndex.set(e.pageIndex);
+  this.pageSize.set(e.pageSize);
+}
+
 constructor() {
-  effect(() => { this.q(); this.page.set(1); });
+  // Revenir à la page 0 quand la recherche change (sinon page vide)
+  effect(() => { this.q(); this.pageIndex.set(0); });
 }
 ```
 ```html
 <app-search-input [(value)]="q" />
 <app-table [columns]="columns" [rows]="paged()" [showToolbar]="false" />
-<app-pagination [total]="filtered().length" [pageSize]="pageSize" [(page)]="page" />
+
+<mat-paginator
+  [length]="filtered().length"
+  [pageSize]="pageSize()"
+  [pageSizeOptions]="[10, 25, 50]"
+  [pageIndex]="pageIndex()"
+  (page)="onPage($event)" />
 ```
+
+---
 
 ## Import
 ```ts
-import { PaginationComponent } from '@app/shared/ui/pagination/pagination.component';
+import { MatPaginatorModule, PageEvent } from '@angular/material/paginator';
+// @Component({ imports: [MatPaginatorModule] })
 ```
 
 ## Pièges récurrents
-- Passer `total = nombre de la page` au lieu du **total global** → la pagination disparaît.
-- Oublier de **remettre `page` à 1** quand un filtre réduit la liste → on reste sur une page
-  désormais vide.
+- `pageIndex` est **0-based** (pas 1-based comme l'ancien `app-pagination`) → tranche = `pageIndex * pageSize`.
+- Passer `length = nombre de la page` au lieu du **total global** (ou du total filtré) → la
+  navigation disparaît.
+- Oublier de **remettre `pageIndex` à 0** quand un filtre réduit la liste → on reste sur une
+  page désormais vide.
 - Paginer la liste brute alors qu'un filtre est actif → paginer **`filtered()`**, pas `all()`.
-- `page` est **1-based** : la tranche est `(page-1) * pageSize`.
+- Passer `[length]="all().length"` alors qu'un filtre est actif → `mat-paginator` calcule un
+  mauvais nombre de pages.

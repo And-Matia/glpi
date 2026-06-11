@@ -1,15 +1,36 @@
 @use '@angular/material' as mat;
+@use './styles/theme-colors' as palettes;
 
 html {
   height: 100%;
 
   @include mat.theme((
     color: (
-      primary:  mat.$cyan-palette,
-      tertiary: mat.$orange-palette,
+      primary:  palettes.$primary-palette,
+      tertiary: palettes.$tertiary-palette,
     ),
     typography: Roboto,
     density:    0,
+  ));
+
+  // Pin system tokens to the exact brand values from src/styles/colors.css —
+  // the seed-generated tonal roles land on harmonized (darker) tones otherwise.
+  @include mat.theme-overrides((
+    primary:              var(--color-primary),
+    on-primary:           var(--color-text-primary),
+    primary-container:    var(--color-primary-light),
+    on-primary-container: var(--color-text-primary),
+    secondary:            var(--color-accent),
+    on-secondary:         var(--color-text-primary),
+    tertiary:             var(--color-tertiary),
+    on-tertiary:          var(--color-white),
+    error:                var(--color-danger),
+    on-error:             var(--color-white),
+    surface:              var(--color-surface),
+    on-surface:           var(--color-text-primary),
+    on-surface-variant:   var(--color-text-secondary),
+    outline:              var(--color-border-strong),
+    outline-variant:      var(--color-border),
   ));
 }
 

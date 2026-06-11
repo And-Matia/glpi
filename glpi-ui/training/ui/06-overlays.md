@@ -20,20 +20,35 @@ Les composants qui s'affichent **par-dessus** la page, et le sélecteur de fichi
 ### Exemple : formulaire en modale
 ```ts
 readonly modalOpen = signal(false);
-readonly name = signal('');
+readonly saving    = signal(false);
+readonly name      = signal('');
 
 openModal()  { this.name.set(''); this.modalOpen.set(true); }
-save()       { /* … POST … */ this.modalOpen.set(false); }
+
+async save(): Promise<void> {
+  this.saving.set(true);
+  try {
+    await this.service.create({ name: this.name() });
+    this.toast.success('Créé !');
+    this.modalOpen.set(false);
+  } catch {
+    this.toast.error('Erreur lors de la création.');
+  } finally {
+    this.saving.set(false);
+  }
+}
 ```
 ```html
-<app-button (clicked)="openModal()">Ajouter</app-button>
+<button mat-flat-button (click)="openModal()">Ajouter</button>
 
 <app-modal [open]="modalOpen()" title="Nouvel élément" size="md" (closed)="modalOpen.set(false)">
   <app-input label="Nom" [(value)]="name" />
 
   <div slot="footer">
-    <app-button variant="ghost" (clicked)="modalOpen.set(false)">Annuler</app-button>
-    <app-button [loading]="saving()" (clicked)="save()">Enregistrer</app-button>
+    <button mat-button (click)="modalOpen.set(false)">Annuler</button>
+    <button mat-flat-button [disabled]="saving()" (click)="save()">
+      {{ saving() ? 'Enregistrement…' : 'Enregistrer' }}
+    </button>
   </div>
 </app-modal>
 ```
@@ -57,11 +72,21 @@ Spécialisation du modal pour les confirmations, surtout les actions **destructr
 ```ts
 readonly confirmOpen = signal(false);
 
-askDelete()  { this.confirmOpen.set(true); }
-onConfirmed(){ this.confirmOpen.set(false); /* … DELETE … */ }
+askDelete()   { this.confirmOpen.set(true); }
+
+async onConfirmed(): Promise<void> {
+  this.confirmOpen.set(false);
+  try {
+    await this.service.delete(this.item().id);
+    this.toast.success('Supprimé.');
+    this.router.navigate(['/back-office/items']);
+  } catch {
+    this.toast.error('Impossible de supprimer.');
+  }
+}
 ```
 ```html
-<app-button variant="danger" (clicked)="askDelete()">Supprimer</app-button>
+<button mat-flat-button color="warn" (click)="askDelete()">Supprimer</button>
 
 <app-confirm-dialog
   [open]="confirmOpen()"
@@ -110,6 +135,7 @@ onFiles(files: File[]): void {
 import { ModalComponent } from '@app/shared/ui/modal/modal.component';
 import { ConfirmDialogComponent } from '@app/shared/ui/confirm-dialog/confirm-dialog.component';
 import { DropzoneComponent } from '@app/shared/ui/dropzone/dropzone.component';
+import { MatButtonModule } from '@angular/material/button';
 ```
 
 ## Pièges récurrents
@@ -118,3 +144,5 @@ import { DropzoneComponent } from '@app/shared/ui/dropzone/dropzone.component';
 - Oublier de réinitialiser le formulaire à l'ouverture (`openModal()` qui remet les signals à vide).
 - Oublier `[danger]="true"` sur une suppression (le bouton doit être rouge).
 - Lire `event` au lieu de `event[0]` sur `filesSelected`.
+- Utiliser `app-button` / `(clicked)` dans le footer du modal : c'est l'ancienne API.
+  Aujourd'hui : `<button mat-flat-button>` et `(click)` natif.
