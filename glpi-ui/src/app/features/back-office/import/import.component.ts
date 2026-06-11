@@ -22,21 +22,17 @@ interface ImportStep {
   validationErrors: string[];
 }
 
-const STEP_LABELS = [
-  'Assets',
-  'Tickets',
-  'Coûts tickets',
-  'Images',
-] as const;
+interface ImportService {
+  validateFile(file: File): Promise<string[]>;
+  importFile(file: File): Promise<ImportStats>;
+}
 
-const STEP_ICONS = [
-  'fa-solid fa-desktop',
-  'fa-solid fa-ticket',
-  'fa-solid fa-coins',
-  'fa-solid fa-images',
-] as const;
-
-const ACCEPT = ['.csv', '.csv', '.csv', '.zip'] as const;
+interface StepConfig {
+  label:   string;
+  icon:    string;
+  accept:  string;
+  service: ImportService;
+}
 
 function emptyStep(): ImportStep {
   return { status: 'idle', selectedFile: null, isDragOver: false, result: null, errorMsg: null, validationErrors: [] };
@@ -51,16 +47,19 @@ function emptyStep(): ImportStep {
 })
 export class ImportComponent {
   private readonly dropdown         = inject(GlpiDropdownService);
-  private readonly itemImport       = inject(AssetImportService);
-  private readonly ticketImport     = inject(TicketImportService);
-  private readonly ticketCostImport = inject(TicketCostImportService);
-  private readonly imageImport      = inject(ImageImportService);
+
+  readonly stepConfigs: StepConfig[] = [
+    { label: 'Assets',        icon: 'fa-solid fa-desktop', accept: '.csv', service: inject(AssetImportService)
+    },
+    { label: 'Tickets',       icon: 'fa-solid fa-ticket',  accept: '.csv', service: inject(TicketImportService)
+    },
+    { label: 'Coûts tickets', icon: 'fa-solid fa-coins',   accept: '.csv', service:
+        inject(TicketCostImportService) },
+    { label: 'Images',        icon: 'fa-solid fa-images',  accept: '.zip', service: inject(ImageImportService)
+    },
+  ];
 
   readonly steps = signal<ImportStep[]>([emptyStep(), emptyStep(), emptyStep(), emptyStep()]);
-
-  readonly stepLabels = STEP_LABELS;
-  readonly stepIcons  = STEP_ICONS;
-  readonly accept     = ACCEPT;
 
   readonly isProcessing = computed(() =>
     this.steps().some(s => s.status === 'validating' || s.status === 'importing')
@@ -95,7 +94,7 @@ export class ImportComponent {
   private handleFile(file: File, index: number): void {
     this.patchStep(index, { selectedFile: file, status: 'validating', validationErrors: [], errorMsg: null });
 
-    this.getService(index).validateFile(file).then(errors => {
+    this.stepConfigs[index].service.validateFile(file).then(errors => {
       if (errors.length > 0) {
         this.patchStep(index, { status: 'error', validationErrors: errors });
       } else {
@@ -119,7 +118,7 @@ export class ImportComponent {
   private async runStep(file: File, index: number): Promise<void> {
     this.patchStep(index, { status: 'importing' });
     try {
-      const stats = await this.getService(index).importFile(file);
+      const stats = await this.stepConfigs[index].service.importFile(file);
       this.patchStep(index, {
         result: stats,
         status: stats.failed > 0 && stats.success === 0 ? 'error' : 'done',
@@ -141,15 +140,6 @@ export class ImportComponent {
     });
   }
 
-  private getService(index: number): AssetImportService | TicketImportService | TicketCostImportService | ImageImportService {
-    switch (index) {
-      case 0: return this.itemImport;
-      case 1: return this.ticketImport;
-      case 2: return this.ticketCostImport;
-      case 3: return this.imageImport;
-      default: throw new Error(`Étape invalide: ${index}`);
-    }
-  }
 
   private patchStep(index: number, patch: Partial<ImportStep>): void {
     this.steps.update(steps => {

@@ -1,17 +1,28 @@
-import { inject, Injectable } from '@angular/core';
-import { HttpClient } from '@angular/common/http';
-import { firstValueFrom } from 'rxjs';
-import { environment } from '../../../../environment';
-import { ASSET_API_TYPES } from '@app/core/models/asset.model';
-import { UserService } from './user.service';
+import {inject, Injectable, signal} from '@angular/core';
+import {HttpClient} from '@angular/common/http';
+import {firstValueFrom} from 'rxjs';
+import {environment} from '../../../../environment';
+import {ASSET_API_TYPES} from '@app/core/models/asset.model';
+import {UserService} from './user.service';
 
 const ENTITIES = ['TicketCost', 'Item_Ticket', 'Document_Item', 'Ticket', 'Document', ...ASSET_API_TYPES];
 
-@Injectable({ providedIn: 'root' })
+export type EntityStatus = 'idle' | 'fetching' | 'deleting' | 'done' | 'error';
+
+export interface EntityProgress {
+  label: string;
+  status: EntityStatus;
+  current: number;
+  total: number;
+}
+
+@Injectable({providedIn: 'root'})
 export class ResetService {
-  private readonly http        = inject(HttpClient);
-  private readonly baseUrl     = environment.glpi.v1ApiUrl;
+  private readonly http = inject(HttpClient);
+  private readonly baseUrl = environment.glpi.v1ApiUrl;
   private readonly userService = inject(UserService);
+
+  readonly progress = signal<EntityProgress[]>([]);
 
   resetAll(): Promise<void> {
     return this.deleteAll(false);
@@ -21,15 +32,43 @@ export class ResetService {
     return this.deleteAll(true);
   }
 
-  private async deleteAll(includeTrash: boolean): Promise<void> {
-    const users = await this.userService.getAll();
+  private patchProgress(id: number, patch: Partial<EntityProgress>): void {
+    this.progress.update(list => {
+      const next = [...list];
+      next[id] = {...next[id], ...patch};
+      return next;
+    })
+  }
 
-    for (const entityType of ENTITIES) {
-      const path = encodeURIComponent(entityType);
+  private async deleteAll(includeTrash: boolean): Promise<void> {
+    this.progress.set(
+      ENTITIES.map(e => (
+        {
+          label: e,
+          status: 'idle',
+          current: 0,
+          total: 0
+        })
+      )
+    );
+
+    for (let i = 0; i < ENTITIES.length; i++) {
+      const path = encodeURIComponent(ENTITIES[i]);
+      this.patchProgress(i, {status: 'fetching'});
       const ids = await this.collectIds(path, includeTrash);
-      await this.purgeIds(path, ids);
+      this.patchProgress(i, {status: 'deleting', current: 0, total: ids.length});
+      try {
+        await this.purgeIds(path, ids, current => {
+          this.patchProgress(i, {current});
+        });
+        this.patchProgress(i, {status: 'done'});
+      } catch (e) {
+        this.patchProgress(i, {status: 'error'});
+        throw e
+      }
     }
 
+    const users = await this.userService.getAll();
     for (const user of users) {
       if (user.id < 7) continue;
       try {
@@ -40,31 +79,37 @@ export class ResetService {
     }
   }
 
-  private async collectIds(path: string, includeTrash: boolean): Promise<number[]> {
-    const fetch = async (deleted: boolean): Promise<number[]> => {
-      try {
-        const url = `${this.baseUrl}/${path}?range=0-9999${deleted ? '&is_deleted=1' : ''}`;
-        const items = await firstValueFrom(this.http.get<{ id: number }[]>(url));
-        return items.map(i => i.id);
-      } catch {
-        return [];
-      }
-    };
+  private async fetch(path: string, deleted: boolean = true): Promise<number[]> {
+    const url = `${this.baseUrl}/${path}?range=0-9999${deleted ? '&is_deleted=1' : ''}`;
+    const items = await firstValueFrom((this.http.get<{ id: number }[]>(url)));
+    return items.map(item => item.id);
+  }
 
-    const active = await fetch(false);
+  private async collectIds(path: string, includeTrash: boolean): Promise<number[]> {
+
+    const active = await this.fetch(path, false);
     if (!includeTrash) return active;
 
-    const trash = await fetch(true);
+    const trash = await this.fetch(path, true);
     return [...new Set([...active, ...trash])];
   }
 
-  private async purgeIds(path: string, ids: number[]): Promise<void> {
-    for (const id of ids) {
-      try {
-        await firstValueFrom(this.http.delete<void>(`${this.baseUrl}/${path}/${id}/?force_purge=1`));
-      } catch (e) {
-        throw new Error(e instanceof Error ? e.message : 'Erreur inconnue');
-      }
+  private async purgeIds(path: string, ids: number[], onProgress: (current: number) => void): Promise<void> {
+    const CHUNK = 20;
+    let deleted = 0;
+    for (let i = 0; i < ids.length; i += CHUNK) {
+      const chunk = ids.slice(i, i + CHUNK);
+      await Promise.all(
+        chunk.map(id =>
+          firstValueFrom(
+            this.http.delete<void>(`${this.baseUrl}/${path}/${id}/?force_purge=1`)
+          ).catch(e => {
+            throw new Error(e instanceof Error ? e.message : 'Erreur inconnue');
+          })
+        )
+      )
+      deleted += chunk.length;
+      onProgress(deleted);
     }
   }
 }

@@ -1,23 +1,23 @@
-import { Injectable, signal, computed } from '@angular/core';
+import { Injectable, signal } from '@angular/core';
 import {environment} from '../../../environment';
 
 @Injectable({ providedIn: 'root' })
 export class AuthService {
-  private readonly user = signal<string | null>(localStorage.getItem('backOfficePassword') );
+  private readonly loggedIn = signal(localStorage.getItem('backOfficeAuth') !== null);
 
-  readonly isLoggedIn   = computed(() => this.user() !== null);
+  readonly isLoggedIn   = this.loggedIn.asReadonly();
 
   login(code: string): boolean {
     if (code === environment.backOfficePassword) {
-      localStorage.setItem('backOfficePassword', code);
-      this.user.set(code)
+      localStorage.setItem('backOfficeAuth', '1');
+      this.loggedIn.set(true);
       return true;
     }
     return false;
   }
 
   logout(): void {
-    localStorage.removeItem('backOfficePassword');
-    this.user.set(null);
+    localStorage.removeItem('backOfficeAuth');
+    this.loggedIn.set(false)
   }
 }

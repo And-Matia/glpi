@@ -13,9 +13,39 @@
       <p class="reset-page__error">{{ error() }}</p>
     }
 
-    <button mat-flat-button color="warn" [disabled]="loading()" (click)="openConfirm()">
+    <button mat-flat-button color="warn" [disabled]="loading()" (click)="openConfirmDialog()">
       Réinitialiser les données
     </button>
+
+    @if (progress().length) {
+      <app-table
+        [columns]="columns"
+        [rows]="progress()"
+        [showToolbar]="false"
+      >
+        <ng-template appCell="status" let-row>
+          <app-badge [variant]="statusVariant(row.status)">
+            {{ row.status }}
+          </app-badge>
+        </ng-template>
+
+        <ng-template appCell="progress" let-row>
+          @if (row.status === 'done' || row.status === 'error' || row.status === 'deleting') {
+            <div>
+              {{ row.current }} / {{ row.total }}
+              <app-progress-bar
+                [value]="row.current"
+                [max]="row.total"
+                [showLabel]="true"
+                [variant]="progressVariant(row.status)"
+              />
+            </div>
+          } @else {
+            <span>-</span>
+          }
+        </ng-template>
+      </app-table>
+    }
   </div>
 </div>
 

@@ -11,14 +11,10 @@ export class GlpiSessionService {
   private accessToken: string | null = null;
 
   async initAll(): Promise<void> {
-    try {
-      await Promise.all([
-        this.initV1Session(),
-        this.initV2Token()
-      ]);
-    }catch (error) {
-      console.error('Failed to initialize GLPI session:', error);
-    }
+    await Promise.all([
+      this.initV1Session(),
+      this.initV2Token()
+    ]);
   }
 
   private async initV1Session(): Promise<void> {

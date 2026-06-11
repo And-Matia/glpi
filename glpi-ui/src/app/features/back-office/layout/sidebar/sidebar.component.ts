@@ -21,8 +21,8 @@ export class SidebarComponent {
     this.isOpen.set(!this.isOpen());
   }
 
-  logout() {
+  logout() : void {
     this.auth.logout();
-    return this.router.navigate(['/back-office/login']);
+    this.router.navigate(['/back-office/login']);
   }
 }
