@@ -2,9 +2,9 @@ import { inject, Injectable } from '@angular/core';
 import { HttpClient } from '@angular/common/http';
 import { firstValueFrom } from 'rxjs';
 import { environment } from '../../../../environment';
-import { ImportStats } from '@app/core/models';
 import { GlpiLookupService } from './lookup.service';
 import { parseCsvText, parseFrenchFloat, ParseResult } from '@app/core/utils/csv.utils';
+import { GlpiBaseImportService } from './glpi-base-import.service';
 
 interface TicketCostRow {
   num_ticket:      string; // CSV reference, e.g. "TK-001" or "1" — kept as text
@@ -14,51 +14,12 @@ interface TicketCostRow {
 }
 
 @Injectable({ providedIn: 'root' })
-export class TicketCostImportService {
+export class TicketCostImportService extends GlpiBaseImportService<TicketCostRow> {
   private readonly http   = inject(HttpClient);
   private readonly lookup = inject(GlpiLookupService);
   private readonly base   = environment.glpi.v1ApiUrl;
 
-  importFile(file: File): Promise<ImportStats> {
-    return this.doImport(file);
-  }
-
-  async validateFile(file: File): Promise<string[]> {
-    try {
-      const { errors } = await this.parseFile(file);
-      return errors.map(e => `Ligne ${e.row}: ${e.error}`);
-    } catch (e) {
-      return [e instanceof Error ? e.message : 'Erreur inconnue'];
-    }
-  }
-
-  private async doImport(file: File): Promise<ImportStats> {
-    const { rows, errors: parseErrors } = await this.parseFile(file);
-
-    const stats: ImportStats = {
-      total: rows.length + parseErrors.length,
-      success: 0,
-      failed: parseErrors.length,
-      errors: [...parseErrors],
-    };
-
-    for (let i = 0; i < rows.length; i++) {
-      try {
-        await this.importRow(rows[i]);
-        stats.success++;
-      } catch (err) {
-        stats.failed++;
-        stats.errors.push({ row: i + 2, error: err instanceof Error ? err.message : String(err) });
-      }
-    }
-
-    return stats;
-  }
-
-  private async importRow(row: TicketCostRow): Promise<void> {
-    // Map the CSV ticket reference to the real GLPI id by querying the ticket whose
-    // `externalid` carries that reference (set during the ticket import). GLPI ids
-    // are auto-incremented, so we must NOT assume num_ticket === id.
+  protected async importRow(row: TicketCostRow): Promise<void> {
     const ticketId = await this.lookup.findTicketIdByRef(row.num_ticket);
     if (ticketId === null) {
       throw new Error(`Ticket #${row.num_ticket} introuvable : importez d'abord la feuille des tickets (feuille 2).`);
@@ -76,7 +37,7 @@ export class TicketCostImportService {
     );
   }
 
-  private parseFile(file: File): Promise<ParseResult<TicketCostRow>> {
+  protected parseFile(file: File): Promise<ParseResult<TicketCostRow>> {
     return file.text().then(text =>
       parseCsvText<TicketCostRow>(text, record => {
         if (!record['Num_Ticket']) throw new Error('Num_Ticket manquant');

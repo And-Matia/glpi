@@ -41,16 +41,18 @@ export class ResetService {
   }
 
   private async deleteAll(includeTrash: boolean): Promise<void> {
-    this.progress.set(
-      ENTITIES.map(e => (
+
+    const userProgressId = ENTITIES.length;
+    this.progress.set([
+      ...ENTITIES.map(e => (
         {
           label: e,
-          status: 'idle',
+          status: 'idle' as EntityStatus,
           current: 0,
           total: 0
-        })
-      )
+        })), {label: 'Utilisateurs', status: 'idle', current: 0, total: 0}]
     );
+
 
     for (let i = 0; i < ENTITIES.length; i++) {
       const path = encodeURIComponent(ENTITIES[i]);
@@ -68,15 +70,32 @@ export class ResetService {
       }
     }
 
+    this.patchProgress(userProgressId, {status: 'fetching'});
     const users = await this.userService.getAll();
-    for (const user of users) {
-      if (user.id < 7) continue;
-      try {
-        await this.userService.delete(user.id);
-      } catch (e) {
-        throw new Error(e instanceof Error ? e.message : 'Erreur inconnue');
-      }
+    const deletable = users.filter(u => u.id >= 7);
+    this.patchProgress(userProgressId, {status: 'deleting', total: deletable.length, current: 0});
+
+    const USER_CHUNK = 5;
+    let deleted = 0;
+
+    for (let i = 0; i < deletable.length; i += USER_CHUNK) {
+      const chunk = deletable.slice(i, i + USER_CHUNK);
+      await Promise.all(
+        chunk.map(user =>
+          this.userService.delete(user.id)
+            .then(() => {
+              deleted++;
+              this.patchProgress(userProgressId, {current: deleted});
+            })
+            .catch(e => {
+              this.patchProgress(userProgressId, {status: 'error'});
+              throw new Error(e instanceof Error ? e.message : 'Erreur inconnue');
+            })
+        )
+      );
     }
+
+    this.patchProgress(userProgressId, {status: 'done'});
   }
 
   private async fetch(path: string, deleted: boolean = true): Promise<number[]> {

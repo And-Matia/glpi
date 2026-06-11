@@ -11,8 +11,8 @@
         <mat-card-content>
           <div class="step-header">
             <span class="step-number">{{ $index + 1 }}</span>
-            <i [class]="stepIcons[$index]" class="step-icon"></i>
-            <span class="step-label">{{ stepLabels[$index] }}</span>
+            <i [class]="stepConfigs[$index].icon" class="step-icon"></i>
+            <span class="step-label">{{ stepConfigs[$index].label }}</span>
             @if (step.status === 'validated') {
               <app-badge variant="success">Valide</app-badge>
             }
@@ -37,7 +37,7 @@
             >
               <i class="fa-solid fa-file-arrow-up drop-zone__icon"></i>
               <p class="drop-zone__text">Glissez un fichier ici ou</p>
-              <input type="file" [accept]="accept[$index]" (change)="onFileChange($event, $index)" hidden #fileInput />
+              <input type="file" [accept]="stepConfigs[$index].accept" (change)="onFileChange($event, $index)" hidden #fileInput />
               <button mat-button (click)="fileInput.click()">Parcourir</button>
             </div>
           }

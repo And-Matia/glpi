@@ -1,3 +1,5 @@
+import {ImportStats} from '@app/core/models';
+
 /** Parses one CSV line, handling quoted fields with escaped internal quotes. */
 export function parseCsvLine(line: string): string[] {
   const fields: string[] = [];
@@ -22,6 +24,39 @@ export function parseCsvLine(line: string): string[] {
   }
   fields.push(current);
   return fields;
+}
+
+function extractErrorText(err: unknown): string {
+  if (err && typeof err === 'object' && 'error' in err) {
+    const body = (err as { error: unknown }).error;
+    if (Array.isArray(body)) return body.join(' — ');
+    if (typeof body === 'string') return body;
+  }
+  return err instanceof Error ? err.message : String(err);
+}
+
+export async function runCsvImport<T>(
+  parsed: ParseResult<T>,
+  importRow: (row: T) => Promise<void>,
+): Promise<ImportStats> {
+  const stats: ImportStats = {
+    total: parsed.rows.length + parsed.errors.length,
+    success: 0,
+    failed: parsed.errors.length,
+    errors: [...parsed.errors],
+  };
+
+  for (let i = 0; i < parsed.rows.length; i++) {
+    try {
+      await importRow(parsed.rows[i]);
+      stats.success++;
+    } catch (err) {
+      stats.failed++;
+      stats.errors.push({row: i + 2, error: extractErrorText(err)});
+    }
+  }
+
+  return stats;
 }
 
 export interface ParseResult<T> {

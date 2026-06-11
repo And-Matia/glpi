@@ -44,10 +44,10 @@ export const TICKET_TYPE_CODE: Record<string, number> = {
 
 export const TICKET_STATUS_CODE: Record<string, number> = {
   'New':                   1,
-  'Processing (assigned)': 2,
-  'Processing (planned)':  3,
-  'Pending':               4,
-  'Solved':                5,
+  'In Progress (assigned)': 2,
+  // 'Processing (planned)':  3,
+  // 'Pending':               4,
+  // 'Solved':                5,
   'Closed':                6,
 };
 
