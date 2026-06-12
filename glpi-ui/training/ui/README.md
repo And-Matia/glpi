@@ -26,6 +26,13 @@ exacte** de chaque composant maison.
 | `06-overlays.md` | **Modal · ConfirmDialog · Dropzone** (CDK overlay/focus-trap à l'intérieur) |
 | `07-pagination.md` | **`mat-paginator`** (le composant `app-pagination` n'existe plus) |
 | `08-recettes.md` | **Compositions complètes** (page liste, fiche, formulaire, CRUD avec modale, kanban) |
+| `09-kanban.md` | **Kanban CDK** : base, transitions avec modale, WIP limits, densité, filtre technicien, swimlanes |
+| `10-modales-avancees.md` | **Modales avancées** : données depuis une modale, modales empilées, drawer coulissant, re-auth à la volée |
+| `11-formulaires-avances.md` | **Formulaires avancés** : champs conditionnels, brouillon auto-sauvegardé, wizard, édition en masse, inline editing |
+| `12-tableaux-avances.md` | **Tableaux avancés** : tri multi-colonnes, colonnes masquables, lignes extensibles, multi-sélection, export |
+| `13-recherche-filtres.md` | **Recherche & filtres** : chips, autocomplete catégorisé, debounce+annulation, favoris, partage URL |
+| `14-dashboard-widgets.md` | **Dashboard** : KPI cards + animation, sélecteur période, graphiques CSS, drag-to-reorder, sync indicator |
+| `15-permissions-auth.md` | **Permissions & Auth** : route guard, rôles multiples, bandeau protégé, élévation à la volée |
 
 > Pour brancher ces composants à un **service + GLPI** (créer un élément, un utilisateur, éditer,
 > supprimer), voir `../docs/13-recettes-features.md`.

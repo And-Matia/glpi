@@ -29,14 +29,19 @@ training/
 │   ├── 10-conventions-bonnes-pratiques.md
 │   ├── 11-flux-de-donnees.md
 │   ├── 12-debugging.md
-│   └── 13-recettes-features.md   ← CRUD bout-en-bout (créer élément/user, éditer, supprimer)
+│   ├── 13-recettes-features.md   ← CRUD bout-en-bout (créer élément/user, éditer, supprimer)
+│   ├── 14-patterns-examen.md    ← 12 catégories × patterns UI + métier (référence rapide)
+│   └── 15-rxjs-pratique.md      ← RxJS pratique : Observables→Promises, arrow functions, opérateurs
 ├── ui/                       ← Angular Material/CDK + shared/ui de A à Z (API + exemples)
 │   ├── README.md
 │   ├── 00-material-cdk.md       05-table.md
 │   ├── 01-boutons.md            06-overlays.md
 │   ├── 02-formulaires.md        07-pagination.md
 │   ├── 03-feedback.md           08-recettes.md
-│   └── 04-structure.md
+│   ├── 04-structure.md          09-kanban.md
+│   ├── 10-modales-avancees.md   11-formulaires-avances.md
+│   ├── 12-tableaux-avances.md   13-recherche-filtres.md
+│   ├── 14-dashboard-widgets.md  15-permissions-auth.md
 └── exercises/                ← le parcours pratique, du débutant à l'examen
     ├── README.md
     ├── niveau-1-comprehension.md
@@ -59,17 +64,20 @@ training/
 | **J2 — RxJS & données** | docs 04, 05 | Exercices niveau 2 (RxJS) |
 | **J3 — État & UI** | docs 06, 07, 08 | Exercices niveaux 3 et 4 |
 | **J4 — Métier & flux** | docs 09, 11, 10 | Exercice niveau 5 |
-| **J5 — CRUD & UI** | doc 13 (recettes) + dossier `ui/` | Exercices niveau 8 (création/édition/suppression) |
-| **J6 — Examen** | doc 12 (debug) + relecture | Exercices niveaux 6 et 7 (simulations chronométrées) |
+| **J5 — CRUD & UI** | doc 13 (recettes) + `ui/00→08` | Exercices niveau 8 (création/édition/suppression) |
+| **J6 — Patterns avancés** | `ui/09→15` (kanban, modales, formulaires, tableaux, recherche, dashboard, auth) | Exercices niveaux 5 et 6 |
+| **J7 — Examen** | doc 12 (debug) + `docs/14-patterns-examen.md` (référence 12 catégories) | Exercices niveau 7 (simulations chronométrées) |
 
 > 📚 Le dossier **`ui/`** couvre **Angular Material/CDK** (utilisés directement) et **chaque
 > composant `shared/ui`** (API exacte + exemples + pièges). Commence par `ui/00-material-cdk.md`.
 > La doc **13** est ton aide-mémoire CRUD : créer un élément, étendre la création de ticket,
 > créer un utilisateur, éditer, supprimer (tous en `async/await`).
+> La doc **14** (`docs/14-patterns-examen.md`) est la référence condensée pour les 36 séries d'examen.
+> La doc **15** (`docs/15-rxjs-pratique.md`) couvre RxJS → Promises, arrow functions dans les pipes.
 
 > Tu peux accélérer si tu connais déjà Angular, mais **ne saute pas les docs 05 (services),
 > 09 (workflow import) et 13 (recettes CRUD)** : c'est là que se concentre 80 % de la difficulté
-> réelle de l'examen. La doc 04 (RxJS) couvre les pipelines d'import uniquement.
+> réelle de l'examen. La doc 04 (RxJS) + 15 (RxJS pratique) couvrent les pipelines et patterns async.
 
 ---
 
