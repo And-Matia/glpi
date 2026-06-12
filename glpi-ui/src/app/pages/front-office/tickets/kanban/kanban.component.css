@@ -20,6 +20,16 @@
   margin: 0;
 }
 
+.kanban-page__actions {
+  display: flex;
+  align-items: center;
+  gap: var(--space-12);
+}
+
+.kanban-lang-select {
+  width: 140px;
+}
+
 .kanban__loader {
   display: flex;
   justify-content: center;
@@ -58,21 +68,10 @@
   border-bottom: 1px solid rgba(0, 0, 0, 0.08);
 }
 
-.kanban-col__titles {
-  display: flex;
-  flex-direction: column;
-}
-
-.kanban-col__label-fr {
+.kanban-col__label {
   font-weight: var(--weight-semibold);
   font-size: var(--text-15);
   color: var(--color-text-primary);
-}
-
-.kanban-col__label-mg {
-  font-size: var(--text-12);
-  color: var(--color-text-muted);
-  font-style: italic;
 }
 
 .kanban-col__count {

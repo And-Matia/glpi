@@ -29,7 +29,7 @@
         <div class="item-card">
           <div class="item-card__photo">
             @if (getImage(asset)) {
-              <img [ngSrc]="getImage(asset)!" [alt]="asset.name" class="item-card__img" fill />
+              <img [src]="getImage(asset)!" [alt]="asset.name" class="item-card__img" />
             } @else {
               <div class="item-card__icon-placeholder">
                 <i [class]="typeIcon(asset.item_type)"></i>

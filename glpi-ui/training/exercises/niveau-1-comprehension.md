@@ -40,7 +40,7 @@ But : savoir **lire**, **localiser** et **tracer** le code avant d'y toucher. R�
 **Objectifs.** Décris le flux **complet** : du `ngOnInit` jusqu'au libellé affiché. Cite la
 ou les méthodes de service, l'endpoint GLPI, le mapping, le(s) signal(aux) et le `computed`.
 
-**Fichiers.** `dashboard.component.ts`, `item-v1.service.ts`, `glpi.constants.ts`.
+**Fichiers.** `item-list-cost.component.ts`, `item-v1.service.ts`, `glpi.constants.ts`.
 
 **Compétences.** Lecture de flux (doc 11), signals/computed (doc 03/06).
 
@@ -63,7 +63,7 @@ fait `@for (e of itemsByType())` → `<app-badge>{{ e.count }}</app-badge>`.
 **Objectifs.** Explique : (a) la différence de forme des données renvoyées par v1 et v2 ;
 (b) pourquoi les deux renvoient quand même `Item[]` ; (c) qui utilise lequel et pourquoi.
 
-**Fichiers.** `item-v1.service.ts`, `item-v2.service.ts`, `dashboard.component.ts`,
+**Fichiers.** `item-v1.service.ts`, `item-v2.service.ts`, `item-list-cost.component.ts`,
 `item-list.component.ts`.
 
 <details><summary>Solution</summary>

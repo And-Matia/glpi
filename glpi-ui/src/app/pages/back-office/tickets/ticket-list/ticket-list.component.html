@@ -13,6 +13,15 @@
       [rows]="rows()"
       [searchKeys]="['titre', 'ref_ticket', 'status', 'type']"
     >
+      <ng-template appCell="status" let-row>
+        <span class="status-chip"
+              [style.background-color]="row['color'] + '22'"
+              [style.color]="row['color']"
+              [style.border-color]="row['color'] + '66'">
+          {{ row['status'] }}
+        </span>
+      </ng-template>
+
       <ng-template appCell="actions" let-row>
         <button mat-button (click)="openTicket(row)">Voir</button>
       </ng-template>

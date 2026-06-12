@@ -61,6 +61,12 @@ export const routes: Routes = [
         loadComponent: () =>
           import('./pages/front-office/items/item-list/item-list.component').then(m => m.ItemListComponent),
       },
+
+      {
+        path: 'items-costs',
+        loadComponent: () =>
+          import('./pages/front-office/items/item-list-cost/item-list-cost.component').then(m => m.ItemListCostComponent),
+      },
       {
         path: 'tickets/new',
         loadComponent: () =>

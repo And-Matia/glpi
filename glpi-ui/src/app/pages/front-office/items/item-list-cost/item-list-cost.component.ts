@@ -15,17 +15,19 @@ import {BadgeComponent} from '@app/shared/ui/badge/badge.component';
 import {StatCardComponent} from '@app/shared/ui/stat-card/stat-card.component';
 import {AssetListComponent} from '@app/shared/components/asset-list/asset-list.component';
 import {TicketListComponent} from '@app/shared/components/ticket-list/ticket-list.component';
+import {SuperCostService} from '@app/core/services/spring-boot/super-cost.service';
 
 @Component({
   selector: 'app-dashboard',
   imports: [MatCardModule, MatButtonModule, MatIconModule, PageHeaderComponent, SpinnerComponent, BadgeComponent, StatCardComponent, AssetListComponent, TicketListComponent],
-  templateUrl: './dashboard.component.html',
-  styleUrl: './dashboard.component.css',
+  templateUrl: './item-list-cost.component.html',
+  styleUrl: './item-list-cost.component.css',
   changeDetection: ChangeDetectionStrategy.OnPush,
 })
-export class DashboardComponent implements OnInit {
+export class ItemListCostComponent implements OnInit {
   private readonly itemService = inject(AssetService);
   private readonly ticketService = inject(TicketService);
+  private readonly superCostService = inject(SuperCostService);
   private readonly ticketCostService = inject(TicketCostService);
 
   readonly loading = signal(true);
@@ -81,6 +83,7 @@ export class DashboardComponent implements OnInit {
       this.ticketService.getAll(),
       this.itemService.getAll(),
       this.ticketCostService.getAll(),
+      this.superCostService.getAll()
     ])
       .then(([tickets, assets, ticketCosts]) => {
         this.tickets.set(tickets);
@@ -98,4 +101,6 @@ export class DashboardComponent implements OnInit {
     const n = isFinite(value) ? value : 0;
     return n.toLocaleString('fr-FR', {style: 'currency', currency: 'EUR'});
   }
+
+  getCostTotal() {}
 }

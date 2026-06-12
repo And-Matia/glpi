@@ -7,7 +7,8 @@ import { parseCsvText, parseFrenchFloat, ParseResult } from '@app/core/utils/csv
 import { GlpiBaseImportService } from '../base/glpi-base-import.service';
 
 interface TicketCostRow {
-  num_ticket:      string; // CSV reference, e.g. "TK-001" or "1" — kept as text
+  num_ticket:      string;
+  name:            string;
   duration_second: number;
   time_cost:       number;
   fixed_cost:      number;
@@ -28,6 +29,7 @@ export class TicketCostImportService extends GlpiBaseImportService<TicketCostRow
     await firstValueFrom(
       this.http.post<void>(`${this.base}/TicketCost`, {
         input: {
+          name:        row.name,
           tickets_id:  ticketId,
           actiontime:  row.duration_second,
           cost_time:   row.time_cost,
@@ -43,9 +45,10 @@ export class TicketCostImportService extends GlpiBaseImportService<TicketCostRow
         if (!record['num_ticket']) throw new Error('num_ticket manquant');
         return {
           num_ticket:      (record['num_ticket'] ?? '').trim(),
-          duration_second: Number(record['duration_second']) || 0,
-          time_cost:       parseFrenchFloat(record['time_cost']  ?? '0'),
-          fixed_cost:      parseFrenchFloat(record['fixed_cost'] ?? '0'),
+          name:            (record['name'] || '').trim() || 'Coût',
+          duration_second: Math.round(parseFrenchFloat(record['duration_second'] || '0')),
+          time_cost:       parseFrenchFloat(record['time_cost']  || '0'),
+          fixed_cost:      parseFrenchFloat(record['fixed_cost'] || '0'),
         };
       })
     );

@@ -12,3 +12,13 @@
 }
 
 .ticket-list__error { color: var(--color-danger); }
+
+.status-chip {
+  display: inline-block;
+  padding: 2px 10px;
+  border-radius: var(--radius-full);
+  border: 1px solid;
+  font-size: var(--font-size-sm);
+  font-weight: 500;
+  white-space: nowrap;
+}

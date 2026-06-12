@@ -24,7 +24,7 @@ main.ts → bootstrapApplication(App, appConfig)
 ## 2. Dashboard (back-office, lecture v1)
 
 ```
-DashboardComponent.ngOnInit
+ItemListCostComponent.ngOnInit
   forkJoin({ tickets: TicketV1Service.getAll(), items: ItemV1Service.getAll() }).subscribe
         │                              │
         │  GET /api.php/v1/Ticket      │  forkJoin(ASSET_TYPES → GET /api.php/v1/<type>?expand_dropdowns=1)

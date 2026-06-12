@@ -5,12 +5,9 @@ import { MatFormFieldModule } from '@angular/material/form-field';
 import { MatInputModule } from '@angular/material/input';
 import { TicketStatusService } from '@app/core/services/spring-boot/ticket-status.service';
 import { ToastService } from '@app/core/services/ui/toast.service';
-import { TicketStatus } from '@app/core/models';
+import { KanbanStatus } from '@app/core/models';
 import { SpinnerComponent } from '@app/shared/ui/spinner/spinner.component';
 import { PageHeaderComponent } from '@app/shared/ui/page-header/page-header.component';
-
-// Maps index in the statuses array to the GLPI status code used by the kanban board
-const GLPI_CODES = [1, 2, 5] as const;
 
 @Component({
   selector: 'app-settings-kanban',
@@ -28,16 +25,17 @@ const GLPI_CODES = [1, 2, 5] as const;
   styleUrl: './kanban-configuration.component.css',
 })
 export class KanbanConfigurationComponent implements OnInit {
-  private readonly ticketStatusService = inject(TicketStatusService);
-  private readonly toast               = inject(ToastService);
+  private readonly statusService = inject(TicketStatusService);
+  private readonly toast         = inject(ToastService);
 
-  readonly statuses = signal<TicketStatus[]>([]);
+  readonly statuses = signal<KanbanStatus[]>([]);
   readonly loading  = signal(true);
   readonly saving   = signal(false);
 
   async ngOnInit(): Promise<void> {
     try {
-      this.statuses.set(await this.ticketStatusService.getStatuses());
+      await this.statusService.load();
+      this.statuses.set(this.statusService.configuration().statuses);
     } catch {
       this.toast.error('Erreur de chargement des statuts.');
     } finally {
@@ -47,7 +45,7 @@ export class KanbanConfigurationComponent implements OnInit {
 
   setColor(index: number, color: string): void {
     this.statuses.update(list =>
-      list.map((s, i) => i === index ? { ...s, color } : s)
+      list.map((s, i) => i === index ? { ...s, color } : s),
     );
   }
 
@@ -59,19 +57,18 @@ export class KanbanConfigurationComponent implements OnInit {
           ...s,
           names: s.names.map((n, ni) => ni === nameIndex ? { ...n, name } : n),
         };
-      })
+      }),
     );
   }
 
   async saveAll(): Promise<void> {
     this.saving.set(true);
     try {
-      const updated = await Promise.all(
-        this.statuses().map(s => this.ticketStatusService.updateStatus(s))
+      await Promise.all(
+        this.statuses().map(s => this.statusService.updateStatus(s)),
       );
-      this.statuses.set(updated);
-      const columns = this.ticketStatusService.mapStatusesToColumns(updated);
-      this.ticketStatusService.setColumns(columns);
+      await this.statusService.load();
+      this.statuses.set(this.statusService.configuration().statuses);
       this.toast.success('Configuration kanban sauvegardée.');
     } catch {
       this.toast.error('Erreur lors de la sauvegarde.');

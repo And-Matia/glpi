@@ -1,18 +1,19 @@
-import { Component, OnInit, inject, signal, ChangeDetectionStrategy } from '@angular/core';
-import { RouterLink } from '@angular/router';
-import { DragDropModule, CdkDragDrop } from '@angular/cdk/drag-drop';
-import { MatButtonModule } from '@angular/material/button';
-import { TicketService } from '@app/core/services/glpi/api/ticket.service';
-import { TicketStatusService } from '@app/core/services/spring-boot/ticket-status.service';
-import { ToastService } from '@app/core/services/ui/toast.service';
-import { Ticket } from '@app/core/models/assistance.model';
-import { ticketTypeLabel, ticketPriorityLabel } from '@app/core/constants/assistance.constants';
-import { BadgeComponent } from '@app/shared/ui/badge/badge.component';
-import { SpinnerComponent } from '@app/shared/ui/spinner/spinner.component';
-import { ModalComponent } from '@app/shared/ui/modal/modal.component';
-import { SelectComponent, SelectOption } from '@app/shared/ui/select/select.component';
-import { InputComponent } from '@app/shared/ui/input/input.component';
-import { TextareaComponent } from '@app/shared/ui/textarea/textarea.component';
+import {Component, OnInit, inject, signal, computed, ChangeDetectionStrategy} from '@angular/core';
+import {RouterLink} from '@angular/router';
+import {DragDropModule, CdkDragDrop} from '@angular/cdk/drag-drop';
+import {MatButtonModule} from '@angular/material/button';
+import {TicketService} from '@app/core/services/glpi/api/ticket.service';
+import {TicketStatusService} from '@app/core/services/spring-boot/ticket-status.service';
+import {ToastService} from '@app/core/services/ui/toast.service';
+import {UserService} from '@app/core/services/glpi/api/user.service';
+import {Ticket} from '@app/core/models/assistance.model';
+import {ticketTypeLabel, ticketPriorityLabel} from '@app/core/constants/assistance.constants';
+import {BadgeComponent} from '@app/shared/ui/badge/badge.component';
+import {SpinnerComponent} from '@app/shared/ui/spinner/spinner.component';
+import {ModalComponent} from '@app/shared/ui/modal/modal.component';
+import {SelectComponent, SelectOption} from '@app/shared/ui/select/select.component';
+import {TextareaComponent} from '@app/shared/ui/textarea/textarea.component';
+import {SuperCostService} from '@app/core/services/spring-boot/super-cost.service';
 
 @Component({
   selector: 'app-kanban',
@@ -26,7 +27,6 @@ import { TextareaComponent } from '@app/shared/ui/textarea/textarea.component';
     BadgeComponent,
     ModalComponent,
     SelectComponent,
-    InputComponent,
     TextareaComponent,
   ],
   templateUrl: './kanban.component.html',
@@ -34,58 +34,66 @@ import { TextareaComponent } from '@app/shared/ui/textarea/textarea.component';
 })
 export class KanbanComponent implements OnInit {
   private readonly ticketService = inject(TicketService);
-  private readonly toast         = inject(ToastService);
-  readonly settings              = inject(TicketStatusService);
+  private readonly userService = inject(UserService);
+  private readonly toast = inject(ToastService);
+  readonly status = inject(TicketStatusService);
+  readonly superCostService = inject(SuperCostService);
 
-  readonly loading        = signal(true);
-  readonly error          = signal('');
-  readonly tickets        = signal<Ticket[]>([]);
-  readonly detailOpen     = signal(false);
+  readonly loading = signal(true);
+  readonly error = signal('');
+  readonly tickets = signal<Ticket[]>([]);
+  readonly detailOpen = signal(false);
   readonly selectedTicket = signal<Ticket | null>(null);
 
   // Assign modal (New → In Progress)
-  readonly assignOpen      = signal(false);
-  readonly assigneeType    = signal<string>('user');
-  readonly assigneeId      = signal('');
+  readonly assignOpen = signal(false);
+  readonly assigneeType = signal<string>('user');
+  readonly assigneeId = signal('');
   readonly assigneeIdError = signal('');
-  readonly assignSaving    = signal(false);
+  readonly assignSaving = signal(false);
+  readonly userOptions = signal<SelectOption[]>([]);
+  readonly usersLoading = signal(false);
 
   // Solution modal (In Progress → Closed)
-  readonly solutionOpen    = signal(false);
-  readonly solutionText    = signal('');
-  readonly solutionError   = signal('');
-  readonly solutionSaving  = signal(false);
+  readonly solutionOpen = signal(false);
+  solutionText = signal('');
+  superCost = signal('');
+  readonly solutionError = signal('');
+  readonly solutionSaving = signal(false);
 
   private pendingTicket: Ticket | null = null;
 
-  readonly typeLabel     = ticketTypeLabel;
+  readonly typeLabel = ticketTypeLabel;
   readonly priorityLabel = ticketPriorityLabel;
 
   readonly assignTypeOptions: SelectOption[] = [
-    { value: 'user',     label: 'Technicien' },
-    { value: 'group',    label: 'Groupe' },
-    { value: 'supplier', label: 'Fournisseur' },
+    {value: 'user', label: 'Technicien'},
+    {value: 'group', label: 'Groupe'},
+    {value: 'supplier', label: 'Fournisseur'},
   ];
+
+  readonly langOptions = computed<SelectOption[]>(() =>
+    this.status.availableLanguages().map(l => ({value: String(l.id), label: l.name})),
+  );
+
+  readonly selectedLangValue = computed(() => String(this.status.selectedLangId()));
+
 
   ticketsForColumn(statusCode: number): Ticket[] {
     return this.tickets().filter(t => t.status === statusCode);
   }
 
-  async ngOnInit(): Promise<void> {
-    try {
-      const [tickets, statuses] = await Promise.all([
-        this.ticketService.getAll(),
-        this.settings.getStatuses(),
-      ]);
+  ngOnInit(): void {
+    Promise.all([
+      this.ticketService.getAll(),
+      this.status.load(),
+    ]).then(([tickets]) => {
       this.tickets.set(tickets);
-      if (!this.settings.getColumns().length) {
-        this.settings.setColumns(this.settings.mapStatusesToColumns(statuses));
-      }
-    } catch (err: any) {
-      this.error.set(err.message ?? 'Erreur de chargement');
-    } finally {
       this.loading.set(false);
-    }
+    }).catch((err: Error) => {
+      this.error.set(err.message ?? 'Erreur de chargement');
+      this.loading.set(false);
+    });
   }
 
   onDrop(event: CdkDragDrop<Ticket[]>, toStatusCode: number): void {
@@ -98,9 +106,11 @@ export class KanbanComponent implements OnInit {
       this.assigneeId.set('');
       this.assigneeIdError.set('');
       this.assignOpen.set(true);
+      this.loadUsers();
     } else if (toStatusCode === 6 && ticket.status !== 6) {
       this.pendingTicket = ticket;
       this.solutionText.set('');
+      this.superCost.set('');
       this.solutionError.set('');
       this.solutionOpen.set(true);
     } else {
@@ -108,10 +118,26 @@ export class KanbanComponent implements OnInit {
     }
   }
 
+  private async loadUsers(): Promise<void> {
+    if (this.userOptions().length) return;
+    this.usersLoading.set(true);
+    try {
+      const users = await this.userService.getAll();
+      this.userOptions.set(users.map(u => ({
+        value: String(u.id),
+        label: [u.firstname, u.realname].filter(Boolean).join(' ') || u.name,
+      })));
+    } catch {
+      this.toast.error('Impossible de charger la liste des utilisateurs');
+    } finally {
+      this.usersLoading.set(false);
+    }
+  }
+
   async onAssignConfirmed(): Promise<void> {
     const id = Number(this.assigneeId());
     if (!id || id <= 0) {
-      this.assigneeIdError.set('Veuillez saisir un ID valide');
+      this.assigneeIdError.set('Veuillez sélectionner un utilisateur');
       return;
     }
     if (!this.pendingTicket) return;
@@ -124,7 +150,7 @@ export class KanbanComponent implements OnInit {
         id,
       );
       this.tickets.update(list =>
-        list.map(t => t.id === this.pendingTicket!.id ? { ...t, status: 2 } : t),
+        list.map(t => t.id === this.pendingTicket!.id ? {...t, status: 2} : t),
       );
       this.assignOpen.set(false);
       this.pendingTicket = null;
@@ -154,17 +180,19 @@ export class KanbanComponent implements OnInit {
     }
     if (!this.pendingTicket) return;
 
+    console.log(this.superCost(),this.solutionText())
     this.solutionSaving.set(true);
     try {
       await this.ticketService.postSolution(this.pendingTicket.id, this.solutionText().trim());
-      await this.ticketService.update(this.pendingTicket.id, { status: 6 } as any);
+      await this.ticketService.update(this.pendingTicket.id, {status: 6} as any);
       this.tickets.update(list =>
-        list.map(t => t.id === this.pendingTicket!.id ? { ...t, status: 6 } : t),
+        list.map(t => t.id === this.pendingTicket!.id ? {...t, status: 6} : t),
       );
+      await this.superCostService.create(this.pendingTicket.id, this.superCost().trim());
       this.solutionOpen.set(false);
       this.pendingTicket = null;
-    } catch {
-      this.toast.error('Erreur lors de la clôture du ticket');
+    } catch (e) {
+      this.toast.error('Erreur' + e);
     } finally {
       this.solutionSaving.set(false);
     }
@@ -189,9 +217,10 @@ export class KanbanComponent implements OnInit {
   }
 
   private applyMove(ticket: Ticket, toStatus: number): void {
-    this.ticketService.update(ticket.id, { status: toStatus } as any).catch(() => {});
+    this.ticketService.update(ticket.id, {status: toStatus} as any).catch(() => {
+    });
     this.tickets.update(list =>
-      list.map(t => t.id === ticket.id ? { ...t, status: toStatus } : t),
+      list.map(t => t.id === ticket.id ? {...t, status: toStatus} : t),
     );
   }
 }

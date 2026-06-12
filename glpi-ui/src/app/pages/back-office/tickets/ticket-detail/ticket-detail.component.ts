@@ -53,7 +53,7 @@ export class TicketDetailComponent implements OnInit {
     return h > 0 ? `${h}h ${m}min` : `${m}min`;
   });
 
-  readonly totalTimeCost      = computed(() => this.costs().reduce((s, c) => s + c.time_cost,      0));
+  readonly totalTimeCost      = computed(() => this.costs().reduce((s, c) => s + (c.time_cost * c.duration_second / 3600) ,      0));
   readonly totalFixedCost     = computed(() => this.costs().reduce((s, c) => s + c.fixed_cost,     0));
   readonly totalMaterialCost  = computed(() => this.costs().reduce((s, c) => s + c.cost_material,  0));
   readonly totalCost          = computed(() => this.totalTimeCost() + this.totalFixedCost() + this.totalMaterialCost());

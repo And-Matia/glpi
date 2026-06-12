@@ -12,6 +12,7 @@ public class TicketStatus {
     @GeneratedValue(strategy = GenerationType.IDENTITY)
     private Long id;
     private String color;
+    private String defaultName;
     @OneToMany(mappedBy = "status", cascade = CascadeType.ALL)
     private List<TicketStatusName> names;
 }

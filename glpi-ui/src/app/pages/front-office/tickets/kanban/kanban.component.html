@@ -1,12 +1,21 @@
 <div class="kanban-page">
 
   <div class="kanban-page__header">
-    <div>
-      <h1 class="kanban-page__title">Tickets Kanban</h1>
+    <h1 class="kanban-page__title">Tickets Kanban</h1>
+    <div class="kanban-page__actions">
+      @if (langOptions().length > 1) {
+        <app-select
+          class="kanban-lang-select"
+          label=""
+          [options]="langOptions()"
+          [value]="selectedLangValue()"
+          (valueChange)="status.setLang(+($event ?? 0))"
+        />
+      }
+      <button mat-flat-button routerLink="/front-office/tickets/new">
+        <i class="fa-solid fa-plus"></i> Ajouter 1 ticket
+      </button>
     </div>
-    <button mat-flat-button routerLink="/front-office/tickets/new">
-      <i class="fa-solid fa-plus"></i> Ajouter 1 ticket
-    </button>
   </div>
 
   @if (loading()) {
@@ -15,14 +24,11 @@
     <p class="kanban__error">{{ error() }}</p>
   } @else {
     <div class="kanban-board" cdkDropListGroup>
-      @for (col of settings.columns(); track col.statusCode) {
+      @for (col of status.columns(); track col.statusCode) {
         <div class="kanban-col" [style.background-color]="col.color">
 
           <div class="kanban-col__header">
-            <div class="kanban-col__titles">
-              <span class="kanban-col__label-fr">{{ col.labelFr }}</span>
-              <span class="kanban-col__label-mg">{{ col.labelMg }}</span>
-            </div>
+            <span class="kanban-col__label">{{ col.label }}</span>
             <span class="kanban-col__count">{{ ticketsForColumn(col.statusCode).length }}</span>
           </div>
 
@@ -104,21 +110,20 @@
       [options]="assignTypeOptions"
       [(value)]="assigneeType"
     />
-    <app-input
-      label="ID de l'assigné"
-      type="number"
-      placeholder="Ex : 42"
-      [(value)]="assigneeId"
-      [errorMessage]="assigneeIdError()"
-    />
+    @if (usersLoading()) {
+      <app-spinner size="sm" />
+    } @else {
+      <app-select
+        label="Utilisateur"
+        [options]="userOptions()"
+        [(value)]="assigneeId"
+        [errorMessage]="assigneeIdError()"
+      />
+    }
   </div>
   <div slot="footer" class="modal-footer">
-    <button mat-stroked-button (click)="onAssignCancelled()" [disabled]="assignSaving()">
-      Annuler
-    </button>
-    <button mat-button (click)="onAssignSkipped()" [disabled]="assignSaving()">
-      Ignorer
-    </button>
+    <button mat-stroked-button (click)="onAssignCancelled()" [disabled]="assignSaving()">Annuler</button>
+    <button mat-button (click)="onAssignSkipped()" [disabled]="assignSaving()">Ignorer</button>
     <button mat-flat-button (click)="onAssignConfirmed()" [disabled]="assignSaving()">
       @if (assignSaving()) { <app-spinner size="sm" /> } @else { Assigner }
     </button>
@@ -133,9 +138,7 @@
   (closed)="onSolutionCancelled()"
 >
   <div class="transition-form">
-    <p class="transition-form__hint">
-      Décrivez la solution apportée avant de clôturer le ticket.
-    </p>
+    <p class="transition-form__hint">Décrivez la solution apportée avant de clôturer le ticket.</p>
     <app-textarea
       label="Solution"
       placeholder="Décrivez la solution…"
@@ -144,13 +147,20 @@
       [errorMessage]="solutionError()"
     />
   </div>
+  <div>
+    <p class="transition-form__hint">value</p>
+    <app-textarea
+      label="Solution"
+      placeholder="Décrivez la solution…"
+      [rows]="5"
+      [(value)]="superCost"
+      [errorMessage]="solutionError()"
+    />
+  </div>
+
   <div slot="footer" class="modal-footer">
-    <button mat-stroked-button (click)="onSolutionCancelled()" [disabled]="solutionSaving()">
-      Annuler
-    </button>
-    <button mat-button (click)="onSolutionSkipped()" [disabled]="solutionSaving()">
-      Ignorer
-    </button>
+    <button mat-stroked-button (click)="onSolutionCancelled()" [disabled]="solutionSaving()">Annuler</button>
+    <button mat-button (click)="onSolutionSkipped()" [disabled]="solutionSaving()">Ignorer</button>
     <button mat-flat-button (click)="onSolutionConfirmed()" [disabled]="solutionSaving()">
       @if (solutionSaving()) { <app-spinner size="sm" /> } @else { Clôturer }
     </button>

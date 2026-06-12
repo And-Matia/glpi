@@ -152,7 +152,7 @@ l'import marche toujours.
 **Objectifs.** Extraire le chargement dans une méthode `load()`, l'appeler dans `ngOnInit` et
 sur un bouton « Rafraîchir » (avec état `loading`).
 
-**Fichiers.** `dashboard.component.ts` (+ `.html`).
+**Fichiers.** `item-list-cost.component.ts` (+ `.html`).
 
 <details><summary>Solution (extrait)</summary>
 

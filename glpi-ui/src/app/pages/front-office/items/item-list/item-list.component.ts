@@ -1,5 +1,4 @@
 import { Component, OnInit, ChangeDetectionStrategy, inject, signal, computed } from '@angular/core';
-import { NgOptimizedImage } from '@angular/common';
 import { AssetService } from '@app/core/services/glpi/api/asset.service';
 import { AssetImageService } from '@app/core/services/glpi/images/asset-image.service';
 import { StateService } from '@app/core/services/glpi/lookup/state.service';
@@ -16,7 +15,6 @@ import { EmptyStateComponent } from '@app/shared/ui/empty-state/empty-state.comp
 @Component({
   selector: 'app-item-list',
   imports: [
-    NgOptimizedImage,
     SelectComponent,
     SearchInputComponent,
     SpinnerComponent,
@@ -38,9 +36,9 @@ export class ItemListComponent implements OnInit {
   readonly assets    = signal<GlpiAsset[]>([]);
   readonly imageUrls = signal<Record<string, string>>({});
 
-  readonly searchText   = signal('');
-  readonly filterType   = signal('');
-  readonly filterStatus = signal('');
+  searchText   = signal('');
+  filterType   = signal('');
+  filterStatus = signal('');
 
   readonly typeOptions   = ASSET_TYPE_OPTIONS;
   readonly statusOptions = signal<SelectOption[]>([]);
@@ -115,6 +113,7 @@ export class ItemListComponent implements OnInit {
     for (const asset of assets) {
       const apiType = apiTypeOf(asset.item_type);
       this.imageService.getImageUrl(asset.id, apiType).then(url => {
+        console.log(`[ItemList] image result for ${this.imageKey(asset)}:`, url ?? 'null (no image)');
         if (url) {
           this.imageUrls.update(prev => ({ ...prev, [this.imageKey(asset)]: url }));
         }

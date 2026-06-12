@@ -11,19 +11,37 @@ export class AssetImageService {
   private readonly base = GLPI_CONFIG.apiV1;
 
   async getImageUrl(itemId: number, apiType: string): Promise<string | null> {
+    console.log(`[AssetImageService] getImageUrl — itemId=${itemId} apiType=${apiType}`);
     let docs: DocumentItemRaw[] = [];
     try {
       docs = await firstValueFrom(this.http.get<DocumentItemRaw[]>(`${this.base}/${apiType}/${itemId}/Document_Item/`));
-    } catch {
+      console.log(`[AssetImageService] Document_Item response for ${apiType}/${itemId}:`, docs);
+    } catch (err) {
+      console.warn(`[AssetImageService] Document_Item fetch failed for ${apiType}/${itemId}:`, err);
       return null;
     }
 
-    if (!docs?.length) return null;
+    if (!docs?.length) {
+      console.log(`[AssetImageService] No documents for ${apiType}/${itemId}`);
+      return null;
+    }
 
+    const docId = docs[0].documents_id;
+    console.log(`[AssetImageService] Downloading document id=${docId}`);
     try {
-      const blob = await firstValueFrom(this.http.get(`${this.base}/Document/${docs[0].documents_id}/download`, { responseType: 'blob' }));
-      return URL.createObjectURL(blob);
-    } catch {
+      const blob = await firstValueFrom(this.http.get(`${this.base}/Document/${docId}`, {
+        responseType: 'blob',
+        headers: { 'Accept': 'application/octet-stream' },
+      }));
+      console.log(`[AssetImageService] Blob received for doc ${docId}:`, blob.type, blob.size, 'bytes');
+      const url = URL.createObjectURL(blob);
+      console.log(`[AssetImageService] Object URL created:`, url);
+      return url;
+    } catch (err: any) {
+      const body = err?.error instanceof Blob
+        ? await err.error.text()
+        : JSON.stringify(err?.error ?? err?.message ?? err);
+      console.warn(`[AssetImageService] Blob download failed for doc ${docId} — status ${err?.status}:`, body);
       return null;
     }
   }

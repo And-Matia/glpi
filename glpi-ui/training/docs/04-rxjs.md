@@ -217,7 +217,7 @@ forkJoin(
 ).pipe(map(lists => lists.flat()));                  // [[...],[...]] → [...]
 ```
 
-Forme tableau simple (`dashboard.component.ts`) :
+Forme tableau simple (`item-list-cost.component.ts`) :
 ```ts
 forkJoin({ tickets: this.ticketService.getAll(), items: this.itemService.getAll() })
   .subscribe({ next: ({ tickets, items }) => { … } });
