@@ -73,7 +73,7 @@ export function parseCsvText<T>(
   mapper: (record: Record<string, string>, lineNumber: number) => T,
 ): ParseResult<T> {
   const lines = text.replace(/\r\n/g, '\n').replace(/\r/g, '\n').trim().split('\n');
-  const headers = parseCsvLine(lines[0]).map(h => h.trim());
+  const headers = parseCsvLine(lines[0]).map(h => h.trim().toLowerCase());
 
   const rows: T[] = [];
   const errors: { row: number; error: string }[] = [];

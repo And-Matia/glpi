@@ -1,5 +1,5 @@
 <nav class="breadcrumb" aria-label="Fil d'Ariane">
-  @for (item of items(); track $index; let last = $last) {
+  @for (item of items(); track item.label; let last = $last) {
     @if (!last && item.link) {
       <a class="breadcrumb__link" [routerLink]="item.link">{{ item.label }}</a>
       <i class="fa-solid fa-chevron-right breadcrumb__sep" aria-hidden="true"></i>

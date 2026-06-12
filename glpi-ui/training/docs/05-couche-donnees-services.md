@@ -16,7 +16,7 @@ async initAll(): Promise<void> {
 }
 private async initV1Session() {
   const res = await firstValueFrom(this.http.get<{session_token:string}>(
-    `${environment.glpi.v1ApiUrl}/initSession`,
+    `${GLPI_CONFIG.apiV1}/initSession`,
     { headers: new HttpHeaders({ Authorization: `user_token ${environment.glpi.userToken}` }) }));
   this.sessionToken = res.session_token;
 }
@@ -44,7 +44,7 @@ export const glpiAuthInterceptor: HttpInterceptorFn = (req, next) => {
   const isFormData = req.body instanceof FormData;
   const wantsJson  = req.body != null && !isFormData;
 
-  if (req.url.startsWith(environment.glpi.v1ApiUrl)) {
+  if (req.url.startsWith(GLPI_CONFIG.apiV1)) {
     const token = session.getSessionToken();
     if (token) {
       const headers: Record<string,string> = { 'Session-Token': token };
@@ -52,7 +52,7 @@ export const glpiAuthInterceptor: HttpInterceptorFn = (req, next) => {
       req = req.clone({ setHeaders: headers });
     }
   }
-  if (req.url.startsWith(environment.glpi.v2ApiUrl) || req.url.startsWith(environment.glpi.graphqlUrl)) {
+  if (req.url.startsWith(GLPI_CONFIG.apiV2) || req.url.startsWith(environment.glpi.graphqlUrl)) {
     const token = session.getAccessToken();
     if (token) {
       const headers: Record<string,string> = { Authorization: `Bearer ${token}` };
@@ -94,7 +94,7 @@ provideHttpClient(withInterceptors([glpiAuthInterceptor]))
 @Injectable({ providedIn: 'root' })
 export class ItemV1Service {
   private readonly http = inject(HttpClient);
-  private readonly base = environment.glpi.v1ApiUrl;
+  private readonly base = GLPI_CONFIG.apiV1;
   private readonly params = new HttpParams().set('expand_dropdowns', '1'); // ids → noms
 
   getAll(): Observable<Item[]> {

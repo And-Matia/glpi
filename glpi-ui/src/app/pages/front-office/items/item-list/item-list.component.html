@@ -1,0 +1,81 @@
+<div class="item-list">
+  <app-page-header title="Éléments" subtitle="Parc informatique" />
+
+  <div class="item-list__filters">
+    <app-search-input
+      class="item-list__search"
+      placeholder="Rechercher (nom, inventaire, utilisateur…)"
+      [(value)]="searchText"
+    />
+    <app-select label="Type"   [options]="typeOptions"   [(value)]="filterType"   />
+    <app-select label="Statut" [options]="statusOptions()" [(value)]="filterStatus" />
+  </div>
+
+  @if (loading()) {
+    <div class="item-list__loader">
+      <app-spinner size="lg" />
+    </div>
+  } @else if (error()) {
+    <p class="item-list__error">{{ error() }}</p>
+  } @else if (filteredAssets().length === 0) {
+    <app-empty-state
+      icon="fa-solid fa-desktop"
+      title="Aucun élément trouvé"
+      message="Essayez de modifier vos filtres de recherche."
+    />
+  } @else {
+    <div class="item-grid">
+      @for (asset of filteredAssets(); track asset.id) {
+        <div class="item-card">
+          <div class="item-card__photo">
+            @if (getImage(asset)) {
+              <img [ngSrc]="getImage(asset)!" [alt]="asset.name" class="item-card__img" fill />
+            } @else {
+              <div class="item-card__icon-placeholder">
+                <i [class]="typeIcon(asset.item_type)"></i>
+              </div>
+            }
+          </div>
+
+          <div class="item-card__body">
+            <div class="item-card__header">
+              <span class="item-card__name">{{ asset.name }}</span>
+              <app-badge [variant]="statusVariant(asset.status)" size="sm">
+                {{ asset.status || '—' }}
+              </app-badge>
+            </div>
+
+            <app-badge variant="neutral" size="sm">{{ assetLabel(asset.item_type) }}</app-badge>
+
+            <ul class="item-card__meta">
+              @if (asset.model) {
+                <li>
+                  <i class="fa-solid fa-tag item-card__meta-icon"></i>
+                  <span>{{ asset.model }}</span>
+                </li>
+              }
+              @if (asset.location) {
+                <li>
+                  <i class="fa-solid fa-location-dot item-card__meta-icon"></i>
+                  <span>{{ asset.location }}</span>
+                </li>
+              }
+              @if (asset.user) {
+                <li>
+                  <i class="fa-solid fa-user item-card__meta-icon"></i>
+                  <span>{{ asset.user }}</span>
+                </li>
+              }
+              @if (asset.inventory_number) {
+                <li>
+                  <i class="fa-solid fa-barcode item-card__meta-icon"></i>
+                  <code class="item-card__inv">{{ asset.inventory_number }}</code>
+                </li>
+              }
+            </ul>
+          </div>
+        </div>
+      }
+    </div>
+  }
+</div>

@@ -1,0 +1,14 @@
+<app-table
+  [columns]="columns"
+  [rows]="rows()"
+  [searchKeys]="['titre', 'ref_ticket', 'type_label']"
+  emptyIcon="fa-solid fa-ticket"
+  emptyLabel="Aucun ticket"
+>
+  <ng-template appCell="status" let-value="value">
+    <app-badge [variant]="statusVariant(value)">{{ statusLabel(value) }}</app-badge>
+  </ng-template>
+  <ng-template appCell="priority" let-value="value">
+    <app-badge [variant]="priorityVariant(value)">{{ priorityLabel(value) }}</app-badge>
+  </ng-template>
+</app-table>

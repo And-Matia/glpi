@@ -4,11 +4,6 @@
     "secure": false,
     "changeOrigin": true
   },
-  "/apirest.php": {
-    "target": "http://localhost",
-    "secure": false,
-    "changeOrigin": true
-  },
   "/files": {
     "target": "http://localhost",
     "secure": false,

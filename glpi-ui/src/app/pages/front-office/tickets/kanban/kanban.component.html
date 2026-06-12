@@ -1,0 +1,158 @@
+<div class="kanban-page">
+
+  <div class="kanban-page__header">
+    <div>
+      <h1 class="kanban-page__title">Tickets Kanban</h1>
+    </div>
+    <button mat-flat-button routerLink="/front-office/tickets/new">
+      <i class="fa-solid fa-plus"></i> Ajouter 1 ticket
+    </button>
+  </div>
+
+  @if (loading()) {
+    <div class="kanban__loader"><app-spinner size="lg" /></div>
+  } @else if (error()) {
+    <p class="kanban__error">{{ error() }}</p>
+  } @else {
+    <div class="kanban-board" cdkDropListGroup>
+      @for (col of settings.columns(); track col.statusCode) {
+        <div class="kanban-col" [style.background-color]="col.color">
+
+          <div class="kanban-col__header">
+            <div class="kanban-col__titles">
+              <span class="kanban-col__label-fr">{{ col.labelFr }}</span>
+              <span class="kanban-col__label-mg">{{ col.labelMg }}</span>
+            </div>
+            <span class="kanban-col__count">{{ ticketsForColumn(col.statusCode).length }}</span>
+          </div>
+
+          <div
+            cdkDropList
+            [cdkDropListData]="ticketsForColumn(col.statusCode)"
+            (cdkDropListDropped)="onDrop($event, col.statusCode)"
+            class="kanban-col__list"
+          >
+            @for (ticket of ticketsForColumn(col.statusCode); track ticket.id) {
+              <div
+                cdkDrag
+                [cdkDragData]="ticket"
+                class="kanban-card"
+                (click)="openDetail(ticket, $event)"
+              >
+                <p class="kanban-card__title">{{ ticket.titre }}</p>
+                <div class="kanban-card__footer">
+                  <app-badge variant="neutral" size="sm">#{{ ticket.ref_ticket }}</app-badge>
+                  <app-badge variant="info" size="sm">{{ typeLabel(ticket.type) }}</app-badge>
+                </div>
+                <ng-template cdkDragPlaceholder>
+                  <div class="kanban-drag-placeholder"></div>
+                </ng-template>
+              </div>
+            }
+          </div>
+
+        </div>
+      }
+    </div>
+  }
+
+</div>
+
+<!-- Ticket detail -->
+<app-modal
+  [open]="detailOpen()"
+  [title]="'Ticket #' + (selectedTicket()?.ref_ticket ?? '')"
+  size="md"
+  (closed)="detailOpen.set(false)"
+>
+  @if (selectedTicket(); as t) {
+    <div class="ticket-detail">
+      <div class="ticket-detail__row">
+        <span class="ticket-detail__label">Titre</span>
+        <span>{{ t.titre }}</span>
+      </div>
+      <div class="ticket-detail__row">
+        <span class="ticket-detail__label">Description</span>
+        <p class="ticket-detail__desc">{{ t.description }}</p>
+      </div>
+      <div class="ticket-detail__row">
+        <span class="ticket-detail__label">Date</span>
+        <span>{{ t.date }} {{ t.heure }}</span>
+      </div>
+      <div class="ticket-detail__row">
+        <span class="ticket-detail__label">Type</span>
+        <app-badge variant="info">{{ typeLabel(t.type) }}</app-badge>
+      </div>
+      <div class="ticket-detail__row">
+        <span class="ticket-detail__label">Priorité</span>
+        <app-badge variant="warning">{{ priorityLabel(t.priority) }}</app-badge>
+      </div>
+    </div>
+  }
+</app-modal>
+
+<!-- Assign modal: New → In Progress -->
+<app-modal
+  [open]="assignOpen()"
+  title="Assigner le ticket"
+  size="sm"
+  (closed)="onAssignCancelled()"
+>
+  <div class="transition-form">
+    <app-select
+      label="Type d'assignation"
+      [options]="assignTypeOptions"
+      [(value)]="assigneeType"
+    />
+    <app-input
+      label="ID de l'assigné"
+      type="number"
+      placeholder="Ex : 42"
+      [(value)]="assigneeId"
+      [errorMessage]="assigneeIdError()"
+    />
+  </div>
+  <div slot="footer" class="modal-footer">
+    <button mat-stroked-button (click)="onAssignCancelled()" [disabled]="assignSaving()">
+      Annuler
+    </button>
+    <button mat-button (click)="onAssignSkipped()" [disabled]="assignSaving()">
+      Ignorer
+    </button>
+    <button mat-flat-button (click)="onAssignConfirmed()" [disabled]="assignSaving()">
+      @if (assignSaving()) { <app-spinner size="sm" /> } @else { Assigner }
+    </button>
+  </div>
+</app-modal>
+
+<!-- Solution modal: In Progress → Closed -->
+<app-modal
+  [open]="solutionOpen()"
+  title="Clôturer le ticket"
+  size="sm"
+  (closed)="onSolutionCancelled()"
+>
+  <div class="transition-form">
+    <p class="transition-form__hint">
+      Décrivez la solution apportée avant de clôturer le ticket.
+    </p>
+    <app-textarea
+      label="Solution"
+      placeholder="Décrivez la solution…"
+      [rows]="5"
+      [(value)]="solutionText"
+      [errorMessage]="solutionError()"
+    />
+  </div>
+  <div slot="footer" class="modal-footer">
+    <button mat-stroked-button (click)="onSolutionCancelled()" [disabled]="solutionSaving()">
+      Annuler
+    </button>
+    <button mat-button (click)="onSolutionSkipped()" [disabled]="solutionSaving()">
+      Ignorer
+    </button>
+    <button mat-flat-button (click)="onSolutionConfirmed()" [disabled]="solutionSaving()">
+      @if (solutionSaving()) { <app-spinner size="sm" /> } @else { Clôturer }
+    </button>
+  </div>
+</app-modal>

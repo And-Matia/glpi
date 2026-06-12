@@ -234,7 +234,7 @@ export interface CreateUserInput {
 @Injectable({ providedIn: 'root' })
 export class UserV1Service {
   private readonly http = inject(HttpClient);
-  private readonly base = `${environment.glpi.v1ApiUrl}/User`;
+  private readonly base = `${GLPI_CONFIG.apiV1}/User`;
 
   getAll(): Observable<AppUser[]> {
     return this.http.get<any[]>(`${this.base}?range=0-9999`).pipe(

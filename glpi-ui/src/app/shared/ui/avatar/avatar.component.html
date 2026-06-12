@@ -1,6 +1,6 @@
 <div [class]="'avatar avatar--' + size()" [attr.aria-label]="name()">
   @if (src()) {
-    <img class="avatar__img" [src]="src()" [alt]="name()" />
+    <img class="avatar__img" [ngSrc]="src()" [alt]="name()" [width]="pixelSize()" [height]="pixelSize()" />
   } @else {
     <span class="avatar__initials">{{ initials() }}</span>
   }

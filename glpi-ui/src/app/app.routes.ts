@@ -5,13 +5,13 @@ export const routes: Routes = [
   {
     path: 'back-office/login',
     loadComponent: () =>
-      import('./features/back-office/login/login.component').then(m => m.LoginComponent),
+      import('./pages/back-office/login/login.component').then(m => m.LoginComponent),
   },
   {
     path: 'back-office',
     canActivate: [authGuard],
     loadComponent: () =>
-      import('./features/back-office/layout/back-office-layout/back-office-layout.component').then(
+      import('./pages/back-office/layout/back-office-layout/back-office-layout.component').then(
         m => m.BackOfficeLayoutComponent,
       ),
     children: [
@@ -19,39 +19,39 @@ export const routes: Routes = [
       {
         path: 'dashboard',
         loadComponent: () =>
-          import('./features/back-office/dashboard/dashboard.component').then(m => m.DashboardComponent),
+          import('./pages/back-office/dashboard/dashboard.component').then(m => m.DashboardComponent),
       },
       {
         path: 'tickets',
         loadComponent: () =>
-          import('./features/back-office/tickets/ticket-list/ticket-list.component').then(m => m.TicketListComponent),
+          import('./pages/back-office/tickets/ticket-list/ticket-list.component').then(m => m.TicketListComponent),
       },
       {
         path: 'kanban-configuration',
         loadComponent: () =>
-          import('@app/features/back-office/kanban-configuration/kanban-configuration.component').then(m => m.KanbanConfigurationComponent),
+          import('@app/pages/back-office/kanban-configuration/kanban-configuration.component').then(m => m.KanbanConfigurationComponent),
       },
       {
         path: 'tickets/:id',
         loadComponent: () =>
-          import('./features/back-office/tickets/ticket-detail/ticket-detail.component').then(m => m.TicketDetailComponent),
+          import('./pages/back-office/tickets/ticket-detail/ticket-detail.component').then(m => m.TicketDetailComponent),
       },
       {
         path: 'import',
         loadComponent: () =>
-          import('./features/back-office/import/import.component').then(m => m.ImportComponent),
+          import('./pages/back-office/import/import.component').then(m => m.ImportComponent),
       },
       {
         path: 'reset',
         loadComponent: () =>
-          import('./features/back-office/reset/reset.component').then(m => m.ResetComponent),
+          import('./pages/back-office/reset/reset.component').then(m => m.ResetComponent),
       },
     ],
   },
   {
     path: 'front-office',
     loadComponent: () =>
-      import('@app/features/front-office/layout/front-office-layout/front-office-layout.component').then(
+      import('@app/pages/front-office/layout/front-office-layout/front-office-layout.component').then(
         m => m.FrontOfficeLayoutComponent,
       ),
     children: [
@@ -59,17 +59,17 @@ export const routes: Routes = [
       {
         path: 'items',
         loadComponent: () =>
-          import('./features/front-office/items/item-list/item-list.component').then(m => m.ItemListComponent),
+          import('./pages/front-office/items/item-list/item-list.component').then(m => m.ItemListComponent),
       },
       {
         path: 'tickets/new',
         loadComponent: () =>
-          import('./features/front-office/tickets/ticket-create/ticket-create.component').then(m => m.TicketCreateComponent),
+          import('./pages/front-office/tickets/ticket-create/ticket-create.component').then(m => m.TicketCreateComponent),
       },
       {
         path: 'tickets/kanban',
         loadComponent: () =>
-          import('./features/front-office/tickets/kanban/kanban.component').then(m => m.KanbanComponent),
+          import('./pages/front-office/tickets/kanban/kanban.component').then(m => m.KanbanComponent),
       },
     ],
   },

@@ -1,0 +1,92 @@
+<div class="dashboard">
+  <app-page-header title="Dashboard" subtitle="Vue générale du parc GLPI" />
+
+  @if (loading()) {
+    <div class="dashboard__loader">
+      <app-spinner size="lg" />
+    </div>
+  } @else if (error()) {
+    <p class="dashboard__error">{{ error() }}</p>
+  } @else {
+
+    <!-- ── Section Assets ─────────────────────────────────────────────────── -->
+    <section class="dashboard__section">
+      <div class="dashboard__section-header">
+        <h2 class="dashboard__section-title">
+          <i class="fa-solid fa-desktop"></i> Équipements
+        </h2>
+        <button mat-stroked-button (click)="showAssetTable.set(!showAssetTable())">
+          <mat-icon>{{ showAssetTable() ? 'visibility_off' : 'visibility' }}</mat-icon>
+          {{ showAssetTable() ? 'Masquer la liste' : 'Afficher la liste' }}
+        </button>
+      </div>
+
+      <div class="dashboard__stats">
+        <app-stat-card label="Total" [value]="totalAssets()" icon="fa-solid fa-desktop" variant="primary" />
+        @for (item of itemsByType(); track item.label) {
+          <app-stat-card [label]="item.label" [value]="item.count" icon="fa-solid fa-box" />
+        }
+      </div>
+
+      @if (showAssetTable()) {
+        <app-asset-list [assets]="assets()" />
+      }
+    </section>
+
+    <!-- ── Section Tickets ────────────────────────────────────────────────── -->
+    <section class="dashboard__section">
+      <div class="dashboard__section-header">
+        <h2 class="dashboard__section-title">
+          <i class="fa-solid fa-ticket"></i> Tickets
+        </h2>
+        <button mat-stroked-button (click)="showTicketTable.set(!showTicketTable())">
+          <mat-icon>{{ showTicketTable() ? 'visibility_off' : 'visibility' }}</mat-icon>
+          {{ showTicketTable() ? 'Masquer la liste' : 'Afficher la liste' }}
+        </button>
+      </div>
+
+      <div class="dashboard__stats">
+        <app-stat-card label="Total" [value]="totalTickets()" icon="fa-solid fa-ticket" variant="primary" />
+        <app-stat-card label="Coût fixe total" [value]="formatCost(totalFixedCost())" icon="fa-solid fa-coins" variant="info" />
+        <app-stat-card label="Coût temps total" [value]="formatCost(totalTimeCost())" icon="fa-solid fa-clock" variant="info" />
+        <app-stat-card label="Coût total" [value]="formatCost(totalCost())" icon="fa-solid fa-circle-dollar-to-slot" variant="warning" />
+        <app-stat-card label="Durée totale" [value]="totalDuration()" icon="fa-solid fa-hourglass-half" />
+      </div>
+
+      <div class="dashboard__grid">
+        <mat-card>
+          <mat-card-header><mat-card-title>Par type</mat-card-title></mat-card-header>
+          <mat-card-content>
+            <div class="stat-list">
+              @for (item of ticketsByType(); track item.label) {
+                <div class="stat-list__item">
+                  <span>{{ item.label }}</span>
+                  <app-badge variant="neutral">{{ item.count }}</app-badge>
+                </div>
+              }
+            </div>
+          </mat-card-content>
+        </mat-card>
+
+        <mat-card>
+          <mat-card-header><mat-card-title>Par statut</mat-card-title></mat-card-header>
+          <mat-card-content>
+            <div class="stat-list">
+              @for (item of ticketsByStatus(); track item.label) {
+                <div class="stat-list__item">
+                  <span>{{ item.label }}</span>
+                  <app-badge variant="neutral">{{ item.count }}</app-badge>
+                </div>
+              }
+            </div>
+          </mat-card-content>
+        </mat-card>
+      </div>
+
+      @if (showTicketTable()) {
+        <app-ticket-list [tickets]="tickets()" />
+      }
+    </section>
+
+  }
+</div>

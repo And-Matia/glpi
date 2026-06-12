@@ -30,7 +30,7 @@ Service :
 @Injectable({ providedIn: 'root' })
 export class TicketCostV1Service {
   private readonly http = inject(HttpClient);
-  private readonly base = `${environment.glpi.v1ApiUrl}/TicketCost`;
+  private readonly base = `${GLPI_CONFIG.apiV1}/TicketCost`;
   getAll(): Observable<TicketCost[]> {
     return this.http.get<any[]>(`${this.base}?range=0-9999`).pipe(
       catchError(() => of([])),

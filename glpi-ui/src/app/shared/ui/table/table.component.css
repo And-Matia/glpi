@@ -70,7 +70,7 @@
   font-weight: var(--weight-semibold);
   font-size: var(--text-12);
   text-transform: uppercase;
-  letter-spacing: 0.5px;
+  letter-spacing: 1px;
 }
 
 .table__th--sortable { cursor: pointer; user-select: none; }

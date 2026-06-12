@@ -1,4 +1,47 @@
-/* Color palette — all design tokens as CSS custom properties */
+/* ── @property declarations — enables IDE custom-property resolution ────────── */
+@property --color-primary         { syntax: '<color>'; inherits: true; initial-value: #FFD600; }
+@property --color-primary-light   { syntax: '<color>'; inherits: true; initial-value: #FFF176; }
+@property --color-accent          { syntax: '<color>'; inherits: true; initial-value: #F5A623; }
+@property --color-accent-warm     { syntax: '<color>'; inherits: true; initial-value: #E8B000; }
+@property --color-tertiary        { syntax: '<color>'; inherits: true; initial-value: #C97D10; }
+
+@property --color-success         { syntax: '<color>'; inherits: true; initial-value: #16a34a; }
+@property --color-success-bg      { syntax: '<color>'; inherits: true; initial-value: #dcfce7; }
+@property --color-success-text    { syntax: '<color>'; inherits: true; initial-value: #14532d; }
+
+@property --color-warning         { syntax: '<color>'; inherits: true; initial-value: #d97706; }
+@property --color-warning-bg      { syntax: '<color>'; inherits: true; initial-value: #fef3c7; }
+@property --color-warning-text    { syntax: '<color>'; inherits: true; initial-value: #78350f; }
+
+@property --color-danger          { syntax: '<color>'; inherits: true; initial-value: #dc2626; }
+@property --color-danger-bg       { syntax: '<color>'; inherits: true; initial-value: #fee2e2; }
+@property --color-danger-text     { syntax: '<color>'; inherits: true; initial-value: #7f1d1d; }
+@property --color-error           { syntax: '<color>'; inherits: true; initial-value: #dc2626; }
+@property --color-error-bg        { syntax: '<color>'; inherits: true; initial-value: #fee2e2; }
+@property --color-error-text      { syntax: '<color>'; inherits: true; initial-value: #7f1d1d; }
+
+@property --color-info            { syntax: '<color>'; inherits: true; initial-value: #2563eb; }
+@property --color-info-light      { syntax: '<color>'; inherits: true; initial-value: #eff6ff; }
+@property --color-info-bg         { syntax: '<color>'; inherits: true; initial-value: #dbeafe; }
+@property --color-info-dark       { syntax: '<color>'; inherits: true; initial-value: #1d4ed8; }
+@property --color-info-text       { syntax: '<color>'; inherits: true; initial-value: #1e3a8a; }
+
+@property --color-text-primary    { syntax: '<color>'; inherits: true; initial-value: #1A1A1A; }
+@property --color-text-secondary  { syntax: '<color>'; inherits: true; initial-value: #3D3D3D; }
+@property --color-text-muted      { syntax: '<color>'; inherits: true; initial-value: #6b7280; }
+@property --color-border          { syntax: '<color>'; inherits: true; initial-value: #e5e7eb; }
+@property --color-border-strong   { syntax: '<color>'; inherits: true; initial-value: #d1d5db; }
+@property --color-surface           { syntax: '<color>'; inherits: true; initial-value: #f9fafb; }
+@property --color-surface-secondary { syntax: '<color>'; inherits: true; initial-value: #f3f4f6; }
+@property --color-bg-light          { syntax: '<color>'; inherits: true; initial-value: #FFF8E7; }
+@property --color-white           { syntax: '<color>'; inherits: true; initial-value: #FFFFFF; }
+
+@property --color-text            { syntax: '<color>'; inherits: true; initial-value: #1A1A1A; }
+@property --color-bg              { syntax: '<color>'; inherits: true; initial-value: #f9fafb; }
+@property --color-bg-primary      { syntax: '<color>'; inherits: true; initial-value: #FFFFFF; }
+@property --color-bg-secondary    { syntax: '<color>'; inherits: true; initial-value: #f9fafb; }
+
+/* ── Runtime values ──────────────────────────────────────────────────────────── */
 :root {
   /* Brand */
   --color-primary:         #FFD600;
@@ -27,7 +70,9 @@
 
   /* Semantic — info */
   --color-info:            #2563eb;
+  --color-info-light:      #eff6ff;
   --color-info-bg:         #dbeafe;
+  --color-info-dark:       #1d4ed8;
   --color-info-text:       #1e3a8a;
 
   /* Neutral surface & text */
@@ -36,13 +81,14 @@
   --color-text-muted:      #6b7280;
   --color-border:          #e5e7eb;
   --color-border-strong:   #d1d5db;
-  --color-surface:         #f9fafb;
-  --color-bg-light:        #FFF8E7;
+  --color-surface:           #f9fafb;
+  --color-surface-secondary: #f3f4f6;
+  --color-bg-light:          #FFF8E7;
   --color-white:           #FFFFFF;
 
-  /* Semantic aliases (named convention used across feature components) */
-  --color-text:           var(--color-text-primary);
-  --color-bg:             var(--color-surface);
-  --color-bg-primary:     var(--color-white);
-  --color-bg-secondary:   var(--color-surface);
+  /* Semantic aliases */
+  --color-text:            var(--color-text-primary);
+  --color-bg:              var(--color-surface);
+  --color-bg-primary:      var(--color-white);
+  --color-bg-secondary:    var(--color-surface);
 }

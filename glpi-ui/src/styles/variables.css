@@ -1,11 +1,85 @@
-/* Design tokens — spacing, typography, radius, shadows, z-index */
+/* ── @property declarations — enables IDE custom-property resolution ────────── */
+
+/* Spacing */
+@property --space-2  { syntax: '<length>'; inherits: false; initial-value: 2px;  }
+@property --space-4  { syntax: '<length>'; inherits: false; initial-value: 4px;  }
+@property --space-6  { syntax: '<length>'; inherits: false; initial-value: 6px;  }
+@property --space-8  { syntax: '<length>'; inherits: false; initial-value: 8px;  }
+@property --space-12 { syntax: '<length>'; inherits: false; initial-value: 12px; }
+@property --space-14 { syntax: '<length>'; inherits: false; initial-value: 14px; }
+@property --space-16 { syntax: '<length>'; inherits: false; initial-value: 16px; }
+@property --space-20 { syntax: '<length>'; inherits: false; initial-value: 20px; }
+@property --space-24 { syntax: '<length>'; inherits: false; initial-value: 24px; }
+@property --space-32 { syntax: '<length>'; inherits: false; initial-value: 32px; }
+@property --space-48 { syntax: '<length>'; inherits: false; initial-value: 48px; }
+@property --space-64 { syntax: '<length>'; inherits: false; initial-value: 64px; }
+
+/* Named spacing */
+@property --spacing-1  { syntax: '<length>'; inherits: false; initial-value: 4px;  }
+@property --spacing-2  { syntax: '<length>'; inherits: false; initial-value: 8px;  }
+@property --spacing-3  { syntax: '<length>'; inherits: false; initial-value: 12px; }
+@property --spacing-4  { syntax: '<length>'; inherits: false; initial-value: 16px; }
+@property --spacing-5  { syntax: '<length>'; inherits: false; initial-value: 20px; }
+@property --spacing-6  { syntax: '<length>'; inherits: false; initial-value: 24px; }
+@property --spacing-8  { syntax: '<length>'; inherits: false; initial-value: 32px; }
+@property --spacing-10 { syntax: '<length>'; inherits: false; initial-value: 40px; }
+@property --spacing-12 { syntax: '<length>'; inherits: false; initial-value: 48px; }
+
+/* Font sizes */
+@property --text-11 { syntax: '<length>'; inherits: true; initial-value: 11px; }
+@property --text-12 { syntax: '<length>'; inherits: true; initial-value: 12px; }
+@property --text-13 { syntax: '<length>'; inherits: true; initial-value: 13px; }
+@property --text-14 { syntax: '<length>'; inherits: true; initial-value: 14px; }
+@property --text-15 { syntax: '<length>'; inherits: true; initial-value: 15px; }
+@property --text-16 { syntax: '<length>'; inherits: true; initial-value: 16px; }
+@property --text-18 { syntax: '<length>'; inherits: true; initial-value: 18px; }
+@property --text-20 { syntax: '<length>'; inherits: true; initial-value: 20px; }
+@property --text-24 { syntax: '<length>'; inherits: true; initial-value: 24px; }
+@property --text-32 { syntax: '<length>'; inherits: true; initial-value: 32px; }
+
+/* Named font sizes */
+@property --font-size-xs   { syntax: '<length>'; inherits: true; initial-value: 12px; }
+@property --font-size-sm   { syntax: '<length>'; inherits: true; initial-value: 14px; }
+@property --font-size-base { syntax: '<length>'; inherits: true; initial-value: 16px; }
+@property --font-size-md   { syntax: '<length>'; inherits: true; initial-value: 16px; }
+@property --font-size-lg   { syntax: '<length>'; inherits: true; initial-value: 18px; }
+@property --font-size-xl   { syntax: '<length>'; inherits: true; initial-value: 20px; }
+@property --font-size-2xl  { syntax: '<length>'; inherits: true; initial-value: 24px; }
+@property --font-size-3xl  { syntax: '<length>'; inherits: true; initial-value: 30px; }
+
+/* Font weights */
+@property --weight-regular  { syntax: '<number>'; inherits: true; initial-value: 400; }
+@property --weight-medium   { syntax: '<number>'; inherits: true; initial-value: 500; }
+@property --weight-semibold { syntax: '<number>'; inherits: true; initial-value: 600; }
+@property --weight-bold     { syntax: '<number>'; inherits: true; initial-value: 700; }
+
+/* Border radius */
+@property --radius-2    { syntax: '<length>'; inherits: false; initial-value: 2px;    }
+@property --radius-4    { syntax: '<length>'; inherits: false; initial-value: 4px;    }
+@property --radius-8    { syntax: '<length>'; inherits: false; initial-value: 8px;    }
+@property --radius-12   { syntax: '<length>'; inherits: false; initial-value: 12px;   }
+@property --radius-16   { syntax: '<length>'; inherits: false; initial-value: 16px;   }
+@property --radius-full { syntax: '<length>'; inherits: false; initial-value: 9999px; }
+@property --radius-sm   { syntax: '<length>'; inherits: false; initial-value: 4px;    }
+@property --radius-md   { syntax: '<length>'; inherits: false; initial-value: 8px;    }
+@property --radius-lg   { syntax: '<length>'; inherits: false; initial-value: 12px;   }
+
+/* Z-index */
+@property --z-navbar  { syntax: '<integer>'; inherits: false; initial-value: 100; }
+@property --z-sidebar { syntax: '<integer>'; inherits: false; initial-value: 90;  }
+@property --z-modal   { syntax: '<integer>'; inherits: false; initial-value: 200; }
+
+/* ── Runtime values ──────────────────────────────────────────────────────────── */
 :root {
   /* Spacing scale */
   --space-2:  2px;
   --space-4:  4px;
+  --space-6:  6px;
   --space-8:  8px;
   --space-12: 12px;
+  --space-14: 14px;
   --space-16: 16px;
+  --space-20: 20px;
   --space-24: 24px;
   --space-32: 32px;
   --space-48: 48px;
@@ -27,20 +101,22 @@
   --text-12: 12px;
   --text-13: 13px;
   --text-14: 14px;
+  --text-15: 15px;
   --text-16: 16px;
   --text-18: 18px;
   --text-20: 20px;
   --text-24: 24px;
   --text-32: 32px;
 
-  /* Named font sizes (alias convention used across feature components) */
-  --font-size-xs:  12px;
-  --font-size-sm:  14px;
-  --font-size-md:  16px;
-  --font-size-lg:  18px;
-  --font-size-xl:  20px;
-  --font-size-2xl: 24px;
-  --font-size-3xl: 30px;
+  /* Named font sizes */
+  --font-size-xs:   12px;
+  --font-size-sm:   14px;
+  --font-size-base: 16px;
+  --font-size-md:   16px;
+  --font-size-lg:   18px;
+  --font-size-xl:   20px;
+  --font-size-2xl:  24px;
+  --font-size-3xl:  30px;
 
   /* Font weights */
   --weight-regular:  400;
@@ -55,7 +131,6 @@
   --radius-12:  12px;
   --radius-16:  16px;
   --radius-full: 9999px;
-  /* Named radius aliases */
   --radius-sm:  4px;
   --radius-md:  8px;
   --radius-lg:  12px;

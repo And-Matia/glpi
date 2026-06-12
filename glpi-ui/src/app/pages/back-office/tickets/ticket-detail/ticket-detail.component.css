@@ -1,0 +1,157 @@
+.ticket-detail {
+  padding: var(--spacing-6);
+  display: flex;
+  flex-direction: column;
+  gap: var(--spacing-4);
+}
+
+.ticket-detail__loader {
+  display: flex;
+  justify-content: center;
+  padding: var(--spacing-10);
+}
+
+.ticket-detail__error { color: var(--color-danger); }
+
+/* ── Header actions ─────────────────────────────────────────────────────────── */
+.header-actions {
+  display: flex;
+  align-items: center;
+  gap: var(--spacing-3);
+}
+
+/* ── Top row: info (fixed) + description (flex) ────────────────────────────── */
+.ticket-detail__top {
+  display: grid;
+  grid-template-columns: 300px 1fr;
+  gap: var(--spacing-4);
+  align-items: start;
+}
+
+/* ── Detail list ────────────────────────────────────────────────────────────── */
+.detail-list {
+  display: flex;
+  flex-direction: column;
+  gap: 0;
+}
+
+.detail-list__row {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  font-size: var(--font-size-sm);
+  padding: var(--spacing-2) 0;
+  border-bottom: 1px solid var(--color-border);
+}
+
+.detail-list__row:last-child { border-bottom: none; }
+
+.detail-list__label {
+  color: var(--color-text-secondary);
+  font-weight: 500;
+}
+
+.detail-list__value { font-weight: 500; }
+
+.divider { margin: var(--spacing-3) 0 !important; }
+
+/* ── Description ────────────────────────────────────────────────────────────── */
+.description-card mat-card-content {
+  min-height: 120px;
+}
+
+.ticket-detail__description {
+  font-size: var(--font-size-sm);
+  color: var(--color-text-secondary);
+  line-height: 1.7;
+  white-space: pre-wrap;
+  margin: 0;
+}
+
+/* ── Cost stat cards ────────────────────────────────────────────────────────── */
+.stat-row {
+  display: grid;
+  grid-template-columns: repeat(5, 1fr);
+  gap: var(--spacing-3);
+}
+
+/* ── Cost breakdown table ───────────────────────────────────────────────────── */
+.cost-table {
+  font-size: var(--font-size-sm);
+}
+
+.cost-table__header,
+.cost-table__row {
+  display: grid;
+  grid-template-columns: 2rem 1.5fr 1fr 1fr 1fr 1fr 1fr;
+  gap: var(--spacing-4);
+  padding: var(--spacing-2) var(--spacing-2);
+  border-radius: var(--radius-sm);
+}
+
+.cost-table__header {
+  background: var(--color-surface);
+  font-weight: 600;
+  color: var(--color-text-secondary);
+  font-size: var(--font-size-xs);
+  text-transform: uppercase;
+  letter-spacing: 0.04em;
+}
+
+.cost-table__row { border-bottom: 1px solid var(--color-border); }
+.cost-table__row:last-child { border-bottom: none; }
+.cost-table__row:hover { background: var(--color-surface); }
+
+.cost-table__index { color: var(--color-text-secondary); }
+.cost-table__subtotal { font-weight: 600; }
+
+/* ── Linked asset cards ─────────────────────────────────────────────────────── */
+.asset-grid {
+  display: grid;
+  grid-template-columns: repeat(auto-fill, minmax(220px, 1fr));
+  gap: var(--spacing-3);
+}
+
+.asset-card {
+  border: 1px solid var(--color-border);
+  border-radius: var(--radius-md);
+  padding: var(--spacing-3) var(--spacing-4);
+  display: flex;
+  flex-direction: column;
+  gap: var(--spacing-1);
+  transition: box-shadow 0.15s;
+}
+
+.asset-card:hover { box-shadow: var(--shadow-sm); }
+
+.asset-card__type {
+  font-size: var(--font-size-xs);
+  color: var(--color-text-secondary);
+  font-weight: 600;
+  text-transform: uppercase;
+  letter-spacing: 0.06em;
+}
+
+.asset-card__name {
+  font-size: var(--font-size-sm);
+  font-weight: 600;
+  color: var(--color-text-primary);
+}
+
+.asset-card__meta {
+  display: flex;
+  flex-wrap: wrap;
+  gap: var(--spacing-1);
+  margin-top: var(--spacing-2);
+}
+
+.asset-card__meta span {
+  font-size: var(--font-size-xs);
+  color: var(--color-text-secondary);
+  background: var(--color-surface);
+  padding: 2px var(--spacing-2);
+  border-radius: var(--radius-sm);
+  display: flex;
+  align-items: center;
+  gap: var(--spacing-1);
+}

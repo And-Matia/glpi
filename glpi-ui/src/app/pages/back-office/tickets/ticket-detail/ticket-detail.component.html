@@ -1,0 +1,167 @@
+<div class="ticket-detail">
+
+  @if (loading()) {
+    <div class="ticket-detail__loader">
+      <app-spinner size="lg" />
+    </div>
+  } @else if (error()) {
+    <p class="ticket-detail__error">{{ error() }}</p>
+  } @else if (ticket(); as t) {
+
+    <app-page-header [title]="'Ticket #' + t.ref_ticket" [subtitle]="t.titre">
+      <div class="header-actions">
+        <app-badge [variant]="statusVariant(t.status)">{{ statusLabel(t.status) }}</app-badge>
+        <button mat-stroked-button (click)="goBack()">← Retour</button>
+      </div>
+    </app-page-header>
+
+    <!-- ── Info + Description ────────────────────────────────────────────────── -->
+    <div class="ticket-detail__top">
+
+      <mat-card class="info-card">
+        <mat-card-header><mat-card-title>Informations</mat-card-title></mat-card-header>
+        <mat-card-content>
+
+          <div class="detail-list">
+            <div class="detail-list__row">
+              <span class="detail-list__label">Référence</span>
+              <span class="detail-list__value">#{{ t.ref_ticket }}</span>
+            </div>
+            <div class="detail-list__row">
+              <span class="detail-list__label">Type</span>
+              <app-badge variant="info" size="sm">{{ typeLabel(t.type) }}</app-badge>
+            </div>
+            <div class="detail-list__row">
+              <span class="detail-list__label">Priorité</span>
+              <app-badge [variant]="priorityVariant(t.priority)" size="sm">{{ priorityLabel(t.priority) }}</app-badge>
+            </div>
+            <div class="detail-list__row">
+              <span class="detail-list__label">Statut</span>
+              <app-badge [variant]="statusVariant(t.status)" size="sm">{{ statusLabel(t.status) }}</app-badge>
+            </div>
+          </div>
+
+          <mat-divider class="divider" />
+
+          <div class="detail-list">
+            @if (t.date) {
+              <div class="detail-list__row">
+                <span class="detail-list__label">Ouvert le</span>
+                <span class="detail-list__value">{{ t.date }}@if (t.heure) { à {{ t.heure }} }</span>
+              </div>
+            }
+            @if (t.date_creation) {
+              <div class="detail-list__row">
+                <span class="detail-list__label">Créé le</span>
+                <span class="detail-list__value">{{ t.date_creation }}</span>
+              </div>
+            }
+            @if (t.date_solve) {
+              <div class="detail-list__row">
+                <span class="detail-list__label">Résolu le</span>
+                <span class="detail-list__value">{{ t.date_solve }}</span>
+              </div>
+            }
+            @if (t.date_close) {
+              <div class="detail-list__row">
+                <span class="detail-list__label">Clos le</span>
+                <span class="detail-list__value">{{ t.date_close }}</span>
+              </div>
+            }
+            @if (t.date_mod) {
+              <div class="detail-list__row">
+                <span class="detail-list__label">Modifié le</span>
+                <span class="detail-list__value">{{ t.date_mod }}</span>
+              </div>
+            }
+          </div>
+
+        </mat-card-content>
+      </mat-card>
+
+      <mat-card class="description-card">
+        <mat-card-header><mat-card-title>Description</mat-card-title></mat-card-header>
+        <mat-card-content>
+          <p class="ticket-detail__description">{{ t.description || '—' }}</p>
+        </mat-card-content>
+      </mat-card>
+
+    </div>
+
+    <!-- ── Coûts ──────────────────────────────────────────────────────────────── -->
+    @if (costs().length > 0) {
+      <mat-card>
+        <mat-card-header>
+          <mat-card-title>Coûts</mat-card-title>
+          <mat-card-subtitle>{{ costs().length }} entrée{{ costs().length > 1 ? 's' : '' }}</mat-card-subtitle>
+        </mat-card-header>
+        <mat-card-content>
+
+          <div class="stat-row">
+            <app-stat-card label="Durée totale"   [value]="totalDuration()"                    icon="fa-solid fa-clock" />
+            <app-stat-card label="Coût temps"     [value]="formatCost(totalTimeCost())"         icon="fa-solid fa-hourglass-half" variant="info" />
+            <app-stat-card label="Coût fixe"      [value]="formatCost(totalFixedCost())"        icon="fa-solid fa-receipt"        variant="info" />
+            <app-stat-card label="Coût matériel"  [value]="formatCost(totalMaterialCost())"     icon="fa-solid fa-box"            variant="info" />
+            <app-stat-card label="Coût total"     [value]="formatCost(totalCost())"             icon="fa-solid fa-coins"          variant="warning" />
+          </div>
+
+          @if (costs().length > 1) {
+            <mat-divider class="divider" />
+            <div class="cost-table">
+              <div class="cost-table__header">
+                <span>#</span>
+                <span>Libellé</span>
+                <span>Durée</span>
+                <span>Coût temps</span>
+                <span>Coût fixe</span>
+                <span>Coût matériel</span>
+                <span>Sous-total</span>
+              </div>
+              @for (cost of costs(); track cost.id; let i = $index) {
+                <div class="cost-table__row">
+                  <span class="cost-table__index">{{ i + 1 }}</span>
+                  <span>{{ cost.name || '—' }}</span>
+                  <span>{{ formatDuration(cost.duration_second) }}</span>
+                  <span>{{ formatCost(cost.time_cost) }}</span>
+                  <span>{{ formatCost(cost.fixed_cost) }}</span>
+                  <span>{{ formatCost(cost.cost_material) }}</span>
+                  <span class="cost-table__subtotal">{{ formatCost(cost.time_cost + cost.fixed_cost + cost.cost_material) }}</span>
+                </div>
+              }
+            </div>
+          }
+
+        </mat-card-content>
+      </mat-card>
+    }
+
+    <!-- ── Équipements liés ───────────────────────────────────────────────────── -->
+    @if (linkedAssets().length > 0) {
+      <mat-card>
+        <mat-card-header>
+          <mat-card-title>Équipements liés</mat-card-title>
+          <mat-card-subtitle>{{ linkedAssets().length }} équipement{{ linkedAssets().length > 1 ? 's' : '' }}</mat-card-subtitle>
+        </mat-card-header>
+        <mat-card-content>
+          <div class="asset-grid">
+            @for (asset of linkedAssets(); track asset.id) {
+              <div class="asset-card">
+                <div class="asset-card__type">{{ assetTypeLabel(asset.item_type) }}</div>
+                <div class="asset-card__name">{{ asset.name }}</div>
+                <div class="asset-card__meta">
+                  @if (asset.status)           { <span>{{ asset.status }}</span> }
+                  @if (asset.location)         { <span><i class="fa-solid fa-location-dot"></i> {{ asset.location }}</span> }
+                  @if (asset.manufacturer)     { <span>{{ asset.manufacturer }}</span> }
+                  @if (asset.model)            { <span>{{ asset.model }}</span> }
+                  @if (asset.inventory_number) { <span>S/N {{ asset.inventory_number }}</span> }
+                  @if (asset.user)             { <span><i class="fa-solid fa-user"></i> {{ asset.user }}</span> }
+                </div>
+              </div>
+            }
+          </div>
+        </mat-card-content>
+      </mat-card>
+    }
+
+  }
+</div>
