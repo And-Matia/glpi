@@ -1,0 +1,15 @@
+<div class="super-cost">
+  @if (loading()) {
+    <div class="super-cost__loader">
+      <app-spinner size="lg" />
+    </div>
+  } @else if (error()) {
+    <p class="super-cost__error">{{ error() }}</p>
+  } @else {
+    <app-table
+      [columns]="columns"
+      [rows]="rows()"
+      [searchKeys]="['label']"
+    />
+  }
+</div>

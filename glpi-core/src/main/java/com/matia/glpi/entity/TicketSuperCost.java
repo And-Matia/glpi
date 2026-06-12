@@ -11,6 +11,7 @@ import lombok.Data;
 public class TicketSuperCost {
     @Id
     @GeneratedValue(strategy = GenerationType.IDENTITY)
+    private Long id;
     private Long ticketId;
-    private Double value;
+    private double value;
 }

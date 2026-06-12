@@ -1,0 +1,11 @@
+.super-cost {
+  padding: var(--spacing-6);
+}
+
+.super-cost__loader {
+  display: flex;
+  justify-content: center;
+  padding: var(--spacing-10);
+}
+
+.super-cost__error { color: var(--color-danger); }

@@ -11,7 +11,7 @@ public class TicketStatusName {
     @GeneratedValue(strategy = GenerationType.IDENTITY)
     private Long id;
     private String name;
-    @ManyToOne
+    @ManyToOne(cascade = CascadeType.PERSIST)
     @JoinColumn(name = "language_id")
     private Language language;
     @JsonIgnore

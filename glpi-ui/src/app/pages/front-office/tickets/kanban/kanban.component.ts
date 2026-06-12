@@ -180,7 +180,6 @@ export class KanbanComponent implements OnInit {
     }
     if (!this.pendingTicket) return;
 
-    console.log(this.superCost(),this.solutionText())
     this.solutionSaving.set(true);
     try {
       await this.ticketService.postSolution(this.pendingTicket.id, this.solutionText().trim());

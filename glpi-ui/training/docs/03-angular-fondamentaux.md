@@ -36,7 +36,7 @@ performances optimales et un rendu prévisible.
 **Convention projet : on n'utilise jamais l'injection par constructeur.**
 
 ```ts
-export class ItemListCostComponent implements OnInit {
+export class SuperCostComponent implements OnInit {
   private readonly itemService   = inject(ItemV1Service);
   private readonly ticketService = inject(TicketV1Service);
 }
@@ -79,7 +79,7 @@ this.tickets.update(list => [...list, newTicket]); // ÉCRITURE (à partir de l'
 ### `computed()` — état dérivé (lecture seule)
 
 Recalculé automatiquement quand un signal dont il dépend change. Exemple réel
-(`item-list-cost.component.ts`) :
+(`super-cost.component.ts`) :
 
 ```ts
 readonly items = signal<Item[]>([]);

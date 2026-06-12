@@ -6,25 +6,21 @@ import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.*;
 
 @RestController
-@RequestMapping("/super-cost")
+@RequestMapping("/tickets/super-costs")
 public class TicketSuperCostController {
-    private final TicketSuperCostRepository ticketSuperRepository;
+    private final TicketSuperCostRepository ticketSuperCostRepository;
 
-    public TicketSuperCostController(TicketSuperCostRepository ticketSuperRepository) {
-        this.ticketSuperRepository = ticketSuperRepository;
-    }
-
-
-    @GetMapping
-    public ResponseEntity<?> getSuperCost() {
-        return ResponseEntity.ok(ticketSuperRepository.findAll());
+    public TicketSuperCostController(TicketSuperCostRepository ticketSuperCostRepository) {
+        this.ticketSuperCostRepository = ticketSuperCostRepository;
     }
 
     @PostMapping
-    public ResponseEntity<?> postStatus(@RequestBody TicketSuperCost status) {
-        return ResponseEntity.ok(ticketSuperRepository.save(status));
+    public ResponseEntity<?> postCost(@RequestBody TicketSuperCost cost) {
+        return ResponseEntity.ok(ticketSuperCostRepository.save(cost));
     }
-
     
-
+    @GetMapping
+    public ResponseEntity<?> getCosts() {
+        return ResponseEntity.ok(ticketSuperCostRepository.findAll());
+    }
 }

@@ -3,7 +3,6 @@ import {HttpClient, HttpParams} from '@angular/common/http';
 import {SPRING_CONFIG} from '@app/core/config/spring.config';
 import {firstValueFrom} from 'rxjs';
 import {SuperCost} from '@app/core/models/super-cost.model';
-import {Ticket, TicketCost} from '@app/core/models';
 
 @Injectable({providedIn: 'root'})
 export class SuperCostService {
@@ -26,8 +25,9 @@ export class SuperCostService {
 
   private map(raw: SuperCost): SuperCost {
     return {
-      value: raw.value,
-      id: raw.id
+      id:       raw.id,
+      ticketId: raw.ticketId,
+      value:    raw.value,
     };
   }
 
